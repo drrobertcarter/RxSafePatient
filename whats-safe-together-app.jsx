@@ -1,25 +1,4 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>What's Safe Together?</title>
-  <style>html,body,#root{height:100%}body{margin:0}</style>
-  <script type="importmap">
-  {
-    "imports": {
-      "react": "https://esm.sh/react@18.3.1",
-      "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
-      "lucide-react": "https://esm.sh/lucide-react@0.383.0?deps=react@18.3.1"
-    }
-  }
-  </script>
-</head>
-<body>
-  <div id="root"></div>
-  <script type="text/babel" data-type="module" data-presets="react">
 import React, { useState, useMemo, useRef, useEffect, useLayoutEffect, useCallback } from "react";
-import { createRoot } from "react-dom/client";
 import {
   Heart, Brain, Droplets, Activity, FlaskConical, Pill, Search, X, ChevronDown,
   AlertTriangle, ShieldAlert, Plus, LayoutDashboard, Apple, CalendarClock,
@@ -1352,7 +1331,7 @@ function BodyImpactMap() {
 }
 
 // ---- App shell -------------------------------------------------------------
-function App() {
+export default function App() {
   const [page, setPage] = useState("dashboard");
   const [navOpen, setNavOpen] = useState(false);
   const go = id => { setPage(id); setNavOpen(false); };
@@ -1453,11 +1432,3 @@ function App() {
     </div>
   );
 }
-
-
-createRoot(document.getElementById("root")).render(<App />);
-
-  </script>
-  <script src="https://unpkg.com/@babel/standalone@7.25.6/babel.min.js"></script>
-</body>
-</html>
