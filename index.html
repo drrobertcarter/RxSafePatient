@@ -461,6 +461,7 @@ const SYS = {
   eyes:      { name: "Eyes",                    Icon: Eye,      pos: { x: 160, y: 104 } },
   endocrine: { name: "Endocrine System",        Icon: Dna,      pos: { x: 160, y: 150 } },
   heart:     { name: "Heart & Cardiovascular",  Icon: Heart,    pos: { x: 148, y: 250 } },
+  blood:     { name: "Blood & Clotting",         Icon: Droplets, pos: { x: 176, y: 290 } },
   lungs:     { name: "Lungs",                    Icon: Wind,     pos: { x: 190, y: 236 } },
   liver:     { name: "Liver",                    Icon: Hexagon,  pos: { x: 128, y: 322 } },
   digestive: { name: "Digestive System",        Icon: Droplets, pos: { x: 162, y: 376 } },
@@ -486,6 +487,12 @@ const RULES = [
   { sys: "heart", sev: "low", when: k => has(k, "nitrate") || has(k, "pde5"), effect: "Can lower blood pressure by relaxing vessels", why: "Widens blood vessels.", monitor: "Nitrates and PDE5 (erectile-dysfunction) medicines must not be taken close together." },
   { sys: "heart", sev: "low", when: k => isClass(k, "Beta blocker", "Calcium channel blocker", "ACE inhibitor", "ARB", "Diuretic", "Loop diuretic", "Potassium-sparing diuretic"), effect: "Acts on blood pressure and/or heart rate (usually intended)", why: "The cardiovascular system is the target.", monitor: "Routine blood-pressure checks." },
   { sys: "heart", sev: "moderate", when: k => has(k, "sympathomimetic"), effect: "Can raise heart rate and blood pressure", why: "Stimulant effect on the cardiovascular system.", monitor: "Use cautiously with high blood pressure or heart disease." },
+
+  // Blood & clotting
+  { sys: "blood", sev: "high", when: k => has(k, "anticoagulant"), effect: "Thins the blood to prevent clots (intended) — raises bleeding risk", why: "Reduces the blood's ability to form clots.", monitor: "Watch for unusual bruising or bleeding that won't stop; warfarin needs INR checks. Risk adds up with aspirin or anti-inflammatories." },
+  { sys: "blood", sev: "high", when: k => has(k, "antiplatelet"), effect: "Keeps platelets from clumping (intended) — raises bleeding risk", why: "Makes platelets less sticky so clots form less easily.", monitor: "Bleeding risk stacks with other blood thinners and NSAIDs; report black stools or bleeding gums." },
+  { sys: "blood", sev: "moderate", when: k => has(k, "bleeding") && !has(k, "anticoagulant") && !has(k, "antiplatelet"), effect: "Can add to bleeding risk", why: "Affects platelets or the stomach lining, adding to bleeding tendency.", monitor: "Be cautious combining with blood thinners; watch for unusual bruising or bleeding." },
+  { sys: "blood", sev: "moderate", when: k => has(k, "myelosuppression"), effect: "Can lower blood cell counts", why: "Suppresses bone-marrow production of blood cells.", monitor: "Periodic complete blood count (CBC)." },
 
   // Lungs & breathing
   { sys: "lungs", sev: "high", when: k => has(k, "resp_depress"), effect: "Can slow breathing — more so combined or during sleep", why: "Suppresses the brain's drive to breathe.", monitor: "Risk rises with other sedatives; ask about naloxone for opioids." },
@@ -534,6 +541,34 @@ const RULES = [
 
   // Reproductive
   { sys: "repro", sev: "low", when: k => isClass(k, "SSRI", "SNRI"), effect: "Changes in libido or sexual function", why: "Serotonin pathways influence sexual response.", monitor: "Mention if bothersome — options exist." },
+
+  // Anticonvulsants (nervous system)
+  { sys: "brain", sev: "moderate", when: k => isClass(k, "Anticonvulsant"), effect: "Drowsiness, dizziness, or coordination effects; mood changes for some", why: "Acts on nerve signaling in the brain (often the intended effect).", monitor: "Report any new rash (some can cause serious rashes), marked drowsiness, or mood changes." },
+  { sys: "liver", sev: "low", when: k => k === "carbamazepine" || k === "phenytoin", effect: "Processed by the liver; can affect liver enzymes", why: "Cleared by, and can induce, liver enzymes.", monitor: "Liver blood tests with long-term use." },
+
+  // Acid reducers
+  { sys: "digestive", sev: "low", when: k => isClass(k, "Proton pump inhibitor", "H2 blocker"), effect: "Lowers stomach acid (intended); can reduce absorption of magnesium, B12, calcium over time", why: "Less stomach acid changes how some nutrients and medicines are absorbed.", monitor: "Periodic magnesium/B12 with long-term use." },
+  { sys: "bones", sev: "low", when: k => isClass(k, "Proton pump inhibitor"), effect: "Long-term use linked to higher fracture risk", why: "Prolonged acid suppression may affect calcium absorption and bone.", monitor: "Adequate calcium/vitamin D; review the need for long courses." },
+
+  // Azole antifungals
+  { sys: "liver", sev: "moderate", when: k => isClass(k, "Antifungal"), effect: "Can stress the liver", why: "Azole antifungals are processed by, and can irritate, the liver.", monitor: "Liver blood tests with longer courses." },
+
+  // Calcineurin inhibitors
+  { sys: "kidneys", sev: "moderate", when: k => k === "cyclosporine" || k === "tacrolimus", effect: "Can reduce kidney function and raise blood pressure", why: "Calcineurin inhibitors lower kidney blood flow.", monitor: "Kidney function, blood pressure, and drug levels." },
+
+  // Urate-lowering (gout)
+  { sys: "bones", sev: "positive", when: k => isClass(k, "Gout (urate-lowering)"), effect: "Lowers uric acid to prevent gout attacks (intended)", why: "Reduces urate that deposits in joints.", monitor: "Periodic uric acid level." },
+  { sys: "skin", sev: "low", when: k => has(k, "xo_inh"), effect: "Rarely a serious skin reaction", why: "Allopurinol/febuxostat can trigger hypersensitivity rashes in some people.", monitor: "Stop and seek care for a spreading rash, especially with fever or blistering." },
+
+  // Colchicine
+  { sys: "digestive", sev: "moderate", when: k => k === "colchicine", effect: "Diarrhea and nausea are common, especially at higher doses", why: "Acts on rapidly dividing gut-lining cells.", monitor: "Lower doses reduce GI effects; toxicity rises with interacting medicines." },
+
+  // Tamoxifen
+  { sys: "blood", sev: "moderate", when: k => k === "tamoxifen", effect: "Can increase the risk of blood clots", why: "Hormonal (anti-estrogen) therapy raises clotting tendency.", monitor: "Report leg swelling/pain or sudden breathlessness." },
+  { sys: "endocrine", sev: "low", when: k => k === "tamoxifen", effect: "Blocks estrogen's effect in breast tissue (intended)", why: "Selective estrogen-receptor modulation.", monitor: "Routine oncology follow-up." },
+
+  // Mineral supplements / antacids
+  { sys: "digestive", sev: "low", when: k => has(k, "cation_binder"), effect: "Can cause constipation; binds some medicines in the gut", why: "Calcium and iron slow the gut and attach to certain medicines, reducing their absorption.", monitor: "Separate from interacting medicines by a few hours; fluids and fiber help." },
 ];
 
 // Drug-specific organ effects not captured by the generic tags
@@ -613,6 +648,7 @@ function OrganGlyph({ id }) {
     case "eyes": return (<g><ellipse cx="-7" cy="0" rx="5" ry="3.4" /><ellipse cx="7" cy="0" rx="5" ry="3.4" /></g>);
     case "endocrine": return (<g><ellipse cx="-6" cy="0" rx="6" ry="4.5" /><ellipse cx="6" cy="0" rx="6" ry="4.5" /><rect x="-2.5" y="-2" width="5" height="4" rx="1.5" /></g>);
     case "heart": return (<path d="M0,7 C-6,-4 -19,-3 -18,7 C-17,17 -4,23 0,28 C4,23 17,17 18,7 C19,-3 6,-4 0,7 Z" transform="scale(0.92)" />);
+    case "blood": return (<path d="M0,-15 C7,-5 13,1 13,8 A13,13 0 1 1 -13,8 C-13,1 -7,-5 0,-15 Z" transform="scale(0.78)" />);
     case "lungs": return (<g><path d="M-3,-14 C-15,-10 -19,6 -15,18 C-12,24 -4,22 -4,14 L-3,-14 Z" /><path d="M3,-14 C15,-10 19,6 15,18 C12,24 4,22 4,14 L3,-14 Z" /></g>);
     case "liver": return (<path d="M-20,-8 C-2,-14 18,-12 20,-4 C21,6 8,14 -6,13 C-16,12 -22,2 -20,-8 Z" />);
     case "digestive": return (<path d="M-4,-15 C9,-16 12,-4 4,-1 C-7,3 -10,11 0,13 C12,15 14,4 9,0" fill="none" stroke="currentColor" strokeWidth="6.5" strokeLinecap="round" />);
@@ -818,6 +854,7 @@ function foodFindings(keys) {
 const LABS = {
   liver: ["ALT", "AST", "Bilirubin"], kidneys: ["Creatinine", "eGFR", "Potassium"],
   heart: ["ECG (QTc)", "Potassium", "Magnesium"], endocrine: ["Blood glucose / HbA1c", "Thyroid (TSH)"],
+  blood: ["INR (for warfarin)", "Complete blood count (CBC)", "Platelets"],
   bones: ["Bone density (DEXA)", "Vitamin D"], muscles: ["Creatine kinase (CK)"],
   lungs: ["Chest imaging if breathless"], digestive: ["Hemoglobin if bleeding"],
   eyes: ["Eye exam if vision changes"], brain: [], repro: [], skin: [],
