@@ -1248,7 +1248,7 @@ function BodyImpactMap({ baseSel, go }) {
 }
 
 // ---- Dashboard -------------------------------------------------------------
-const TOOLS = [["meds", "Add Medication", Pill, "#5E5276"], ["interactions", "Check Interactions", Activity, "#B5532E"], ["bodymap", "Body Impact Map", PersonStanding, "#3F6E8C"], ["food", "Food Interactions", Apple, "#9A5A1E"], ["schedule", "Schedule Builder", CalendarClock, "#3E7A6E"], ["symptom", "Symptom Checker", Stethoscope, "#8E3A52"], ["pharmacist", "AI Pharmacist", MessageCircle, "#6B6256"]];
+const TOOLS = [["meds", "Add Medication", Pill, "#5E5276"], ["pillid", "Pill Identifier", ScanLine, "#6B6256"], ["interactions", "Check Interactions", Activity, "#B5532E"], ["bodymap", "Body Impact Map", PersonStanding, "#3F6E8C"], ["food", "Food Interactions", Apple, "#9A5A1E"], ["schedule", "Schedule Builder", CalendarClock, "#3E7A6E"], ["symptom", "Symptom Checker", Stethoscope, "#8E3A52"]];
 
 function Dashboard({ meds, symptoms, findings, score, go }) {
   const band = SCOREBAND(score);
@@ -2008,6 +2008,101 @@ function DrugSafetyNews({ meds, keys, findings, score, go }) {
   );
 }
 
+// ---- Pill Identifier -------------------------------------------------------
+const PILL_COLORS = ["Any color", "White", "Off-white", "Beige", "Tan", "Yellow", "Gold", "Orange", "Peach", "Pink", "Red", "Purple", "Blue", "Green", "Turquoise", "Brown", "Gray", "Black", "Clear", "Multi-colored"];
+const PILL_SHAPES = ["Any shape", "Round", "Oval / Elliptical", "Capsule / Oblong", "Rectangle", "Square", "Triangle", "Diamond", "Pentagon", "Hexagon", "Heart", "Teardrop", "Other"];
+
+function PillIdentifier({ go }) {
+  const [imprint, setImprint] = useState("");
+  const [color, setColor] = useState("Any color");
+  const [shape, setShape] = useState("Any shape");
+  const [searched, setSearched] = useState(false);
+  const localMatch = useMemo(() => {
+    const t = imprint.trim().toLowerCase(); if (t.length < 3) return [];
+    return searchDirectory(t, null).filter(d => d.name.toLowerCase().includes(t)).slice(0, 5);
+  }, [imprint]);
+  const q = encodeURIComponent(imprint.trim());
+  const links = [
+    { label: "Drugs.com Pill Identifier", url: "https://www.drugs.com/imprints.php?imprint=" + q },
+    { label: "NIH DailyMed", url: "https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=" + q },
+    { label: "Web search", url: "https://www.google.com/search?q=" + encodeURIComponent("pill imprint " + imprint.trim() + " " + (color !== "Any color" ? color : "") + " " + (shape !== "Any shape" ? shape : "")) },
+  ];
+  const run = () => { setSearched(true); if (imprint.trim()) window.open(links[0].url, "_blank", "noopener,noreferrer"); };
+
+  return (
+    <div style={{ maxWidth: 820 }}>
+      <PageHead title="Pill Identifier" italic={"\u201cNot sure what a loose tablet is? Start with what's printed on it.\u201d"} sub="Identify a medicine by the imprint, color, and shape on the pill itself." />
+
+      <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 18, alignItems: "start" }} className="pill-grid">
+        <div style={{ ...card }}>
+          <label style={{ display: "block" }}>
+            <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: C.ink, marginBottom: 6 }}>Pill imprint</span>
+            <input className="wst-input" value={imprint} onChange={e => { setImprint(e.target.value); setSearched(false); }} onKeyDown={e => { if (e.key === "Enter") run(); }} placeholder="Imprint on pill (e.g. 9 3 5510)"
+              style={{ width: "100%", boxSizing: "border-box", borderRadius: 11, border: `1px solid ${C.line}`, background: C.surface, padding: "13px 14px", fontSize: 15, color: C.ink, outline: "none" }} />
+          </label>
+          <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "8px 0 0", lineHeight: 1.5 }}><strong style={{ color: C.ink }}>Tip:</strong> enter the <strong>imprint only first</strong>. Refine by color or shape if too many results appear.</p>
+
+          <div style={{ marginTop: 18 }}>
+            <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: C.ink, marginBottom: 8 }}>Color and shape <span style={{ fontWeight: 400, color: C.inkFaint }}>(optional)</span></span>
+            <div style={{ display: "grid", gap: 10 }}>
+              <select className="wst-input" value={color} onChange={e => setColor(e.target.value)} style={{ width: "100%", boxSizing: "border-box", borderRadius: 11, border: `1px solid ${C.line}`, background: C.surface, padding: "12px 14px", fontSize: 14.5, color: C.ink, outline: "none" }}>
+                {PILL_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <select className="wst-input" value={shape} onChange={e => setShape(e.target.value)} style={{ width: "100%", boxSizing: "border-box", borderRadius: 11, border: `1px solid ${C.line}`, background: C.surface, padding: "12px 14px", fontSize: 14.5, color: C.ink, outline: "none" }}>
+                {PILL_SHAPES.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <button onClick={run} disabled={!imprint.trim()} style={{ ...primaryBtn, width: "100%", justifyContent: "center", marginTop: 16, opacity: imprint.trim() ? 1 : 0.5 }}><Search size={16} /> Search</button>
+        </div>
+
+        {/* side guide */}
+        <div style={{ ...card, background: "#F6EFE2" }}>
+          <p style={{ fontSize: 13, color: C.inkSoft, margin: "0 0 14px", lineHeight: 1.5, textAlign: "center" }}>Enter the <strong style={{ color: C.ink }}>letters</strong> or <strong style={{ color: C.ink }}>numbers</strong> from each side of your pill.</p>
+          <div style={{ display: "flex", justifyContent: "center", gap: 18 }}>
+            {[["9 | 3", "SIDE A"], ["5510", "SIDE B"]].map(([txt, side]) => (
+              <div key={side} style={{ textAlign: "center" }}>
+                <div style={{ width: 76, height: 76, borderRadius: 999, background: "radial-gradient(circle at 35% 30%, #E8D3B0, #D8BE92)", border: "1px solid #CBB084", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#6E5836", fontSize: 17, boxShadow: "inset 0 -4px 10px rgba(110,88,54,0.18)" }}>{txt}</div>
+                <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.1em", color: C.inkFaint, marginTop: 7 }}>{side}</div>
+              </div>
+            ))}
+          </div>
+          <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "14px 0 4px", textAlign: "center" }}>For this tablet you would enter</p>
+          <p style={{ fontSize: 22, fontWeight: 700, color: C.ink, textAlign: "center", margin: 0, fontFamily: serifH }}>9 3 5510</p>
+        </div>
+      </div>
+
+      {searched && (
+        <div style={{ marginTop: 18 }}>
+          {localMatch.length > 0 && (
+            <div style={{ ...card, marginBottom: 14 }}>
+              <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "0 0 8px" }}>That text also matches medicine names in this app — if you typed a name rather than an imprint:</p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {localMatch.map(d => <button key={d.name} onClick={() => go("meds")} style={{ ...ghostBtn, padding: "6px 12px", fontSize: 12.5 }}>{d.name}{d.cls ? " · " + d.cls : ""}</button>)}
+              </div>
+            </div>
+          )}
+          <div style={{ ...card }}>
+            <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+              <ShieldAlert size={18} color={C.terra} style={{ flexShrink: 0, marginTop: 2 }} />
+              <div>
+                <h3 style={{ fontFamily: serifH, fontSize: 16.5, margin: 0, color: C.ink }}>Confirm the pill with a verified source</h3>
+                <p style={{ fontSize: 13.5, color: "#4F4233", margin: "6px 0 0", lineHeight: 1.6 }}>This tool doesn't keep its own imprint database — accurate identification has to come from an authoritative, regularly-updated source. We've opened a verified identifier for imprint <strong>{imprint.trim() || "—"}</strong>{color !== "Any color" ? `, color ${color.toLowerCase()}` : ""}{shape !== "Any shape" ? `, shape ${shape.toLowerCase()}` : ""}. You can also open these:</p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
+                  {links.map(l => <a key={l.label} href={l.url} target="_blank" rel="noopener noreferrer" style={{ ...ghostBtn, padding: "8px 13px", fontSize: 13, textDecoration: "none" }}>{l.label} <ArrowRight size={14} /></a>)}
+                </div>
+              </div>
+            </div>
+            <p style={{ fontSize: 12, color: "#B4332B", margin: "14px 0 0", lineHeight: 1.55, fontWeight: 500 }}>Never take a pill you can't positively identify. If a medicine is unlabeled or you're unsure, a pharmacist can identify it in person — that's the safest check.</p>
+          </div>
+        </div>
+      )}
+      <p style={{ marginTop: 16, fontSize: 11.5, color: C.inkFaint }}>Educational tool. Visual identification isn't performed here; results come from external verified databases. In an emergency or suspected poisoning, contact your local emergency number or poison control.</p>
+    </div>
+  );
+}
+
 // ---- Stubs -----------------------------------------------------------------
 const STUBS = {
   emergency: { Icon: Siren, title: "Emergency", italic: "\u201cWhen it can't wait, this is the short version.\u201d", body: "Red-flag combinations and warning signs worth acting on quickly — severe bleeding, trouble breathing, chest pain, or sudden confusion. This tool is educational and can't call for help: for a medical emergency, contact your local emergency number right away.", cta: "interactions", ctaLabel: "Review serious interactions" },
@@ -2033,7 +2128,7 @@ function Stub({ id, go }) {
 
 // ---- Navigation ------------------------------------------------------------
 const NAV = [
-  ["dashboard", "Dashboard", LayoutDashboard], ["meds", "My Medications", Pill], ["interactions", "Interaction Checker", Activity],
+  ["dashboard", "Dashboard", LayoutDashboard], ["meds", "My Medications", Pill], ["pillid", "Pill Identifier", ScanLine], ["interactions", "Interaction Checker", Activity],
   ["bodymap", "Body Impact Map", PersonStanding], ["food", "Food Interactions", Apple], ["schedule", "Schedule Builder", CalendarClock],
   ["symptom", "Symptom Checker", Stethoscope], ["summary", "Health Summary", Gauge], ["notifications", "Notifications", Bell],
   ["emergency", "Emergency", Siren], ["plan", "Plan ahead", CalendarCheck], ["pharmacist", "AI Pharmacist", MessageCircle],
@@ -2068,7 +2163,7 @@ function App() {
         .wst-row:hover { background:#F4EAD8 !important; }
         .hero { display:grid; grid-template-columns:1.1fr 0.9fr; gap:34px; align-items:center; }
         .hero-figure { aspect-ratio:4/3; margin:0; }
-        @media (max-width:760px){ .hero{ grid-template-columns:1fr; } .hero-figure{ aspect-ratio:16/10; order:-1; } }
+        @media (max-width:760px){ .hero{ grid-template-columns:1fr; } .hero-figure{ aspect-ratio:16/10; order:-1; } .pill-grid{ grid-template-columns:1fr !important; } }
         .shell { display:grid; grid-template-columns:268px 1fr; min-height:100vh; }
         .sidebar { position:sticky; top:0; height:100vh; overflow-y:auto; border-right:1px solid ${C.line}; background:${C.sidebar}; padding:22px 16px; }
         .topbar { display:none; }
@@ -2114,6 +2209,7 @@ function App() {
           <main style={{ padding: "clamp(20px, 4vw, 44px)", maxWidth: 1240, margin: "0 auto" }}>
             {page === "dashboard" && <Dashboard meds={meds} symptoms={symptoms} findings={findings} score={score} go={go} />}
             {page === "meds" && <MyMedications meds={meds} setMeds={setMeds} go={go} />}
+            {page === "pillid" && <PillIdentifier go={go} />}
             {page === "interactions" && <Interactions meds={meds} findings={findings} score={score} go={go} />}
             {page === "bodymap" && <BodyImpactMap baseSel={keys} go={go} />}
             {page === "food" && <FoodInteractions keys={keys} go={go} />}
