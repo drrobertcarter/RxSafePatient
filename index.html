@@ -2008,68 +2008,119 @@ function DrugSafetyNews({ meds, keys, findings, score, go }) {
   );
 }
 
-// ---- Pill Identifier -------------------------------------------------------
-const PILL_COLORS = ["Any color", "White", "Off-white", "Beige", "Tan", "Yellow", "Gold", "Orange", "Peach", "Pink", "Red", "Purple", "Blue", "Green", "Turquoise", "Brown", "Gray", "Black", "Clear", "Multi-colored"];
-const PILL_SHAPES = ["Any shape", "Round", "Oval / Elliptical", "Capsule / Oblong", "Rectangle", "Square", "Triangle", "Diamond", "Pentagon", "Hexagon", "Heart", "Teardrop", "Other"];
+// ---- Pill Identifier (original design) ------------------------------------
+const PILL_SWATCH = {
+  "Any": "", White: "#FCFBF8", "Off-white": "#F1ECE0", Beige: "#E8DCC2", Tan: "#D7BE93", Yellow: "#F2D24B",
+  Gold: "#D9A93B", Orange: "#E5863A", Peach: "#F2C09A", Pink: "#E59BB2", Red: "#C0392B", Purple: "#8E5BB5",
+  Blue: "#3F6FB5", Green: "#3E9A6B", Turquoise: "#3FB2A6", Brown: "#8A5A3B", Gray: "#9AA0A6", Black: "#2B231C", "Multi": "conic",
+};
+const SHAPE_GLYPH = {
+  Round: <circle cx="12" cy="12" r="8.5" />,
+  Oval: <ellipse cx="12" cy="12" rx="9.5" ry="6" />,
+  Capsule: <rect x="2.5" y="7" width="19" height="10" rx="5" />,
+  Rectangle: <rect x="3.5" y="7" width="17" height="10" rx="2" />,
+  Square: <rect x="4.5" y="4.5" width="15" height="15" rx="2.5" />,
+  Triangle: <path d="M12,3.5 L20.5,19 L3.5,19 Z" />,
+  Diamond: <path d="M12,2.5 L20,12 L12,21.5 L4,12 Z" />,
+  Pentagon: <path d="M12,2.5 L20.5,9 L17.2,19.5 L6.8,19.5 L3.5,9 Z" />,
+  Hexagon: <path d="M7,3.5 L17,3.5 L22,12 L17,20.5 L7,20.5 L2,12 Z" />,
+  Heart: <path d="M12,19 C2.5,12 5.5,4 12,8.2 C18.5,4 21.5,12 12,19 Z" />,
+  Teardrop: <path d="M12,2.5 C17.5,9.5 18.5,13.5 12,20 C5.5,13.5 6.5,9.5 12,2.5 Z" />,
+  Other: <text x="12" y="16" textAnchor="middle" fontSize="14" fontWeight="700" fill="currentColor">?</text>,
+};
+const SHAPE_LIST = ["Round", "Oval", "Capsule", "Rectangle", "Square", "Triangle", "Diamond", "Pentagon", "Hexagon", "Heart", "Teardrop", "Other"];
 
 function PillIdentifier({ go }) {
   const [imprint, setImprint] = useState("");
-  const [color, setColor] = useState("Any color");
-  const [shape, setShape] = useState("Any shape");
+  const [color, setColor] = useState("Any");
+  const [shape, setShape] = useState("");
   const [searched, setSearched] = useState(false);
   const localMatch = useMemo(() => {
     const t = imprint.trim().toLowerCase(); if (t.length < 3) return [];
     return searchDirectory(t, null).filter(d => d.name.toLowerCase().includes(t)).slice(0, 5);
   }, [imprint]);
   const q = encodeURIComponent(imprint.trim());
+  const descr = [imprint.trim() && ("imprint " + imprint.trim()), color !== "Any" && (color.toLowerCase() + " in color"), shape && (shape.toLowerCase() + " shaped")].filter(Boolean).join(", ");
   const links = [
-    { label: "Drugs.com Pill Identifier", url: "https://www.drugs.com/imprints.php?imprint=" + q },
-    { label: "NIH DailyMed", url: "https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=" + q },
-    { label: "Web search", url: "https://www.google.com/search?q=" + encodeURIComponent("pill imprint " + imprint.trim() + " " + (color !== "Any color" ? color : "") + " " + (shape !== "Any shape" ? shape : "")) },
+    { label: "NIH DailyMed", url: "https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=" + q, note: "U.S. National Library of Medicine" },
+    { label: "Drugs.com identifier", url: "https://www.drugs.com/imprints.php?imprint=" + q, note: "consumer pill finder" },
+    { label: "Open web search", url: "https://www.google.com/search?q=" + encodeURIComponent("pill imprint " + imprint.trim() + " " + (color !== "Any" ? color : "") + " " + (shape || "")), note: "broad lookup" },
   ];
   const run = () => { setSearched(true); if (imprint.trim()) window.open(links[0].url, "_blank", "noopener,noreferrer"); };
+  const swatchBg = c => PILL_SWATCH[c] === "conic" ? "conic-gradient(#E59BB2,#F2D24B,#3F6FB5,#3E9A6B,#E59BB2)" : (PILL_SWATCH[c] || "transparent");
 
   return (
-    <div style={{ maxWidth: 820 }}>
-      <PageHead title="Pill Identifier" italic={"\u201cNot sure what a loose tablet is? Start with what's printed on it.\u201d"} sub="Identify a medicine by the imprint, color, and shape on the pill itself." />
+    <div style={{ maxWidth: 860 }}>
+      <PageHead title="Pill Identifier" italic={"\u201cA loose, unlabeled tablet? Read it like a fingerprint.\u201d"} sub="Work from what's physically on the pill \u2014 its stamped code first, then color and shape \u2014 and we'll hand you to a verified database to confirm it." />
 
-      <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 18, alignItems: "start" }} className="pill-grid">
+      <div className="pill-grid" style={{ display: "grid", gridTemplateColumns: "1.35fr 1fr", gap: 18, alignItems: "start" }}>
         <div style={{ ...card }}>
-          <label style={{ display: "block" }}>
-            <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: C.ink, marginBottom: 6 }}>Pill imprint</span>
-            <input className="wst-input" value={imprint} onChange={e => { setImprint(e.target.value); setSearched(false); }} onKeyDown={e => { if (e.key === "Enter") run(); }} placeholder="Imprint on pill (e.g. 9 3 5510)"
-              style={{ width: "100%", boxSizing: "border-box", borderRadius: 11, border: `1px solid ${C.line}`, background: C.surface, padding: "13px 14px", fontSize: 15, color: C.ink, outline: "none" }} />
-          </label>
-          <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "8px 0 0", lineHeight: 1.5 }}><strong style={{ color: C.ink }}>Tip:</strong> enter the <strong>imprint only first</strong>. Refine by color or shape if too many results appear.</p>
+          {/* step 1 imprint */}
+          <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 10 }}>
+            <span style={{ display: "flex", height: 24, width: 24, alignItems: "center", justifyContent: "center", borderRadius: 999, background: C.terra, color: "#FBF6EC", fontSize: 12.5, fontWeight: 700 }}>1</span>
+            <span style={{ fontFamily: serifH, fontSize: 16, color: C.ink }}>The imprint code</span>
+          </div>
+          <input className="wst-input" value={imprint} onChange={e => { setImprint(e.target.value); setSearched(false); }} onKeyDown={e => { if (e.key === "Enter") run(); }} placeholder="Type the letters & numbers, e.g. TEVA 3109"
+            style={{ width: "100%", boxSizing: "border-box", borderRadius: 11, border: `1px solid ${C.line}`, background: C.surface, padding: "13px 14px", fontSize: 15, color: C.ink, outline: "none" }} />
+          <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "8px 0 0", lineHeight: 1.5 }}>Combine whatever you can read from <em>both</em> faces, separated by a space. The imprint alone usually narrows it down \u2014 add color or shape only if you get too many hits.</p>
 
-          <div style={{ marginTop: 18 }}>
-            <span style={{ display: "block", fontSize: 13, fontWeight: 700, color: C.ink, marginBottom: 8 }}>Color and shape <span style={{ fontWeight: 400, color: C.inkFaint }}>(optional)</span></span>
-            <div style={{ display: "grid", gap: 10 }}>
-              <select className="wst-input" value={color} onChange={e => setColor(e.target.value)} style={{ width: "100%", boxSizing: "border-box", borderRadius: 11, border: `1px solid ${C.line}`, background: C.surface, padding: "12px 14px", fontSize: 14.5, color: C.ink, outline: "none" }}>
-                {PILL_COLORS.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-              <select className="wst-input" value={shape} onChange={e => setShape(e.target.value)} style={{ width: "100%", boxSizing: "border-box", borderRadius: 11, border: `1px solid ${C.line}`, background: C.surface, padding: "12px 14px", fontSize: 14.5, color: C.ink, outline: "none" }}>
-                {PILL_SHAPES.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
+          {/* step 2 color */}
+          <div style={{ display: "flex", alignItems: "center", gap: 9, margin: "20px 0 10px" }}>
+            <span style={{ display: "flex", height: 24, width: 24, alignItems: "center", justifyContent: "center", borderRadius: 999, background: "#E3D8C4", color: C.ink, fontSize: 12.5, fontWeight: 700 }}>2</span>
+            <span style={{ fontFamily: serifH, fontSize: 16, color: C.ink }}>Color <span style={{ fontFamily: "inherit", fontSize: 12.5, color: C.inkFaint, fontWeight: 400 }}>(optional)</span></span>
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 9 }}>
+            {Object.keys(PILL_SWATCH).map(c => {
+              const sel = color === c;
+              return (
+                <button key={c} onClick={() => setColor(c)} title={c} style={{ display: "inline-flex", alignItems: "center", gap: 7, borderRadius: 999, border: `1px solid ${sel ? C.terra : C.line}`, background: sel ? "#F4EAD8" : C.surface, padding: "4px 11px 4px 5px", cursor: "pointer" }}>
+                  <span style={{ height: 18, width: 18, borderRadius: 999, background: swatchBg(c), border: c === "Any" ? `1px dashed ${C.inkFaint}` : `1px solid rgba(43,35,28,0.18)`, boxShadow: sel ? `0 0 0 2px ${C.terra}` : "none" }} />
+                  <span style={{ fontSize: 12.5, color: C.inkSoft, fontWeight: sel ? 600 : 400 }}>{c}</span>
+                </button>
+              );
+            })}
           </div>
 
-          <button onClick={run} disabled={!imprint.trim()} style={{ ...primaryBtn, width: "100%", justifyContent: "center", marginTop: 16, opacity: imprint.trim() ? 1 : 0.5 }}><Search size={16} /> Search</button>
+          {/* step 3 shape */}
+          <div style={{ display: "flex", alignItems: "center", gap: 9, margin: "20px 0 10px" }}>
+            <span style={{ display: "flex", height: 24, width: 24, alignItems: "center", justifyContent: "center", borderRadius: 999, background: "#E3D8C4", color: C.ink, fontSize: 12.5, fontWeight: 700 }}>3</span>
+            <span style={{ fontFamily: serifH, fontSize: 16, color: C.ink }}>Shape <span style={{ fontFamily: "inherit", fontSize: 12.5, color: C.inkFaint, fontWeight: 400 }}>(optional)</span></span>
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {SHAPE_LIST.map(s => {
+              const sel = shape === s;
+              return (
+                <button key={s} onClick={() => setShape(sel ? "" : s)} style={{ display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 10, border: `1px solid ${sel ? C.terra : C.line}`, background: sel ? C.terra : C.surface, color: sel ? "#FBF6EC" : C.inkSoft, padding: "6px 10px", cursor: "pointer" }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={{ display: "block" }}>{SHAPE_GLYPH[s]}</svg>
+                  <span style={{ fontSize: 12.5, fontWeight: sel ? 600 : 400 }}>{s}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <button onClick={run} disabled={!imprint.trim()} style={{ ...primaryBtn, width: "100%", justifyContent: "center", marginTop: 20, opacity: imprint.trim() ? 1 : 0.5 }}><Search size={16} /> Identify this pill</button>
         </div>
 
-        {/* side guide */}
+        {/* original "how to read a pill" diagram */}
         <div style={{ ...card, background: "#F6EFE2" }}>
-          <p style={{ fontSize: 13, color: C.inkSoft, margin: "0 0 14px", lineHeight: 1.5, textAlign: "center" }}>Enter the <strong style={{ color: C.ink }}>letters</strong> or <strong style={{ color: C.ink }}>numbers</strong> from each side of your pill.</p>
-          <div style={{ display: "flex", justifyContent: "center", gap: 18 }}>
-            {[["9 | 3", "SIDE A"], ["5510", "SIDE B"]].map(([txt, side]) => (
-              <div key={side} style={{ textAlign: "center" }}>
-                <div style={{ width: 76, height: 76, borderRadius: 999, background: "radial-gradient(circle at 35% 30%, #E8D3B0, #D8BE92)", border: "1px solid #CBB084", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, color: "#6E5836", fontSize: 17, boxShadow: "inset 0 -4px 10px rgba(110,88,54,0.18)" }}>{txt}</div>
-                <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.1em", color: C.inkFaint, marginTop: 7 }}>{side}</div>
-              </div>
-            ))}
-          </div>
-          <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "14px 0 4px", textAlign: "center" }}>For this tablet you would enter</p>
-          <p style={{ fontSize: 22, fontWeight: 700, color: C.ink, textAlign: "center", margin: 0, fontFamily: serifH }}>9 3 5510</p>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkFaint, margin: "0 0 12px" }}>How to read a tablet</p>
+          <svg viewBox="0 0 240 150" style={{ width: "100%", height: "auto", display: "block" }}>
+            <defs><linearGradient id="tab" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#EAD9BC" /><stop offset="1" stopColor="#DBC49B" /></linearGradient></defs>
+            {/* tablet */}
+            <ellipse cx="120" cy="78" rx="64" ry="40" fill="url(#tab)" stroke="#C9AE82" strokeWidth="1.5" />
+            <line x1="120" y1="42" x2="120" y2="114" stroke="#BD9F70" strokeWidth="2" />
+            <text x="92" y="84" textAnchor="middle" fontSize="19" fontWeight="700" fill="#6E5836" fontFamily="ui-monospace, monospace">93</text>
+            <text x="150" y="84" textAnchor="middle" fontSize="19" fontWeight="700" fill="#6E5836" fontFamily="ui-monospace, monospace">12</text>
+            {/* callouts */}
+            <g stroke="#B5532E" strokeWidth="1.3" fill="none"><path d="M70,60 L36,34" /><path d="M120,40 L120,18" /><path d="M178,84 L214,84" /><path d="M150,116 L150,138" /></g>
+            <g fill="#94401F" fontSize="9.5" fontWeight="600" fontFamily="ui-sans-serif, system-ui">
+              <text x="34" y="30" textAnchor="middle">imprint</text>
+              <text x="120" y="14" textAnchor="middle">score line</text>
+              <text x="216" y="87" textAnchor="start">color</text>
+              <text x="150" y="148" textAnchor="middle">shape</text>
+            </g>
+          </svg>
+          <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "12px 0 0", lineHeight: 1.55 }}>Most tablets and capsules carry a <strong style={{ color: C.ink }}>unique imprint</strong> \u2014 a manufacturer's code pressed into the surface. That code is the most reliable clue; color and shape help break ties.</p>
         </div>
       </div>
 
@@ -2077,28 +2128,28 @@ function PillIdentifier({ go }) {
         <div style={{ marginTop: 18 }}>
           {localMatch.length > 0 && (
             <div style={{ ...card, marginBottom: 14 }}>
-              <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "0 0 8px" }}>That text also matches medicine names in this app — if you typed a name rather than an imprint:</p>
+              <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "0 0 8px" }}>If you actually typed a medicine <em>name</em> (not an imprint), these are in your library:</p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {localMatch.map(d => <button key={d.name} onClick={() => go("meds")} style={{ ...ghostBtn, padding: "6px 12px", fontSize: 12.5 }}>{d.name}{d.cls ? " · " + d.cls : ""}</button>)}
+                {localMatch.map(d => <button key={d.name} onClick={() => go("meds")} style={{ ...ghostBtn, padding: "6px 12px", fontSize: 12.5 }}>{d.name}{d.cls ? " \u00b7 " + d.cls : ""}</button>)}
               </div>
             </div>
           )}
-          <div style={{ ...card }}>
+          <div style={{ ...card, borderLeft: `3px solid ${C.terra}` }}>
             <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
               <ShieldAlert size={18} color={C.terra} style={{ flexShrink: 0, marginTop: 2 }} />
               <div>
-                <h3 style={{ fontFamily: serifH, fontSize: 16.5, margin: 0, color: C.ink }}>Confirm the pill with a verified source</h3>
-                <p style={{ fontSize: 13.5, color: "#4F4233", margin: "6px 0 0", lineHeight: 1.6 }}>This tool doesn't keep its own imprint database — accurate identification has to come from an authoritative, regularly-updated source. We've opened a verified identifier for imprint <strong>{imprint.trim() || "—"}</strong>{color !== "Any color" ? `, color ${color.toLowerCase()}` : ""}{shape !== "Any shape" ? `, shape ${shape.toLowerCase()}` : ""}. You can also open these:</p>
+                <h3 style={{ fontFamily: serifH, fontSize: 16.5, margin: 0, color: C.ink }}>Confirm with a verified database</h3>
+                <p style={{ fontSize: 13.5, color: "#4F4233", margin: "6px 0 0", lineHeight: 1.6 }}>We don't keep our own imprint catalog \u2014 a correct match has to come from an authoritative, maintained source. We've opened one for {descr ? <strong>{descr}</strong> : "your pill"}. Others you can check:</p>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
-                  {links.map(l => <a key={l.label} href={l.url} target="_blank" rel="noopener noreferrer" style={{ ...ghostBtn, padding: "8px 13px", fontSize: 13, textDecoration: "none" }}>{l.label} <ArrowRight size={14} /></a>)}
+                  {links.map(l => <a key={l.label} href={l.url} target="_blank" rel="noopener noreferrer" style={{ ...ghostBtn, padding: "8px 13px", fontSize: 13, textDecoration: "none", flexDirection: "column", alignItems: "flex-start", gap: 1 }}><span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>{l.label} <ArrowRight size={13} /></span><span style={{ fontSize: 10.5, color: C.inkFaint, fontWeight: 400 }}>{l.note}</span></a>)}
                 </div>
               </div>
             </div>
-            <p style={{ fontSize: 12, color: "#B4332B", margin: "14px 0 0", lineHeight: 1.55, fontWeight: 500 }}>Never take a pill you can't positively identify. If a medicine is unlabeled or you're unsure, a pharmacist can identify it in person — that's the safest check.</p>
+            <p style={{ fontSize: 12, color: "#B4332B", margin: "14px 0 0", lineHeight: 1.55, fontWeight: 500 }}>Never take a pill you can't positively identify. When a tablet is unlabeled or you're unsure, a pharmacist can identify it in person \u2014 that's the safest check.</p>
           </div>
         </div>
       )}
-      <p style={{ marginTop: 16, fontSize: 11.5, color: C.inkFaint }}>Educational tool. Visual identification isn't performed here; results come from external verified databases. In an emergency or suspected poisoning, contact your local emergency number or poison control.</p>
+      <p style={{ marginTop: 16, fontSize: 11.5, color: C.inkFaint }}>Educational tool. Visual matching isn't performed here; identification comes from external verified databases. In an emergency or suspected poisoning, contact your local emergency number or poison control.</p>
     </div>
   );
 }
