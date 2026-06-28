@@ -2906,6 +2906,97 @@ function PainSafety({ meds, go }) {
 }
 
 // ---- Emergency ------------------------------------------------------------
+const SERVICE_CATS = [
+  { id: "hospital", label: "Hospital / ER", color: "#B4332B", match: t => t.amenity === "hospital", q: ['node["amenity"="hospital"]', 'way["amenity"="hospital"]'] },
+  { id: "urgent", label: "Urgent care / clinic", color: "#1F7A6D", match: t => t.amenity === "clinic" || t.healthcare === "clinic" || t.amenity === "doctors", q: ['node["amenity"="clinic"]', 'way["amenity"="clinic"]', 'node["healthcare"="clinic"]', 'node["amenity"="doctors"]'] },
+  { id: "police", label: "Police", color: "#3F6E8C", match: t => t.amenity === "police", q: ['node["amenity"="police"]', 'way["amenity"="police"]'] },
+  { id: "fire", label: "Fire station", color: "#B5560A", match: t => t.amenity === "fire_station", q: ['node["amenity"="fire_station"]', 'way["amenity"="fire_station"]'] },
+];
+
+function EmergencyServices() {
+  const [sel, setSel] = useState(["hospital", "urgent"]);
+  const [status, setStatus] = useState("idle"); // idle|locating|loading|ready|empty|denied|error
+  const [results, setResults] = useState([]);
+  const toggle = id => setSel(s => s.includes(id) ? (s.length > 1 ? s.filter(x => x !== id) : s) : [...s, id]);
+
+  async function fetchServices(lat, lng) {
+    const cats = SERVICE_CATS.filter(c => sel.includes(c.id));
+    const body = cats.flatMap(c => c.q.map(q => q + "(around:12000," + lat + "," + lng + ");")).join("");
+    const query = "[out:json][timeout:25];(" + body + ");out center 80;";
+    const ctrl = new AbortController(); const to = setTimeout(() => ctrl.abort(), 13000);
+    const res = await fetch("https://overpass-api.de/api/interpreter", { method: "POST", body: "data=" + encodeURIComponent(query), headers: { "Content-Type": "application/x-www-form-urlencoded" }, signal: ctrl.signal });
+    clearTimeout(to);
+    const data = await res.json();
+    const seen = new Set(); const out = [];
+    for (const el of (data.elements || [])) {
+      const t = el.tags || {};
+      const la = el.lat != null ? el.lat : (el.center && el.center.lat);
+      const lo = el.lon != null ? el.lon : (el.center && el.center.lon);
+      if (la == null || lo == null) continue;
+      const cat = SERVICE_CATS.find(c => sel.includes(c.id) && c.match(t)); if (!cat) continue;
+      const name = t.name || cat.label;
+      const k = name + "@" + la.toFixed(4) + "," + lo.toFixed(4); if (seen.has(k)) continue; seen.add(k);
+      const dLat = (la - lat) * 69.0, dLng = (lo - lng) * 69.0 * Math.cos(lat * Math.PI / 180);
+      const miles = Math.hypot(dLat, dLng);
+      out.push({ name, cat, lat: la, lng: lo, miles, phone: t.phone || t["contact:phone"] || "" });
+    }
+    out.sort((a, b) => a.miles - b.miles);
+    return out.slice(0, 20);
+  }
+
+  const locate = () => {
+    if (!navigator.geolocation) { setStatus("error"); return; }
+    setStatus("locating");
+    navigator.geolocation.getCurrentPosition(
+      pos => { setStatus("loading"); fetchServices(pos.coords.latitude, pos.coords.longitude).then(r => { setResults(r); setStatus(r.length ? "ready" : "empty"); }).catch(() => setStatus("error")); },
+      err => setStatus(err.code === 1 ? "denied" : "error"),
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+    );
+  };
+
+  return (
+    <div style={{ ...card, marginBottom: 18 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 4 }}>
+        <Navigation size={18} color={C.terra} />
+        <h3 style={{ fontFamily: serifH, fontSize: 17, margin: 0, color: C.ink }}>Find help near me</h3>
+      </div>
+      <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "0 0 12px" }}>Locate the nearest hospital, urgent care, police, or fire station. For a life-threatening emergency, call your local emergency number first.</p>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 12 }}>
+        {SERVICE_CATS.map(c => { const on = sel.includes(c.id); return (
+          <button key={c.id} onClick={() => toggle(c.id)} style={{ borderRadius: 999, border: `1px solid ${on ? c.color : C.line}`, background: on ? c.color : C.surface, color: on ? "#fff" : C.inkSoft, padding: "6px 13px", fontSize: 12.5, fontWeight: on ? 600 : 400, cursor: "pointer" }}>{c.label}</button>
+        ); })}
+      </div>
+      <button onClick={locate} style={{ ...primaryBtn, background: C.terra }}><Navigation size={15} /> {status === "ready" ? "Update results" : "Use my location"}</button>
+
+      {status === "locating" && <p style={{ fontSize: 13, color: C.inkSoft, marginTop: 12 }}>Getting your location…</p>}
+      {status === "loading" && <p style={{ fontSize: 13, color: C.inkSoft, marginTop: 12 }}>Finding the nearest services…</p>}
+      {status === "denied" && <p style={{ fontSize: 13, color: C.inkSoft, marginTop: 12 }}>Location is off. Turn it on, or open <a href="https://www.google.com/maps/search/hospital+near+me" target="_blank" rel="noopener noreferrer" style={{ color: C.terra }}>maps for "hospital near me"</a>.</p>}
+      {status === "empty" && <p style={{ fontSize: 13, color: C.inkSoft, marginTop: 12 }}>Nothing found nearby for those categories — try selecting more, or open <a href="https://www.google.com/maps/search/emergency+room+near+me" target="_blank" rel="noopener noreferrer" style={{ color: C.terra }}>maps</a>.</p>}
+      {status === "error" && <p style={{ fontSize: 13, color: C.inkSoft, marginTop: 12 }}>Couldn't fetch nearby services. Open <a href="https://www.google.com/maps/search/hospital+near+me" target="_blank" rel="noopener noreferrer" style={{ color: C.terra }}>maps for "hospital near me"</a>.</p>}
+
+      {status === "ready" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 14 }}>
+          {results.map((r, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, border: `1px solid ${C.line}`, borderRadius: 12, background: "#fff", padding: "11px 13px" }}>
+              <div style={{ minWidth: 0 }}>
+                <p style={{ margin: 0, fontWeight: 600, color: C.ink, fontSize: 14, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.name}</p>
+                <p style={{ margin: "3px 0 0", fontSize: 11.5, color: C.inkFaint, display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ height: 8, width: 8, borderRadius: 999, background: r.cat.color }} />{r.cat.label} · {r.miles < 0.1 ? "< 0.1" : r.miles.toFixed(1)} mi
+                </p>
+              </div>
+              <div style={{ display: "flex", gap: 7, flexShrink: 0 }}>
+                {r.phone && <a href={"tel:" + r.phone.replace(/[^+\d]/g, "")} style={{ ...ghostBtn, padding: "7px 11px", fontSize: 12, textDecoration: "none" }}><Phone size={13} /> Call</a>}
+                <a href={"https://www.google.com/maps/dir/?api=1&destination=" + r.lat + "," + r.lng} target="_blank" rel="noopener noreferrer" style={{ ...primaryBtn, padding: "7px 11px", fontSize: 12, textDecoration: "none" }}><MapPin size={13} /> Directions</a>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      <p style={{ fontSize: 11, color: C.inkFaint, marginTop: 12, lineHeight: 1.5 }}>Locations come live from OpenStreetMap and may be incomplete or out of date — distances are straight-line. Always confirm a hospital has an open emergency room, and in a true emergency call your local emergency number rather than driving yourself when unsafe.</p>
+    </div>
+  );
+}
+
 const EMERGENCY_SIGNS = [
   ["Trouble breathing or shortness of breath", "may signal combined respiratory depressants or a severe reaction"],
   ["Severe bleeding — including vomiting blood, coughing up blood, or black/tarry stools, or bleeding that won't stop", "blood thinners, antiplatelets, and NSAIDs stacked together"],
@@ -2932,6 +3023,8 @@ function EmergencyPage({ go }) {
         </div>
         <p style={{ margin: "8px 0 0", fontSize: 13.5, lineHeight: 1.6, color: "#FBE2DE" }}>for any of the signs below — <strong style={{ color: "#fff" }}>especially when they start suddenly</strong>. This tool is educational and can't call for help. Don't wait to see if it passes.</p>
       </div>
+
+      <EmergencyServices />
 
       <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
         {EMERGENCY_SIGNS.map(([sign, why], i) => (
