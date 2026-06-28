@@ -1376,6 +1376,24 @@ function Dashboard({ meds, symptoms, findings, score, go }) {
         </figure>
       </div>
 
+      {/* Emergency quick-access — large, reachable in a hurry */}
+      <div style={{ marginTop: 22, display: "grid", gridTemplateColumns: "1.4fr 1fr 1fr", gap: 12 }} className="emerg-grid">
+        <button onClick={() => go("emergency")} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, border: "none", cursor: "pointer", borderRadius: 16, padding: "22px 18px", background: "linear-gradient(180deg,#9A1B14,#7A1410)", color: "#fff", boxShadow: "0 16px 36px -18px rgba(122,20,16,0.6)" }}>
+          <Siren size={30} color="#fff" />
+          <span style={{ textAlign: "left" }}><span style={{ display: "block", fontFamily: serifH, fontSize: 22, fontWeight: 700, lineHeight: 1.1 }}>Emergency</span><span style={{ fontSize: 12.5, color: "#FBE2DE" }}>Warning signs & help near me</span></span>
+        </button>
+        <button onClick={() => go("meds")} style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 7, border: `1.5px solid ${C.line}`, cursor: "pointer", borderRadius: 16, padding: "18px 12px", background: "#fff", color: C.ink }}>
+          <Pill size={26} color={C.terra} />
+          <span style={{ fontFamily: serifH, fontSize: 16, fontWeight: 600, lineHeight: 1.1, textAlign: "center" }}>My Drug List</span>
+          <span style={{ fontSize: 11.5, color: C.inkFaint }}>{meds.length} medicine{meds.length === 1 ? "" : "s"}</span>
+        </button>
+        <button onClick={() => go("summary")} style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 7, border: `1.5px solid ${C.line}`, cursor: "pointer", borderRadius: 16, padding: "18px 12px", background: "#fff", color: C.ink }}>
+          <FileText size={26} color={C.terra} />
+          <span style={{ fontFamily: serifH, fontSize: 16, fontWeight: 600, lineHeight: 1.1, textAlign: "center" }}>My Notes & Summary</span>
+          <span style={{ fontSize: 11.5, color: C.inkFaint }}>Show to responders</span>
+        </button>
+      </div>
+
       {meds.length === 0 ? (
         <div style={{ marginTop: 28, borderRadius: 18, border: `1px solid ${C.line}`, background: "linear-gradient(180deg,#F8EFE1,#F4ECDD)", padding: 22 }}>
           <h2 style={{ fontFamily: serifH, fontSize: 20, fontWeight: 600, color: C.ink, margin: 0 }}>Get started</h2>
@@ -3118,7 +3136,7 @@ function App() {
         .wst-row:hover { background:#F4EAD8 !important; }
         .hero { display:grid; grid-template-columns:1.1fr 0.9fr; gap:34px; align-items:center; }
         .hero-figure { aspect-ratio:4/3; margin:0; }
-        @media (max-width:760px){ .hero{ grid-template-columns:1fr; } .hero-figure{ aspect-ratio:16/10; order:-1; } .pill-grid{ grid-template-columns:1fr !important; } }
+        @media (max-width:760px){ .hero{ grid-template-columns:1fr; } .hero-figure{ aspect-ratio:16/10; order:-1; } .pill-grid{ grid-template-columns:1fr !important; } .emerg-grid{ grid-template-columns:1fr 1fr !important; } .emerg-grid > button:first-child{ grid-column:1 / -1; } }
         .shell { display:grid; grid-template-columns:268px 1fr; min-height:100vh; }
         .sidebar { position:sticky; top:0; height:100vh; overflow-y:auto; border-right:1px solid ${C.line}; background:${C.sidebar}; padding:22px 16px; }
         .topbar { display:none; }
