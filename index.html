@@ -2480,6 +2480,282 @@ function MedicationFinder({ meds, go }) {
   );
 }
 
+// ---- Treatment Options (educational) + Clinical Trials ---------------------
+// Class-level alternatives a CLINICIAN might weigh — educational, never prescriptive.
+const ALT_BY_CLASS = {
+  "Anticoagulant": "Warfarin and the DOACs (apixaban, rivaroxaban, dabigatran, edoxaban) are all anticoagulants; the right one depends on kidney function, interactions, reversibility, and cost.",
+  "Antiplatelet": "Aspirin, clopidogrel, ticagrelor, and prasugrel are antiplatelet options chosen by indication and bleeding risk.",
+  "Statin": "Statins differ in strength and interactions; non-statin cholesterol options include ezetimibe, PCSK9 inhibitors, and bempedoic acid.",
+  "ACE inhibitor": "ARBs, calcium channel blockers, and thiazide diuretics are common alternatives for blood pressure; an ARB is the usual swap if an ACE inhibitor causes cough.",
+  "ARB": "ACE inhibitors, calcium channel blockers, and thiazide diuretics are alternatives for blood pressure.",
+  "Beta blocker": "Other beta blockers, or different classes, depending on whether the goal is rate control, blood pressure, or heart failure.",
+  "Calcium channel blocker": "Other calcium channel blockers, or ACE/ARB and thiazides, for blood pressure.",
+  "Diuretic": "Different diuretic classes (thiazide, loop, potassium-sparing) depending on the goal.",
+  "Loop diuretic": "Other diuretics depending on kidney function and fluid goals.",
+  "Proton pump inhibitor": "Other PPIs, H2 blockers (e.g., famotidine), and non-drug measures; the lowest effective dose/duration is usually preferred.",
+  "H2 blocker": "Other H2 blockers or PPIs.",
+  "SSRI": "Other SSRIs, SNRIs, bupropion, or mirtazapine; choice is guided by side effects and prior response.",
+  "SNRI": "SSRIs, other SNRIs, bupropion, or mirtazapine.",
+  "Benzodiazepine": "Depending on the indication, non-benzodiazepine options exist (e.g., SSRIs/SNRIs for anxiety, other approaches for sleep). Stopping needs a supervised taper.",
+  "Opioid": "Non-opioid analgesics, adjuvant medicines, and opioid rotation are clinician-guided; never adjust on your own.",
+  "NSAID": "Acetaminophen, topical NSAIDs, and other analgesics; selective vs non-selective NSAIDs differ in GI and heart risk.",
+  "NSAID (COX-2)": "Non-selective NSAIDs, acetaminophen, or topical options, balancing GI vs cardiovascular risk.",
+  "Antidiabetic": "Metformin plus SGLT2 inhibitors, GLP-1 agonists, DPP-4 inhibitors, sulfonylureas, or insulin — chosen by A1c, weight, kidney, and heart factors.",
+  "Sulfonylurea": "Other glucose-lowering classes (SGLT2, GLP-1, DPP-4, metformin) that carry less hypoglycemia risk.",
+  "Aromatase inhibitor": "Other aromatase inhibitors or tamoxifen — an oncology decision based on your specific cancer.",
+};
+function altFor(cls) {
+  if (!cls) return null;
+  if (ALT_BY_CLASS[cls]) return ALT_BY_CLASS[cls];
+  const pre = [["Antibiotic", "Antibiotic choice depends on the infection and culture results; alternatives within or across classes are common — this is prescriber-driven."],
+    ["Antifungal", "Other antifungals may be options depending on the organism and interactions."],
+    ["Targeted therapy", "Alternatives are highly specific to the cancer's molecular profile — a specialist/oncology decision."],
+    ["Chemotherapy", "Regimens are protocol- and stage-specific — an oncology decision, not interchangeable casually."],
+    ["Monoclonal antibody", "Alternatives depend on the target and cancer type — an oncology decision."],
+    ["Immunotherapy", "Checkpoint-inhibitor choice is cancer- and biomarker-specific — an oncology decision."],
+    ["Anticonvulsant", "Many anticonvulsants exist; switching is guided by seizure type, side effects, and levels."],
+    ["Antipsychotic", "Other antipsychotics differ in side-effect profiles; switching is specialist-guided."]];
+  for (const [p, t] of pre) if (cls.indexOf(p) === 0) return t;
+  return "Several agents exist in this category; the best alternative depends on your condition, history, and tolerability — one to discuss with your prescriber.";
+}
+const CROSS_REACT = [
+  ["Penicillins ↔ cephalosporins", "If you're allergic to penicillin, some cephalosporins carry a small cross-reactivity risk. Tell every prescriber."],
+  ["Sulfonamide (\u201csulfa\u201d) antibiotics", "A sulfa-antibiotic allergy is important to flag; reactions to non-antibiotic sulfonamides are usually separate."],
+  ["NSAIDs / aspirin", "An NSAID reaction can extend to other NSAIDs, especially with asthma/nasal polyps (aspirin-exacerbated respiratory disease)."],
+  ["ACE inhibitor angioedema", "Angioedema on an ACE inhibitor can rarely recur with an ARB — prescribers weigh this carefully."],
+  ["Opioids", "True opioid allergy is uncommon (many effects are side effects); the natural vs synthetic distinction matters — describe what happened."],
+];
+
+function buildTreatmentBrief(meds, keys, findings, score, clinical) {
+  const L = [];
+  L.push("TREATMENT DISCUSSION BRIEF");
+  L.push("Generated by What's Safe Together? — educational; bring to your prescriber or pharmacist.");
+  L.push("This is NOT a recommendation to start, stop, or change any medicine.");
+  L.push("Date: " + new Date().toLocaleDateString());
+  L.push("Country/region: " + (clinical.country || "—"));
+  L.push("");
+  L.push("CURRENT MEDICATIONS (" + meds.length + ")");
+  meds.forEach(m => L.push("  • " + m.name + (m.strength ? " " + m.strength : "") + (m.cls ? " — " + m.cls : "") + (m.key ? "" : " [name only]")));
+  if (!meds.length) L.push("  (none entered)");
+  L.push("");
+  L.push("CONDITIONS & SEVERITY (patient-reported)");
+  (clinical.conditions.length ? clinical.conditions : [{ name: "—", severity: "" }]).forEach(c => L.push("  • " + c.name + (c.severity ? " — " + c.severity : "")));
+  L.push("");
+  L.push("ALLERGIES & INTOLERANCES");
+  (clinical.allergies.length ? clinical.allergies : [{ name: "—", reaction: "" }]).forEach(a => L.push("  • " + a.name + (a.reaction ? " — " + a.reaction : "")));
+  L.push("");
+  L.push("PRIOR MEDICATIONS TRIED & WHY STOPPED");
+  (clinical.priorMeds.length ? clinical.priorMeds : [{ name: "—", reason: "" }]).forEach(p => L.push("  • " + p.name + (p.reason ? " — " + p.reason : "") + (p.note ? " (" + p.note + ")" : "")));
+  L.push("");
+  if (clinical.dependence.length) { L.push("DEPENDENCE / HABITUATION HISTORY (sensitive)"); clinical.dependence.forEach(d => L.push("  • " + d)); L.push(""); }
+  L.push("INSURANCE / FORMULARY NOTES");
+  L.push("  " + (clinical.insurance || "—"));
+  L.push("");
+  L.push("CURRENT INTERACTION FINDINGS (educational, safety score " + score + "/100)");
+  if (findings.length) findings.forEach(f => L.push("  • [" + f.sev + "] " + f.title));
+  else L.push("  • None found among analyzed medicines (not a guarantee).");
+  L.push("");
+  L.push("QUESTIONS TO ASK MY PRESCRIBER");
+  const qs = [];
+  clinical.priorMeds.forEach(p => { if (p.reason) qs.push("I stopped " + p.name + " due to " + p.reason.toLowerCase() + " — what alternatives fit me?"); });
+  findings.filter(f => f.sev === "Contraindicated" || f.sev === "Major").forEach(f => qs.push("Is the combination behind \u201c" + f.title + "\u201d right for me, or is there a safer option?"));
+  clinical.allergies.forEach(a => qs.push("Given my allergy to " + a.name + ", are any of my medicines or alternatives a cross-reactivity concern?"));
+  meds.filter(m => m.key && ALT_BY_CLASS[m.cls]).slice(0, 6).forEach(m => qs.push("Are there alternatives to " + m.name + " (" + m.cls + ") that suit my situation and formulary?"));
+  if (clinical.insurance) qs.push("Which of my medicines have lower-cost or formulary-preferred alternatives?");
+  qs.push("Should any of these be reviewed because of my kidney/liver function or other conditions?");
+  (qs.length ? qs : ["What are my options, and what would you change first?"]).forEach((q, i) => L.push("  " + (i + 1) + ". " + q));
+  L.push("");
+  L.push("Educational tool. Not a diagnosis or prescription. Decisions belong to you and your licensed clinician.");
+  return L.join("\n");
+}
+
+function ChipList({ items, onRemove, color }) {
+  if (!items.length) return null;
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
+      {items.map((t, i) => (
+        <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 999, border: `1px solid ${C.line}`, background: "#fff", padding: "5px 6px 5px 12px", fontSize: 13, color: C.ink }}>
+          {t}
+          <button onClick={() => onRemove(i)} style={{ height: 18, width: 18, borderRadius: 999, border: "none", background: "#F1ECE0", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><X size={11} color={C.inkSoft} /></button>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function TreatmentOptions({ meds, keys, findings, score, clinical, setClinical, go }) {
+  const [cond, setCond] = useState(""); const [condSev, setCondSev] = useState("Moderate");
+  const [alg, setAlg] = useState(""); const [algRx, setAlgRx] = useState("");
+  const [pm, setPm] = useState(""); const [pmReason, setPmReason] = useState("Side effect");
+  const set = (k, v) => setClinical(p => ({ ...p, [k]: v }));
+  const analyzed = meds.filter(m => m.key);
+
+  return (
+    <div style={{ maxWidth: 880 }}>
+      <PageHead title="Treatment Options" italic={"\u201cWhat could we discuss with the prescriber \u2014 and what should they decide?\u201d"} sub="Organize your history into a brief for your clinician. This tool never tells you to start, stop, or switch a medicine — it prepares the conversation." />
+
+      <div style={{ ...card, borderLeft: `3px solid ${C.terra}`, marginBottom: 18 }}>
+        <div style={{ display: "flex", gap: 10 }}>
+          <ShieldCheck size={18} color={C.terra} style={{ flexShrink: 0, marginTop: 1 }} />
+          <p style={{ margin: 0, fontSize: 13, color: "#4F4233", lineHeight: 1.6 }}>Choosing or changing medicines is a clinical decision that depends on your full record, labs, and exam. This page gathers what you know and turns it into questions and a printable brief — the prescribing stays with your licensed clinician.</p>
+        </div>
+      </div>
+
+      {/* Conditions */}
+      <section style={{ ...card, marginBottom: 14 }}>
+        <h3 style={{ fontFamily: serifH, fontSize: 16.5, margin: "0 0 4px", color: C.ink }}>Conditions & severity</h3>
+        <p style={{ fontSize: 12, color: C.inkFaint, margin: "0 0 10px" }}>Patient-reported — your prescriber confirms with exams and scales.</p>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <input className="wst-input" value={cond} onChange={e => setCond(e.target.value)} placeholder="e.g. High blood pressure" style={{ flex: "1 1 220px", borderRadius: 10, border: `1px solid ${C.line}`, background: C.surface, padding: "10px 12px", fontSize: 14, color: C.ink, outline: "none" }} />
+          <select className="wst-input" value={condSev} onChange={e => setCondSev(e.target.value)} style={{ borderRadius: 10, border: `1px solid ${C.line}`, background: C.surface, padding: "10px 12px", fontSize: 14, color: C.ink }}>{["Mild", "Moderate", "Severe"].map(s => <option key={s}>{s}</option>)}</select>
+          <button onClick={() => { if (cond.trim()) { set("conditions", [...clinical.conditions, { name: cond.trim(), severity: condSev }]); setCond(""); } }} style={{ ...ghostBtn, padding: "10px 14px" }}><Plus size={14} /> Add</button>
+        </div>
+        <ChipList items={clinical.conditions.map(c => c.name + " · " + c.severity)} onRemove={i => set("conditions", clinical.conditions.filter((_, j) => j !== i))} />
+      </section>
+
+      {/* Allergies */}
+      <section style={{ ...card, marginBottom: 14 }}>
+        <h3 style={{ fontFamily: serifH, fontSize: 16.5, margin: "0 0 10px", color: C.ink }}>Allergies & intolerances</h3>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <input className="wst-input" value={alg} onChange={e => setAlg(e.target.value)} placeholder="Drug or class (e.g. penicillin)" style={{ flex: "1 1 200px", borderRadius: 10, border: `1px solid ${C.line}`, background: C.surface, padding: "10px 12px", fontSize: 14, color: C.ink, outline: "none" }} />
+          <input className="wst-input" value={algRx} onChange={e => setAlgRx(e.target.value)} placeholder="Reaction (e.g. rash, swelling)" style={{ flex: "1 1 200px", borderRadius: 10, border: `1px solid ${C.line}`, background: C.surface, padding: "10px 12px", fontSize: 14, color: C.ink, outline: "none" }} />
+          <button onClick={() => { if (alg.trim()) { set("allergies", [...clinical.allergies, { name: alg.trim(), reaction: algRx.trim() }]); setAlg(""); setAlgRx(""); } }} style={{ ...ghostBtn, padding: "10px 14px" }}><Plus size={14} /> Add</button>
+        </div>
+        <ChipList items={clinical.allergies.map(a => a.name + (a.reaction ? " · " + a.reaction : ""))} onRemove={i => set("allergies", clinical.allergies.filter((_, j) => j !== i))} />
+        <div style={{ marginTop: 14, borderTop: `1px solid ${C.line}`, paddingTop: 12 }}>
+          <p style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: C.inkFaint, margin: "0 0 8px" }}>Cross-reactivity worth flagging to a prescriber</p>
+          <div style={{ display: "grid", gap: 8 }}>
+            {CROSS_REACT.map(([t, d]) => (
+              <div key={t} style={{ fontSize: 12.5, color: C.inkSoft, lineHeight: 1.5 }}><strong style={{ color: C.ink }}>{t}.</strong> {d}</div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Prior meds */}
+      <section style={{ ...card, marginBottom: 14 }}>
+        <h3 style={{ fontFamily: serifH, fontSize: 16.5, margin: "0 0 4px", color: C.ink }}>Medicines tried before — and why they stopped</h3>
+        <p style={{ fontSize: 12, color: C.inkFaint, margin: "0 0 10px" }}>The reason matters: "no effect" and "side effect" lead a prescriber in different directions.</p>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <input className="wst-input" value={pm} onChange={e => setPm(e.target.value)} placeholder="Medicine name" style={{ flex: "1 1 200px", borderRadius: 10, border: `1px solid ${C.line}`, background: C.surface, padding: "10px 12px", fontSize: 14, color: C.ink, outline: "none" }} />
+          <select className="wst-input" value={pmReason} onChange={e => setPmReason(e.target.value)} style={{ borderRadius: 10, border: `1px solid ${C.line}`, background: C.surface, padding: "10px 12px", fontSize: 14, color: C.ink }}>{["No effect", "Side effect", "Allergy", "Cost", "Other"].map(s => <option key={s}>{s}</option>)}</select>
+          <button onClick={() => { if (pm.trim()) { set("priorMeds", [...clinical.priorMeds, { name: pm.trim(), reason: pmReason }]); setPm(""); } }} style={{ ...ghostBtn, padding: "10px 14px" }}><Plus size={14} /> Add</button>
+        </div>
+        <ChipList items={clinical.priorMeds.map(p => p.name + " · " + p.reason)} onRemove={i => set("priorMeds", clinical.priorMeds.filter((_, j) => j !== i))} />
+      </section>
+
+      {/* Dependence + insurance + country */}
+      <section style={{ ...card, marginBottom: 14 }}>
+        <h3 style={{ fontFamily: serifH, fontSize: 16.5, margin: "0 0 10px", color: C.ink }}>Other factors</h3>
+        <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "0 0 6px", fontWeight: 600 }}>Dependence / habituation history <span style={{ fontWeight: 400, color: C.inkFaint }}>(sensitive — included only if you add it)</span></p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {["Opioids", "Benzodiazepines", "Stimulants", "Alcohol", "Nicotine", "Other"].map(d => {
+            const on = clinical.dependence.includes(d);
+            return <button key={d} onClick={() => set("dependence", on ? clinical.dependence.filter(x => x !== d) : [...clinical.dependence, d])} style={{ borderRadius: 999, border: `1px solid ${on ? C.terra : C.line}`, background: on ? C.terra : C.surface, color: on ? "#FBF6EC" : C.inkSoft, padding: "6px 13px", fontSize: 12.5, cursor: "pointer" }}>{d}</button>;
+          })}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 16 }} className="pill-grid">
+          <label><span style={{ display: "block", fontSize: 12.5, fontWeight: 600, color: C.ink, marginBottom: 6 }}>Insurance / formulary notes</span>
+            <input className="wst-input" value={clinical.insurance} onChange={e => set("insurance", e.target.value)} placeholder="Plan name, tier notes, prior-auth" style={{ width: "100%", boxSizing: "border-box", borderRadius: 10, border: `1px solid ${C.line}`, background: C.surface, padding: "10px 12px", fontSize: 14, color: C.ink, outline: "none" }} /></label>
+          <label><span style={{ display: "block", fontSize: 12.5, fontWeight: 600, color: C.ink, marginBottom: 6 }}>Country / region</span>
+            <select className="wst-input" value={clinical.country} onChange={e => set("country", e.target.value)} style={{ width: "100%", boxSizing: "border-box", borderRadius: 10, border: `1px solid ${C.line}`, background: C.surface, padding: "10px 12px", fontSize: 14, color: C.ink }}>{["United States", "Canada", "United Kingdom", "Ireland", "Australia", "New Zealand", "India", "Other"].map(c => <option key={c}>{c}</option>)}</select></label>
+        </div>
+        <p style={{ fontSize: 11, color: C.inkFaint, margin: "12px 0 0" }}>Availability, approved uses, and names differ by country — your prescriber works to your local guidelines and formulary.</p>
+      </section>
+
+      {/* Per-med class alternatives */}
+      <section style={{ ...card, marginBottom: 14 }}>
+        <h3 style={{ fontFamily: serifH, fontSize: 16.5, margin: "0 0 4px", color: C.ink }}>Classes & alternatives to discuss</h3>
+        <p style={{ fontSize: 12, color: C.inkFaint, margin: "0 0 12px" }}>For your <strong>analyzed</strong> medicines. These are categories a clinician might weigh — not a suggestion to switch.</p>
+        {analyzed.length === 0 ? (
+          <p style={{ fontSize: 13.5, color: C.inkSoft }}>Add analyzed medicines under <button onClick={() => go("meds")} style={{ background: "none", border: "none", color: C.terra, cursor: "pointer", padding: 0, textDecoration: "underline" }}>My Medications</button> to see this.</p>
+        ) : (
+          <div style={{ display: "grid", gap: 10 }}>
+            {analyzed.map(m => (
+              <div key={m.id} style={{ border: `1px solid ${C.line}`, borderRadius: 12, background: "#fff", padding: "12px 14px" }}>
+                <p style={{ margin: 0, fontWeight: 700, color: C.ink, fontSize: 14.5 }}>{m.name} <span style={{ fontWeight: 400, color: C.inkFaint, fontSize: 12.5 }}>· {m.cls}</span></p>
+                <p style={{ margin: "6px 0 0", fontSize: 13, color: C.inkSoft, lineHeight: 1.55 }}>{altFor(m.cls)}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Generate brief */}
+      <section style={{ ...card, background: "#F6EFE2" }}>
+        <h3 style={{ fontFamily: serifH, fontSize: 17, margin: "0 0 4px", color: C.ink }}>Clinician discussion brief</h3>
+        <p style={{ fontSize: 13, color: C.inkSoft, margin: "0 0 14px", lineHeight: 1.55 }}>Turns everything above — meds, conditions, allergies, prior failures, interactions, formulary — into a one-page brief with tailored questions to bring to your appointment.</p>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <button onClick={() => downloadText("treatment-discussion-brief.txt", buildTreatmentBrief(meds, keys, findings, score, clinical))} style={{ ...primaryBtn }}><Download size={15} /> Download brief</button>
+          <button onClick={() => { const w = window.open("", "_blank"); if (w) { w.document.write("<pre style='font:13px/1.5 ui-monospace,monospace;white-space:pre-wrap;padding:24px'>" + buildTreatmentBrief(meds, keys, findings, score, clinical).replace(/[&<]/g, s => s === "&" ? "&amp;" : "&lt;") + "</pre>"); w.document.close(); w.print(); } }} style={{ ...ghostBtn }}><Printer size={15} /> Print</button>
+          <button onClick={() => go("trials")} style={{ ...ghostBtn }}><FlaskConical size={15} /> Find clinical trials</button>
+        </div>
+      </section>
+
+      <p style={{ marginTop: 16, fontSize: 11.5, color: C.inkFaint, lineHeight: 1.55 }}>Educational only. This does not diagnose, recommend, or prescribe. Alternatives shown are general categories; the right choice depends on your full clinical picture and belongs to you and your licensed clinician.</p>
+    </div>
+  );
+}
+
+function ClinicalTrials({ clinical, go }) {
+  const [cond, setCond] = useState(clinical.conditions[0] ? clinical.conditions[0].name : "");
+  const [country, setCountry] = useState(clinical.country || "United States");
+  const [status, setStatus] = useState("idle"); // idle|loading|ready|empty|error
+  const [studies, setStudies] = useState([]);
+
+  async function search() {
+    if (!cond.trim()) return;
+    setStatus("loading"); setStudies([]);
+    try {
+      const params = new URLSearchParams({ "query.cond": cond.trim(), "filter.overallStatus": "RECRUITING", pageSize: "20" });
+      if (country && country !== "Other") params.set("query.locn", country);
+      const res = await fetch("https://clinicaltrials.gov/api/v2/studies?" + params.toString());
+      const data = await res.json();
+      const list = (data.studies || []).map(s => {
+        const p = s.protocolSection || {};
+        const id = p.identificationModule || {}; const st = p.statusModule || {};
+        const loc = (p.contactsLocationsModule && p.contactsLocationsModule.locations) || [];
+        const where = loc.slice(0, 1).map(l => [l.city, l.state, l.country].filter(Boolean).join(", "))[0] || "";
+        return { nct: id.nctId, title: id.briefTitle, status: st.overallStatus, where };
+      }).filter(s => s.nct);
+      setStudies(list); setStatus(list.length ? "ready" : "empty");
+    } catch (e) { setStatus("error"); }
+  }
+
+  return (
+    <div style={{ maxWidth: 820 }}>
+      <PageHead title="Clinical Trials" italic={"\u201cAre there studies recruiting for this, near me?\u201d"} sub="Search recruiting studies from the U.S. National Library of Medicine's ClinicalTrials.gov. Educational — eligibility and enrollment are decided with the study team and your clinician." />
+
+      <div style={{ ...card, marginBottom: 16 }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <input className="wst-input" value={cond} onChange={e => setCond(e.target.value)} onKeyDown={e => { if (e.key === "Enter") search(); }} placeholder="Condition (e.g. breast cancer, epilepsy)" style={{ flex: "1 1 240px", borderRadius: 10, border: `1px solid ${C.line}`, background: C.surface, padding: "11px 13px", fontSize: 14.5, color: C.ink, outline: "none" }} />
+          <select className="wst-input" value={country} onChange={e => setCountry(e.target.value)} style={{ borderRadius: 10, border: `1px solid ${C.line}`, background: C.surface, padding: "11px 13px", fontSize: 14, color: C.ink }}>{["United States", "Canada", "United Kingdom", "Ireland", "Australia", "New Zealand", "India", "Other"].map(c => <option key={c}>{c}</option>)}</select>
+          <button onClick={search} disabled={!cond.trim()} style={{ ...primaryBtn, opacity: cond.trim() ? 1 : 0.5 }}><Search size={15} /> Search</button>
+        </div>
+      </div>
+
+      {status === "loading" && <p style={{ fontSize: 13.5, color: C.inkSoft }}>Searching ClinicalTrials.gov…</p>}
+      {status === "empty" && <p style={{ fontSize: 13.5, color: C.inkSoft }}>No recruiting studies matched. Try a broader condition term or a different country.</p>}
+      {status === "error" && <p style={{ fontSize: 13.5, color: C.inkSoft }}>Couldn't reach ClinicalTrials.gov right now. You can search directly at <a href={"https://clinicaltrials.gov/search?cond=" + encodeURIComponent(cond)} target="_blank" rel="noopener noreferrer" style={{ color: C.terra }}>clinicaltrials.gov</a>.</p>}
+      {status === "ready" && (
+        <div style={{ display: "grid", gap: 10 }}>
+          <p style={{ fontSize: 12.5, color: C.inkFaint, margin: 0 }}>{studies.length} recruiting studies — newest matches:</p>
+          {studies.map(s => (
+            <a key={s.nct} href={"https://clinicaltrials.gov/study/" + s.nct} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", border: `1px solid ${C.line}`, borderRadius: 12, background: "#fff", padding: "13px 15px", display: "block" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "flex-start" }}>
+                <p style={{ margin: 0, fontWeight: 600, color: C.ink, fontSize: 14, lineHeight: 1.4 }}>{s.title}</p>
+                <span style={{ flexShrink: 0, fontSize: 10.5, fontWeight: 700, color: "#2E7D5B", background: "#E6F4EC", borderRadius: 999, padding: "2px 8px" }}>{s.status}</span>
+              </div>
+              <p style={{ margin: "6px 0 0", fontSize: 12, color: C.inkFaint, display: "flex", alignItems: "center", gap: 6 }}><MapPin size={12} />{s.where || "Multiple sites"} · {s.nct}</p>
+            </a>
+          ))}
+        </div>
+      )}
+      <p style={{ marginTop: 16, fontSize: 11.5, color: C.inkFaint, lineHeight: 1.55 }}>Listings come live from ClinicalTrials.gov and may be incomplete. A trial appearing here is not medical advice or an endorsement; eligibility is determined by the study team. Discuss any trial with your own clinician before pursuing it.</p>
+    </div>
+  );
+}
+
 // ---- Stubs -----------------------------------------------------------------
 const STUBS = {
   emergency: { Icon: Siren, title: "Emergency", italic: "\u201cWhen it can't wait, this is the short version.\u201d", body: "Red-flag combinations and warning signs worth acting on quickly — severe bleeding, trouble breathing, chest pain, or sudden confusion. This tool is educational and can't call for help: for a medical emergency, contact your local emergency number right away.", cta: "interactions", ctaLabel: "Review serious interactions" },
@@ -2506,7 +2782,7 @@ function Stub({ id, go }) {
 // ---- Navigation ------------------------------------------------------------
 const NAV = [
   ["dashboard", "Dashboard", LayoutDashboard], ["meds", "My Medications", Pill], ["pillid", "Pill Identifier", ScanLine], ["findmed", "Find My Medication", MapPin], ["interactions", "Interaction Checker", Activity],
-  ["bodymap", "Body Impact Map", PersonStanding], ["food", "Food Interactions", Apple], ["schedule", "Schedule Builder", CalendarClock],
+  ["bodymap", "Body Impact Map", PersonStanding], ["treatment", "Treatment Options", ListChecks], ["trials", "Clinical Trials", FlaskConical], ["food", "Food Interactions", Apple], ["schedule", "Schedule Builder", CalendarClock],
   ["symptom", "Symptom Checker", Stethoscope], ["summary", "Health Summary", Gauge], ["notifications", "Notifications", Bell],
   ["emergency", "Emergency", Siren], ["plan", "Plan ahead", CalendarCheck], ["pharmacist", "AI Pharmacist", MessageCircle],
   ["news", "Drug Safety News", Newspaper], ["learn", "Learn & FAQ", BookOpen],
@@ -2519,6 +2795,7 @@ function App() {
   const [meds, setMeds] = useState([]);
   const [symptoms, setSymptoms] = useState([]);
   const [notify, setNotify] = useState({ phone: "", email: "", prefs: { reminders: true, missed: true, interactions: true, food: false, refills: true, appts: false, labs: false, daily: true, weekly: false, critical: true } });
+  const [clinical, setClinical] = useState({ conditions: [], allergies: [], priorMeds: [], dependence: [], insurance: "", country: "United States" });
 
   const keys = useMemo(() => uniq(meds.map(m => m.key).filter(Boolean)), [meds]);
   const findings = useMemo(() => getFindings(keys), [keys]);
@@ -2588,6 +2865,8 @@ function App() {
             {page === "meds" && <MyMedications meds={meds} setMeds={setMeds} go={go} />}
             {page === "pillid" && <PillIdentifier go={go} />}
             {page === "findmed" && <MedicationFinder meds={meds} go={go} />}
+            {page === "treatment" && <TreatmentOptions meds={meds} keys={keys} findings={findings} score={score} clinical={clinical} setClinical={setClinical} go={go} />}
+            {page === "trials" && <ClinicalTrials clinical={clinical} go={go} />}
             {page === "interactions" && <Interactions meds={meds} findings={findings} score={score} go={go} />}
             {page === "bodymap" && <BodyImpactMap baseSel={keys} go={go} />}
             {page === "food" && <FoodInteractions keys={keys} go={go} />}
