@@ -505,8 +505,11 @@ function getFindings(sel) {
     const ex = map.get(f.key);
     if (!ex || SEV[f.sev].rank > SEV[ex.sev].rank) map.set(f.key, f);
   }
-  return [...map.values()].map(f => ({ ...f, drugs: [...new Set(f.drugs)] }))
-    .sort((a, b) => SEV[b.sev].rank - SEV[a.sev].rank);
+  // High-alert: canonical mechanisms with well-established risk of death.
+  const FATAL_KEYS = new Set(["opioid_benzo", "maoi_sero", "nitrate_pde5", "qt", "bleed", "warf_amp", "aza_xo", "colch", "mtx_amp", "hyperk", "dig", "li", "tiz", "statin_3a4_simvastatin", "statin_3a4_lovastatin"]);
+  const isFatal = k => FATAL_KEYS.has(k);
+  return [...map.values()].map(f => ({ ...f, drugs: [...new Set(f.drugs)], fatal: isFatal(f.key) }))
+    .sort((a, b) => (b.fatal - a.fatal) || (SEV[b.sev].rank - SEV[a.sev].rank));
 }
 
 // ---- Impact severity tokens ------------------------------------------------
@@ -1349,7 +1352,7 @@ function BodyImpactMap({ baseSel, go }) {
 }
 
 // ---- Dashboard -------------------------------------------------------------
-const TOOLS = [["meds", "Add Medication", Pill, "#5E5276"], ["pillid", "Pill Identifier", ScanLine, "#6B6256"], ["findmed", "Find My Medication", MapPin, "#1FA6A6"], ["interactions", "Check Interactions", Activity, "#B5532E"], ["bodymap", "Body Impact Map", PersonStanding, "#3F6E8C"], ["food", "Food Interactions", Apple, "#9A5A1E"], ["schedule", "Schedule Builder", CalendarClock, "#3E7A6E"], ["symptom", "Symptom Checker", Stethoscope, "#8E3A52"]];
+const TOOLS = [["meds", "Add Medication", Pill, "#5E5276"], ["pillid", "Pill Identifier", ScanLine, "#6B6256"], ["findmed", "Find My Medication", MapPin, "#1FA6A6"], ["interactions", "Check Interactions", Activity, "#B5532E"], ["painsafe", "Pain-Reliever Safety", ShieldCheck, "#9A1F4B"], ["bodymap", "Body Impact Map", PersonStanding, "#3F6E8C"], ["food", "Food Interactions", Apple, "#9A5A1E"], ["schedule", "Schedule Builder", CalendarClock, "#3E7A6E"], ["symptom", "Symptom Checker", Stethoscope, "#8E3A52"]];
 
 function Dashboard({ meds, symptoms, findings, score, go }) {
   const band = SCOREBAND(score);
@@ -1542,6 +1545,7 @@ function Interactions({ meds, findings, score, go }) {
   const cat = sev => sev === "Contraindicated" ? "Critical" : sev === "Minor" ? "Mild" : "Moderate";
   const grouped = {}; findings.forEach(f => { (grouped[cat(f.sev)] ||= []).push(f); });
   const order = ["Critical", "Moderate", "Mild"];
+  const fatal = findings.filter(f => f.fatal);
   const flagColor = l => l === "high" ? "#B4332B" : "#B0591E";
   return (
     <div style={{ maxWidth: 860 }}>
@@ -1555,6 +1559,29 @@ function Interactions({ meds, findings, score, go }) {
         </div>
       ) : (
         <>
+          {fatal.length > 0 && (
+            <div style={{ borderRadius: 16, background: "#7A1410", color: "#FFF4F2", padding: "18px 20px", marginBottom: 16, boxShadow: "0 14px 34px -16px rgba(122,20,16,0.55)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                <ShieldAlert size={22} color="#fff" />
+                <span style={{ fontFamily: serifH, fontSize: 19, fontWeight: 700 }}>High-alert combination — check before your next dose</span>
+              </div>
+              <p style={{ margin: "0 0 12px", fontSize: 13.5, lineHeight: 1.6, color: "#FBE2DE" }}>
+                {fatal.length === 1 ? "One combination in your list" : fatal.length + " combinations in your list"} match a pattern that, in some people, can be life-threatening. This isn't a diagnosis — but please <strong style={{ color: "#fff" }}>speak with a pharmacist or prescriber before taking these together again</strong>. Don't stop a prescribed medicine on your own.
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {fatal.map(f => (
+                  <div key={f.key} style={{ display: "flex", alignItems: "flex-start", gap: 9, background: "rgba(255,255,255,0.10)", borderRadius: 11, padding: "10px 12px" }}>
+                    <Siren size={15} color="#FFD2CC" style={{ flexShrink: 0, marginTop: 2 }} />
+                    <div>
+                      <p style={{ margin: 0, fontWeight: 600, fontSize: 13.5 }}>{f.title}</p>
+                      <p style={{ margin: "3px 0 0", fontSize: 12, color: "#F3C9C4" }}>{f.drugs.map(d => DRUGS[d] ? DRUGS[d].name : d).join(" + ")}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p style={{ margin: "12px 0 0", fontSize: 11.5, color: "#E9B4AE" }}>If you feel very unwell now — trouble breathing, fainting, severe bleeding, chest pain, confusion — call your local emergency number.</p>
+            </div>
+          )}
           <div style={{ ...card, display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap" }}>
             <div style={{ textAlign: "center" }}>
               <div style={{ fontSize: 40, fontWeight: 700, color: band.color, lineHeight: 1, fontFamily: serifH }}>{score}</div>
@@ -2756,6 +2783,128 @@ function ClinicalTrials({ clinical, go }) {
   );
 }
 
+// ---- Pain-reliever safety: acetaminophen + NSAID total-dose aggregator -----
+const APAP_QUICK = [
+  ["Tylenol Regular Strength", 325], ["Tylenol Extra Strength", 500], ["Tylenol 8HR / Arthritis", 650],
+  ["Percocet (oxycodone/acetaminophen)", 325], ["Norco / Vicodin / Lortab (hydrocodone/acetaminophen)", 325],
+  ["Tylenol #3 (codeine/acetaminophen)", 300], ["Ultracet (tramadol/acetaminophen)", 325],
+  ["NyQuil / DayQuil (per dose)", 325], ["Theraflu / Mucinex combo (per dose)", 325],
+  ["Excedrin (per tablet)", 250], ["Other acetaminophen product", 500],
+];
+const APAP_COMBO_BRANDS = { percocet: 325, norco: 325, vicodin: 325, lortab: 325, ultracet: 325, "tylenol #3": 300 };
+function parseMg(s) { const m = String(s || "").match(/(\d{2,4})\s*mg/i); return m ? +m[1] : null; }
+function freqCount(f) { const t = String(f || "").toLowerCase(); if (t.includes("four")) return 4; if (t.includes("three")) return 3; if (t.includes("twice") || t.includes("two")) return 2; if (t.includes("once") || t.includes("one")) return 1; return 1; }
+
+function PainSafety({ meds, go }) {
+  const detected = useMemo(() => {
+    const rows = [];
+    meds.forEach(m => {
+      if (m.key === "acetaminophen") rows.push({ label: m.name + (m.strength ? " " + m.strength : ""), mg: parseMg(m.strength) || 500, doses: freqCount(m.freq), from: "your list" });
+      const hay = (m.name + " " + (m.cls || "")).toLowerCase();
+      Object.keys(APAP_COMBO_BRANDS).forEach(b => { if (hay.includes(b)) rows.push({ label: m.name + " — contains acetaminophen", mg: APAP_COMBO_BRANDS[b], doses: freqCount(m.freq), from: "your list" }); });
+    });
+    return rows;
+  }, [meds]);
+  const [rows, setRows] = useState(detected);
+  const [lowCeiling, setLowCeiling] = useState(false);
+  useEffect(() => { setRows(detected); }, [detected]);
+
+  const total = rows.reduce((s, r) => s + (Number(r.mg) || 0) * (Number(r.doses) || 0), 0);
+  const REC = lowCeiling ? 2000 : 3000;
+  const MAX = lowCeiling ? 2000 : 4000;
+  const pct = Math.min(100, Math.round(total / 4000 * 100));
+  const zone = total === 0 ? "none" : total <= REC ? "ok" : total <= MAX ? "caution" : "danger";
+  const zoneColor = zone === "danger" ? "#B4332B" : zone === "caution" ? "#B45309" : "#2E7D5B";
+
+  const nsaids = meds.filter(m => m.key && (DRUGS[m.key].cls.includes("NSAID")));
+  const aspirinTaken = meds.some(m => m.key === "aspirin");
+  const bloodThinner = meds.some(m => m.key && (has(m.key, "anticoagulant") || has(m.key, "antiplatelet")));
+
+  const upd = (i, k, v) => setRows(rs => rs.map((r, j) => j === i ? { ...r, [k]: v } : r));
+  const add = (label, mg) => setRows(rs => [...rs, { label, mg, doses: 1, from: "added" }]);
+
+  return (
+    <div style={{ maxWidth: 820 }}>
+      <PageHead title="Pain-Reliever Safety" italic={"\u201cAm I getting more acetaminophen than I think?\u201d"} sub="Acetaminophen (Tylenol) hides inside many cold, flu, and prescription pain products. Taken together they can quietly add up to a liver-damaging amount. Total yours here." />
+
+      {/* APAP aggregator */}
+      <section style={{ ...card, marginBottom: 16 }}>
+        <h3 style={{ fontFamily: serifH, fontSize: 17, margin: "0 0 4px", color: C.ink }}>Acetaminophen — daily total</h3>
+        <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "0 0 14px" }}>Add every product that contains acetaminophen, with its strength and how many times a day you take it.</p>
+
+        {/* gauge */}
+        <div style={{ borderRadius: 14, border: `1px solid ${C.line}`, background: "#FBF6EC", padding: "16px 16px 14px", marginBottom: 16 }}>
+          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
+            <span style={{ fontSize: 12.5, color: C.inkSoft }}>Your estimated daily total</span>
+            <span style={{ fontFamily: serifH, fontSize: 30, fontWeight: 700, color: zoneColor }}>{total.toLocaleString()} <span style={{ fontSize: 15 }}>mg</span></span>
+          </div>
+          <div style={{ marginTop: 10, height: 12, borderRadius: 999, background: "#EADFC9", overflow: "hidden", position: "relative" }}>
+            <div style={{ width: pct + "%", height: "100%", background: zoneColor, borderRadius: 999, transition: "width .3s" }} />
+            <div style={{ position: "absolute", top: -3, left: (REC / 4000 * 100) + "%", height: 18, width: 2, background: C.ink, opacity: 0.5 }} />
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, fontSize: 10.5, color: C.inkFaint }}>
+            <span>0</span><span>recommended max {REC.toLocaleString()} mg</span><span>4,000 mg</span>
+          </div>
+          {zone === "danger" && <p style={{ margin: "12px 0 0", fontSize: 13, color: "#B4332B", fontWeight: 600, lineHeight: 1.5 }}>This is above the maximum safe daily amount. Too much acetaminophen can seriously harm the liver. Please contact a pharmacist or Poison Control now, and don't take any more today.</p>}
+          {zone === "caution" && <p style={{ margin: "12px 0 0", fontSize: 13, color: "#8A4309", lineHeight: 1.5 }}>You're above the everyday recommended limit and approaching the maximum. Check with a pharmacist before adding any more acetaminophen products.</p>}
+          {zone === "ok" && total > 0 && <p style={{ margin: "12px 0 0", fontSize: 13, color: "#2E7D5B", lineHeight: 1.5 }}>Within the usual daily limit — but remember any extra cold/flu or pain product may also contain acetaminophen.</p>}
+          <label style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12, fontSize: 12.5, color: C.inkSoft, cursor: "pointer" }}>
+            <input type="checkbox" checked={lowCeiling} onChange={e => setLowCeiling(e.target.checked)} />
+            I have liver disease or drink 3+ alcoholic drinks most days (lowers the safe limit)
+          </label>
+        </div>
+
+        {/* rows */}
+        {rows.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
+            {rows.map((r, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", border: `1px solid ${C.line}`, borderRadius: 11, padding: "9px 11px", background: "#fff" }}>
+                <span style={{ flex: "1 1 180px", fontSize: 13, color: C.ink }}>{r.label} {r.from === "your list" && <span style={{ fontSize: 10, color: "#2F8F6B", background: "#2F8F6B15", borderRadius: 999, padding: "1px 6px" }}>from your list</span>}</span>
+                <input type="number" value={r.mg} onChange={e => upd(i, "mg", e.target.value)} style={{ width: 78, borderRadius: 8, border: `1px solid ${C.line}`, padding: "6px 8px", fontSize: 13, color: C.ink }} /> <span style={{ fontSize: 12, color: C.inkFaint }}>mg ×</span>
+                <input type="number" value={r.doses} onChange={e => upd(i, "doses", e.target.value)} style={{ width: 56, borderRadius: 8, border: `1px solid ${C.line}`, padding: "6px 8px", fontSize: 13, color: C.ink }} /> <span style={{ fontSize: 12, color: C.inkFaint }}>/day</span>
+                <button onClick={() => setRows(rs => rs.filter((_, j) => j !== i))} style={{ height: 24, width: 24, borderRadius: 999, border: "none", background: "#F1ECE0", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><X size={12} color={C.inkSoft} /></button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <p style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: C.inkFaint, margin: "0 0 8px" }}>Quick-add a common product</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+          {APAP_QUICK.map(([label, mg]) => (
+            <button key={label} onClick={() => add(label, mg)} style={{ ...ghostBtn, padding: "6px 11px", fontSize: 12 }}><Plus size={12} /> {label.split(" (")[0]}</button>
+          ))}
+        </div>
+      </section>
+
+      {/* NSAID panel */}
+      <section style={{ ...card, marginBottom: 16 }}>
+        <h3 style={{ fontFamily: serifH, fontSize: 17, margin: "0 0 4px", color: C.ink }}>Anti-inflammatories (NSAIDs)</h3>
+        <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "0 0 12px" }}>Ibuprofen, naproxen, and similar shouldn't be doubled up, and they add bleeding and kidney risk.</p>
+        {nsaids.length + (aspirinTaken ? 1 : 0) === 0 ? (
+          <p style={{ fontSize: 13.5, color: C.inkSoft }}>No NSAIDs detected in your analyzed list.</p>
+        ) : (
+          <>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 12 }}>
+              {nsaids.map(m => <span key={m.id} style={{ borderRadius: 999, border: `1px solid ${C.line}`, background: "#fff", padding: "5px 12px", fontSize: 12.5, color: C.ink }}>{m.name}</span>)}
+              {aspirinTaken && <span style={{ borderRadius: 999, border: `1px solid ${C.line}`, background: "#fff", padding: "5px 12px", fontSize: 12.5, color: C.ink }}>Aspirin</span>}
+            </div>
+            {nsaids.length >= 2 && <div style={{ borderRadius: 11, background: "#FBEFE6", border: "1px solid #F0D6C2", padding: "11px 13px", fontSize: 13, color: "#8A4309", marginBottom: 10 }}><strong>You have more than one NSAID.</strong> Taking two at once raises the risk of stomach bleeding and kidney strain without added benefit — ask your pharmacist which one to keep.</div>}
+            {bloodThinner && <div style={{ borderRadius: 11, background: "#FBE8E6", border: "1px solid #EFC6C1", padding: "11px 13px", fontSize: 13, color: "#8A2A22" }}><strong>NSAID + a blood thinner.</strong> This combination meaningfully increases bleeding risk. <button onClick={() => go("interactions")} style={{ background: "none", border: "none", color: C.terra, cursor: "pointer", padding: 0, textDecoration: "underline" }}>See your interaction check</button> and confirm with a pharmacist.</div>}
+            <p style={{ fontSize: 12, color: C.inkFaint, margin: "10px 0 0", lineHeight: 1.55 }}>Typical over-the-counter daily maximums (confirm with the label/pharmacist): ibuprofen ~1,200 mg, naproxen ~660 mg, aspirin (for pain) ~4,000 mg. Prescription limits differ.</p>
+          </>
+        )}
+      </section>
+
+      <div style={{ ...card, background: "#F6EFE2" }}>
+        <p style={{ fontSize: 12.5, color: "#4F4233", margin: 0, lineHeight: 1.6 }}>
+          <strong>If you think you've taken too much acetaminophen,</strong> don't wait for symptoms — liver damage can begin before you feel sick. In the U.S., Poison Control is free and confidential at <strong>1-800-222-1222</strong>; elsewhere, call your local poison or emergency number.
+        </p>
+      </div>
+      <p style={{ marginTop: 14, fontSize: 11.5, color: C.inkFaint, lineHeight: 1.55 }}>Educational estimate based on what you enter; it can't see every product or your liver health. Always read labels and confirm safe limits with your pharmacist or prescriber.</p>
+    </div>
+  );
+}
+
 // ---- Stubs -----------------------------------------------------------------
 const STUBS = {
   emergency: { Icon: Siren, title: "Emergency", italic: "\u201cWhen it can't wait, this is the short version.\u201d", body: "Red-flag combinations and warning signs worth acting on quickly — severe bleeding, trouble breathing, chest pain, or sudden confusion. This tool is educational and can't call for help: for a medical emergency, contact your local emergency number right away.", cta: "interactions", ctaLabel: "Review serious interactions" },
@@ -2781,7 +2930,7 @@ function Stub({ id, go }) {
 
 // ---- Navigation ------------------------------------------------------------
 const NAV = [
-  ["dashboard", "Dashboard", LayoutDashboard], ["meds", "My Medications", Pill], ["pillid", "Pill Identifier", ScanLine], ["findmed", "Find My Medication", MapPin], ["interactions", "Interaction Checker", Activity],
+  ["dashboard", "Dashboard", LayoutDashboard], ["meds", "My Medications", Pill], ["pillid", "Pill Identifier", ScanLine], ["findmed", "Find My Medication", MapPin], ["interactions", "Interaction Checker", Activity], ["painsafe", "Pain-Reliever Safety", ShieldCheck],
   ["bodymap", "Body Impact Map", PersonStanding], ["treatment", "Treatment Options", ListChecks], ["trials", "Clinical Trials", FlaskConical], ["food", "Food Interactions", Apple], ["schedule", "Schedule Builder", CalendarClock],
   ["symptom", "Symptom Checker", Stethoscope], ["summary", "Health Summary", Gauge], ["notifications", "Notifications", Bell],
   ["emergency", "Emergency", Siren], ["plan", "Plan ahead", CalendarCheck], ["pharmacist", "AI Pharmacist", MessageCircle],
@@ -2867,6 +3016,7 @@ function App() {
             {page === "findmed" && <MedicationFinder meds={meds} go={go} />}
             {page === "treatment" && <TreatmentOptions meds={meds} keys={keys} findings={findings} score={score} clinical={clinical} setClinical={setClinical} go={go} />}
             {page === "trials" && <ClinicalTrials clinical={clinical} go={go} />}
+            {page === "painsafe" && <PainSafety meds={meds} go={go} />}
             {page === "interactions" && <Interactions meds={meds} findings={findings} score={score} go={go} />}
             {page === "bodymap" && <BodyImpactMap baseSel={keys} go={go} />}
             {page === "food" && <FoodInteractions keys={keys} go={go} />}
