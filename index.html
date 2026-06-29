@@ -1813,29 +1813,123 @@ function SymptomChecker({ keys, symptoms, setSymptoms, go }) {
 }
 
 // ---- Notifications ---------------------------------------------------------
-function Notifications({ notify, setNotify }) {
+// ---- Google Sign-In + browser push -----------------------------------------
+// Swap in your real OAuth Web client ID from Google Cloud Console → Credentials.
+// (A client ID is PUBLIC and safe to ship; do NOT put a client SECRET in this file.)
+const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com";
+const GSI_READY = typeof GOOGLE_CLIENT_ID === "string" && !GOOGLE_CLIENT_ID.startsWith("YOUR_");
+let _gsiPromise = null;
+function loadGsi() {
+  if (typeof window !== "undefined" && window.google && window.google.accounts && window.google.accounts.id) return Promise.resolve();
+  if (_gsiPromise) return _gsiPromise;
+  _gsiPromise = new Promise((res, rej) => {
+    const s = document.createElement("script");
+    s.src = "https://accounts.google.com/gsi/client"; s.async = true; s.defer = true;
+    s.onload = () => res(); s.onerror = () => rej(new Error("gsi"));
+    document.head.appendChild(s);
+  });
+  return _gsiPromise;
+}
+function decodeJwt(t) {
+  try { return JSON.parse(decodeURIComponent(atob(t.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")).split("").map(c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)).join(""))); }
+  catch (e) { return null; }
+}
+
+function Notifications({ notify, setNotify, account, setAccount }) {
   const setPref = (k, v) => setNotify(p => ({ ...p, prefs: { ...p.prefs, [k]: v } }));
   const set = (k, v) => setNotify(p => ({ ...p, [k]: v }));
+  const btnRef = useRef(null);
+  const [gsiErr, setGsiErr] = useState(false);
+  const [pushPerm, setPushPerm] = useState(typeof Notification !== "undefined" ? Notification.permission : "unsupported");
+
+  useEffect(() => {
+    if (account || !GSI_READY) return;
+    let dead = false;
+    loadGsi().then(() => {
+      if (dead || !btnRef.current || !window.google) return;
+      try {
+        window.google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: resp => { const p = decodeJwt(resp.credential); if (p) setAccount({ name: p.name, email: p.email, picture: p.picture, sub: p.sub }); } });
+        window.google.accounts.id.renderButton(btnRef.current, { theme: "outline", size: "large", shape: "pill", text: "continue_with", width: 260 });
+      } catch (e) { setGsiErr(true); }
+    }).catch(() => setGsiErr(true));
+    return () => { dead = true; };
+  }, [account, setAccount]);
+
+  const signOut = () => { try { window.google && window.google.accounts.id.disableAutoSelect(); } catch (e) {} setAccount(null); };
+  const enablePush = () => {
+    if (typeof Notification === "undefined") { setPushPerm("unsupported"); return; }
+    Notification.requestPermission().then(p => {
+      setPushPerm(p);
+      if (p === "granted") { try { new Notification("What's Safe Together?", { body: "Browser reminders are on. We'll nudge you here while the app is open." }); } catch (e) {} }
+    });
+  };
+
   const PREFS = [["reminders", "Medication reminders"], ["missed", "Missed-dose alerts"], ["interactions", "Drug interaction alerts"], ["food", "Food interaction alerts"], ["refills", "Refill reminders"], ["appts", "Appointment reminders"], ["labs", "Lab monitoring reminders"], ["daily", "Daily symptom check-ins"], ["weekly", "Weekly health summary"], ["critical", "Critical safety alerts"]];
+  const ChannelBadge = ({ ok, text }) => <span style={{ fontSize: 10, fontWeight: 700, borderRadius: 999, padding: "2px 8px", background: ok ? "#E6F4EC" : "#F1ECE0", color: ok ? "#2E7D5B" : C.inkFaint }}>{text}</span>;
+
   return (
     <div style={{ maxWidth: 680 }}>
-      <PageHead title="Notifications & Communication" italic={"\u201cThe right nudge, on the channel you actually read.\u201d"} sub="Choose how and when we check in. (Sending requires a connected account — these settings save locally for now.)" />
-      <div style={{ ...card, marginBottom: 18 }}>
+      <PageHead title="Notifications & Communication" italic={"\u201cThe right nudge, on the channel you actually read.\u201d"} sub="Choose how and when we check in. (Text and email delivery require the messaging service, which is coming soon — your settings save in this session for now.)" />
+
+      {/* Account */}
+      <div style={{ ...card, marginBottom: 16 }}>
+        <h3 style={{ fontFamily: serifH, fontSize: 16.5, margin: "0 0 4px", color: C.ink }}>Your account</h3>
+        <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "0 0 14px", lineHeight: 1.5 }}>Sign in to connect notifications to you. We use Google only to confirm your name and email — nothing about your medicines is sent to Google.</p>
+        {account ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            {account.picture ? <img src={account.picture} alt="" referrerPolicy="no-referrer" style={{ height: 44, width: 44, borderRadius: 999 }} /> : <span style={{ height: 44, width: 44, borderRadius: 999, background: C.terra + "22", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: serifH, color: C.terraDeep, fontWeight: 700 }}>{(account.name || "?").slice(0, 1)}</span>}
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <p style={{ margin: 0, fontWeight: 600, color: C.ink, fontSize: 14.5 }}>{account.name}</p>
+              <p style={{ margin: "2px 0 0", fontSize: 12.5, color: C.inkSoft, overflow: "hidden", textOverflow: "ellipsis" }}>{account.email}</p>
+            </div>
+            <button onClick={signOut} style={{ ...ghostBtn, padding: "8px 14px" }}>Sign out</button>
+          </div>
+        ) : (
+          <div>
+            {GSI_READY ? <div ref={btnRef} style={{ minHeight: 44 }} /> : (
+              <div style={{ borderRadius: 11, border: `1px dashed ${C.inkFaint}`, background: "#FBF6EC", padding: "12px 14px", fontSize: 12.5, color: C.inkSoft, lineHeight: 1.55 }}>
+                <strong style={{ color: C.ink }}>Google Sign-In is ready to switch on.</strong> Add your Google OAuth <em>Web client ID</em> (from Google Cloud Console → APIs &amp; Services → Credentials) into <code>GOOGLE_CLIENT_ID</code>, and add your site URL as an authorized JavaScript origin. The button appears here automatically once it's set.
+              </div>
+            )}
+            {gsiErr && <p style={{ fontSize: 12, color: C.inkFaint, marginTop: 8 }}>Couldn't load Google Sign-In here (it needs a live, allowed origin — works on your deployed site).</p>}
+          </div>
+        )}
+        {account && <div style={{ marginTop: 12, borderRadius: 10, background: "#F6EFE2", padding: "10px 12px", fontSize: 12.5, color: C.inkSoft }}><Info size={13} style={{ verticalAlign: "-2px", marginRight: 5 }} />Account connected. Text/email <strong>delivery is coming soon</strong> — it needs the secure messaging service we're building.</div>}
+      </div>
+
+      {/* Channels */}
+      <div style={{ ...card, marginBottom: 16 }}>
+        <h3 style={{ fontFamily: serifH, fontSize: 16.5, margin: "0 0 12px", color: C.ink }}>How to reach you</h3>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px,1fr))", gap: 12 }}>
           <Field label="Mobile number" value={notify.phone} onChange={v => set("phone", v)} placeholder="+1 555 123 4567" />
           <Field label="Email address" value={notify.email} onChange={v => set("email", v)} placeholder="you@example.com" />
         </div>
-        <div style={{ display: "flex", gap: 14, marginTop: 12, fontSize: 12.5, color: C.inkSoft }}>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><Bell size={14} /> Push</span>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><Phone size={14} /> SMS</span>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><Mail size={14} /> Email</span>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 16 }}>
+          {/* Push — genuinely works in-browser */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, border: `1px solid ${C.line}`, borderRadius: 11, padding: "11px 13px" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13.5, color: C.ink }}><Bell size={15} color={C.terra} /> Browser push {pushPerm === "granted" ? <ChannelBadge ok text="ON" /> : <ChannelBadge text={pushPerm === "denied" ? "BLOCKED" : "OFF"} />}</span>
+            {pushPerm === "granted" ? <span style={{ fontSize: 12, color: "#2E7D5B" }}>Enabled on this device</span>
+              : pushPerm === "denied" ? <span style={{ fontSize: 12, color: C.inkFaint }}>Allow in browser settings</span>
+              : pushPerm === "unsupported" ? <span style={{ fontSize: 12, color: C.inkFaint }}>Not supported here</span>
+              : <button onClick={enablePush} style={{ ...primaryBtn, padding: "7px 13px", fontSize: 12.5 }}>Enable push</button>}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, border: `1px solid ${C.line}`, borderRadius: 11, padding: "11px 13px" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13.5, color: C.ink }}><Phone size={15} color={C.terra} /> Text message (SMS)</span>
+            <ChannelBadge text="COMING SOON" />
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, border: `1px solid ${C.line}`, borderRadius: 11, padding: "11px 13px" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13.5, color: C.ink }}><Mail size={15} color={C.terra} /> Email</span>
+            <ChannelBadge text="COMING SOON" />
+          </div>
         </div>
+        <p style={{ fontSize: 11.5, color: C.inkFaint, marginTop: 12, lineHeight: 1.5 }}>Browser push works on this device while the app is open. Scheduled background delivery, texts, and emails need our secure messaging service (in development) and a connected account.</p>
       </div>
+
       <p style={{ ...eyebrow, marginBottom: 10 }}>What to notify me about</p>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px,1fr))", gap: 10 }}>
         {PREFS.map(([k, label]) => <Toggle key={k} on={notify.prefs[k]} onChange={v => setPref(k, v)} label={label} />)}
       </div>
-      <p style={{ marginTop: 16, fontSize: 11.5, color: C.inkFaint }}>Critical safety alerts are recommended on. Educational tool — not a monitoring or emergency service.</p>
+      <p style={{ marginTop: 16, fontSize: 11.5, color: C.inkFaint }}>Critical safety alerts are recommended on. Educational tool — not a monitoring or emergency service. See our <strong>Policies, Terms &amp; Privacy</strong> for how sign-in and data are handled.</p>
     </div>
   );
 }
@@ -3076,6 +3170,105 @@ function EmergencyPage({ go }) {
   );
 }
 
+// ---- Policies, Terms & Privacy ---------------------------------------------
+function PoliciesPage() {
+  const Sec = ({ title, id, children }) => (
+    <section id={id} style={{ ...card, marginBottom: 14, scrollMarginTop: 16 }}>
+      <h3 style={{ fontFamily: serifH, fontSize: 17, margin: "0 0 8px", color: C.ink }}>{title}</h3>
+      <div style={{ fontSize: 13, color: "#4F4233", lineHeight: 1.65 }}>{children}</div>
+    </section>
+  );
+  const jump = id => { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); };
+  const links = [["About", "about"], ["Editorial policy", "editorial"], ["Citation guidelines", "citations"], ["Advertising enquiries", "advertising"], ["Contact us", "contact"], ["Privacy", "privacy"], ["No ads / no tracking", "nodata"]];
+  return (
+    <div style={{ maxWidth: 780 }}>
+      <PageHead title="Policies, Terms & Privacy" italic={"\u201cThe plain version of who we are and how this works.\u201d"} sub={"What's Safe Together? is owned and operated by Morning Mind LLC (themorningmind.com), Cedar Park, Texas. Effective " + new Date().toLocaleDateString() + "."} />
+
+      <div style={{ ...card, marginBottom: 14 }}>
+        <p style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: C.inkFaint, margin: "0 0 10px" }}>Support &amp; privacy</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {links.map(([label, id]) => (
+            <button key={id} onClick={() => jump(id)} style={{ ...ghostBtn, padding: "7px 13px", fontSize: 12.5 }}>{label}</button>
+          ))}
+        </div>
+      </div>
+
+      <Sec title="About Us" id="about">
+        <p style={{ margin: "0 0 6px", fontStyle: "italic", color: C.terraDeep, fontFamily: serifH, fontSize: 15, lineHeight: 1.5 }}>{"\u201cEvery medicine a person takes joins a conversation already happening in their body. Morning Mind exists to help patients and caregivers hear it clearly \u2014 turning a scattered list of prescriptions, supplements, and everyday remedies into one honest picture, raising a loud, plain warning for the few combinations that can truly cause harm, and putting the right questions in people's hands before they reach the pharmacy counter. Every search should leave someone a little safer than it found them.\u201d"}</p>
+        <p style={{ margin: "10px 0 0" }}>What's Safe Together? is an <strong>independent, educational</strong> medication-safety tool from <strong>Morning Mind LLC</strong> (themorningmind.com), based in <strong>Cedar Park, Texas</strong>. It helps people and their caregivers see how their medicines, supplements, food, and other substances interact, organized by the part of the body they affect, and prepares clear questions to bring to a prescriber or pharmacist. It organizes information; it does not diagnose, prescribe, or replace professional care.</p>
+        <p style={{ margin: "10px 0 0" }}><strong>How our information is built.</strong> The interaction logic, drug classes, and body-system effects are a <strong>curated, conservatively-built knowledge base</strong> authored and maintained for this app, covering well-established, widely-recognized pharmacology. It is a deliberately focused <strong>educational subset</strong>, not an exhaustive clinical database. It is <strong>not peer-reviewed</strong>, is not powered by a licensed clinical drug-information service, and is not a validated medical device. "No interactions found" is never a guarantee of safety.</p>
+        <p style={{ margin: "10px 0 0" }}><strong>Data sources.</strong> For naming and look-ups, the app draws on public resources from the U.S. National Library of Medicine — <strong>RxNorm</strong> (drug names) and the <strong>Dietary Supplement Label Database</strong> (supplements) — along with <strong>ClinicalTrials.gov</strong> for study listings and <strong>OpenStreetMap</strong> for finding nearby pharmacies and emergency services. These are maintained by others and should be verified with the original source.</p>
+        <p style={{ margin: "10px 0 0" }}><strong>News.</strong> The Drug Safety News feature highlights general safety themes relevant to the medicines in your profile and links you to official pages (such as the FDA, EMA, and DailyMed). It is <strong>not a live newswire</strong> and does not publish original reporting or specific recall claims.</p>
+        <p style={{ margin: "10px 0 0" }}><strong>Independence.</strong> What's Safe Together? is currently ad-free, and no one can pay to influence the safety information it shows.</p>
+      </Sec>
+
+      <Sec title="Ownership">
+        This application, its name "What's Safe Together?", and its content, design, and code are owned by <strong>Morning Mind LLC</strong> (themorningmind.com), Cedar Park, Texas ("we," "us," "the Company") and are protected by copyright and other intellectual-property laws. © {new Date().getFullYear()} Morning Mind LLC. All rights reserved. You may use the app for your own personal, non-commercial, educational purposes; you may not copy, resell, or redistribute it without our written permission.
+      </Sec>
+
+      <Sec title="Medical disclaimer — educational only">
+        This app is provided for <strong>general education and information only. It is not medical advice, diagnosis, or treatment, and it does not create a doctor–patient or pharmacist–patient relationship.</strong> It does not — and cannot — see your full health history, lab results, or examination. Nothing here should be used to start, stop, or change any medication. Always consult a qualified, licensed healthcare professional (such as your prescriber or pharmacist) about your medicines and health, and never disregard or delay professional advice because of something you read here. A result of "no interactions found" is never a guarantee that a combination is safe.
+      </Sec>
+
+      <Sec title="Not for emergencies">
+        Do not use this app for medical emergencies. If you think you are having an emergency, call your local emergency number immediately. In the U.S., Poison Control is available at 1-800-222-1222, and the Suicide &amp; Crisis Lifeline at 988. Location-based "find help near me" features are convenience tools only and may be incomplete or inaccurate.
+      </Sec>
+
+      <Sec title="Privacy & your data" id="privacy">
+        We designed this app to be private by default. The medicines, conditions, and notes you enter are held in your browser <strong>only for your current session</strong> — there is no account required, and we do not transmit or store your medication list or health information on Morning Mind LLC servers. Refreshing or closing the app clears that information from memory. Signing in is <strong>optional</strong>: if you choose to sign in with Google, we receive only your basic Google profile (name, email address, and photo) to identify you for notifications — your medicines and health entries are <strong>never</strong> sent to Google.
+        <br /><br />
+        To provide search and location features, the app sends limited queries to independent third-party services (see below). For example, a drug or supplement search sends the text you typed; a "near me" feature uses your device's approximate location to look up nearby places. Those requests are handled by the third parties under their own privacy policies, and your device's geolocation is used only to perform the lookup you requested — it is not collected or stored by us. The app is hosted on a third-party platform that, like most web hosts, may log standard technical request data (such as IP address) for security and operation.
+      </Sec>
+
+      <Sec title="No ads, no trackers, no sale of your data" id="nodata">
+        We want to be unambiguous, because the health-app industry has a poor track record here: <strong>we do not sell, rent, or share your personal or health information for advertising, and we never will.</strong> This app contains <strong>no third-party advertising, no advertising pixels or tags (for example, no Facebook/Meta or Google advertising trackers), and no analytics SDKs that profile you.</strong> We do not build advertising or marketing profiles about you, and because we don't collect your health information on our servers, there is nothing for us to monetize or disclose to advertisers. If this ever changes, we would update this policy, clearly disclose it, obtain any legally required consent before any new data use, and provide any breach notifications required by law (such as the FTC's Health Breach Notification Rule).
+      </Sec>
+
+      <Sec title="HIPAA & regulatory status">
+        Morning Mind LLC is <strong>not a HIPAA-covered entity</strong> (we are not a healthcare provider, health plan, or clearinghouse), and we do <strong>not</strong> display any HIPAA-compliance seal or claim. This app is an educational tool, not a medical device or a personal health record service that we operate on your behalf. Because we don't collect your entries on our servers, that information isn't held by us as a health record. Nothing here should be read as a representation of HIPAA compliance.
+      </Sec>
+
+      <Sec title="Third-party data sources">
+        The app draws on publicly available data and APIs, including the U.S. National Library of Medicine's <strong>RxNorm</strong> and <strong>Dietary Supplement Label Database (DSLD)</strong>, <strong>ClinicalTrials.gov</strong>, and <strong>OpenStreetMap</strong> (via the Overpass API) for places. These sources are maintained by others, may be incomplete or out of date, and are used here for educational purposes. Their appearance in the app is not an endorsement, and we are not responsible for their content or availability. Trademarks and brand names belong to their respective owners and are used only for identification.
+      </Sec>
+
+      <Sec title="Acceptable use">
+        Use the app lawfully and for your own informational purposes. Do not rely on it as a substitute for professional care, attempt to misuse it to obtain or combine substances unsafely, or use it to harm yourself or others. The information about prescription, over-the-counter, supplement, and other substances is provided for awareness and harm-reduction, not to encourage use.
+      </Sec>
+
+      <Sec title="No warranty">
+        The app is provided "as is" and "as available," without warranties of any kind, express or implied, including accuracy, completeness, fitness for a particular purpose, or non-infringement. Drug data, interaction logic, and location results are a curated, simplified subset and may contain errors or omissions. We do not warrant that the app is error-free or continuously available.
+      </Sec>
+
+      <Sec title="Limitation of liability">
+        To the fullest extent permitted by law, Morning Mind LLC and its members, officers, and contributors will not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss arising from your use of — or inability to use — the app, or from reliance on any information it provides. Your use of the app is at your own risk.
+      </Sec>
+
+      <Sec title="Changes & contact">
+        We may update the app and these policies from time to time; the "effective" date above reflects the latest version. Continued use after changes means you accept them. Questions about these terms or our practices can be directed to Morning Mind LLC via <strong>themorningmind.com</strong>. These terms are governed by the laws of the <strong>State of Texas, United States</strong>, without regard to conflict-of-laws rules.
+      </Sec>
+
+      <Sec title="Editorial policy" id="editorial">
+        Content is written for a general audience and reviewed for plain-language clarity and safety framing. Interaction logic, drug classes, and body-system effects reflect <strong>well-established, widely-recognized pharmacology</strong>, captured as a deliberately conservative, curated subset rather than an exhaustive clinical database — we would rather under-claim than overstate. We prioritize flagging the small number of potentially life-threatening combinations clearly while keeping lower-risk findings calm, to avoid alert fatigue. The app is <strong>not peer-reviewed</strong>, is not a validated clinical decision-support device, and is not a substitute for a clinician's judgment. We correct errors when found; if you spot one, please contact us.
+      </Sec>
+
+      <Sec title="Citation guidelines" id="citations">
+        To cite this tool: <em>What's Safe Together? Morning Mind LLC, themorningmind.com (accessed {new Date().toLocaleDateString()}).</em> Please cite it only as an educational resource, not as a clinical or primary medical source. Where the app surfaces data from external providers — the U.S. National Library of Medicine's RxNorm and DSLD, ClinicalTrials.gov, and OpenStreetMap — those sources should be credited to and verified with the original provider.
+      </Sec>
+
+      <Sec title="Advertising enquiries" id="advertising">
+        What's Safe Together? is currently <strong>ad-free</strong>: we do not display third-party advertising, and no one can pay to influence the safety information shown. For partnership, sponsorship, or advertising enquiries, contact Morning Mind LLC via <strong>themorningmind.com</strong>. Any future advertising would be clearly labeled and kept separate from medical content.
+      </Sec>
+
+      <Sec title="Contact us" id="contact">
+        Morning Mind LLC welcomes questions, corrections, and feedback. Reach us through <strong>themorningmind.com</strong> (Morning Mind LLC, Cedar Park, Texas){"\u00a0"}— or, for product feedback inside the app, use the thumbs-down/feedback options where available. For anything urgent or medical, contact your pharmacist, prescriber, or local emergency services rather than us — we can't provide medical advice or emergency help.
+      </Sec>
+
+      <p style={{ marginTop: 4, fontSize: 11.5, color: C.inkFaint, lineHeight: 1.55 }}>This statement is a plain-language template provided for convenience and is not legal advice. Morning Mind LLC should have it reviewed and finalized by a qualified attorney, and complete the bracketed items, before relying on it.</p>
+    </div>
+  );
+}
+
 // ---- Stubs -----------------------------------------------------------------
 const STUBS = {
   plan: { Icon: CalendarCheck, title: "Plan ahead", italic: "\u201cA little preparation makes the next visit easier.\u201d", body: "Before a pharmacy or clinic visit, generate a one-page summary of your medicines, interactions, schedule, suggested labs, and questions to ask — then print it, save it as a PDF, or download it to bring along.", cta: "summary", ctaLabel: "Open Health Summary to export" },
@@ -3104,7 +3297,7 @@ const NAV = [
   ["bodymap", "Body Impact Map", PersonStanding], ["treatment", "Treatment Options", ListChecks], ["trials", "Clinical Trials", FlaskConical], ["food", "Food Interactions", Apple], ["schedule", "Schedule Builder", CalendarClock],
   ["symptom", "Symptom Checker", Stethoscope], ["summary", "Health Summary", Gauge], ["notifications", "Notifications", Bell],
   ["emergency", "Emergency", Siren], ["plan", "Plan ahead", CalendarCheck], ["pharmacist", "AI Pharmacist", MessageCircle],
-  ["news", "Drug Safety News", Newspaper], ["learn", "Learn & FAQ", BookOpen],
+  ["news", "Drug Safety News", Newspaper], ["learn", "Learn & FAQ", BookOpen], ["policies", "Policies & Terms", FileText],
 ];
 
 // ---- App shell -------------------------------------------------------------
@@ -3115,6 +3308,7 @@ function App() {
   const [symptoms, setSymptoms] = useState([]);
   const [notify, setNotify] = useState({ phone: "", email: "", prefs: { reminders: true, missed: true, interactions: true, food: false, refills: true, appts: false, labs: false, daily: true, weekly: false, critical: true } });
   const [clinical, setClinical] = useState({ conditions: [], allergies: [], priorMeds: [], dependence: [], insurance: "", country: "United States" });
+  const [account, setAccount] = useState(null);
 
   const keys = useMemo(() => uniq(meds.map(m => m.key).filter(Boolean)), [meds]);
   const findings = useMemo(() => getFindings(keys), [keys]);
@@ -3170,6 +3364,10 @@ function App() {
           <div style={{ marginTop: 20, padding: "13px", borderRadius: 12, background: "#E3D8C4", border: `1px solid ${C.line}` }}>
             <p style={{ margin: 0, fontSize: 11.5, lineHeight: 1.5, color: C.inkSoft }}><Info size={12} style={{ verticalAlign: "-2px", marginRight: 4 }} />Educational only. Never start, stop, or change a medicine without your prescriber or pharmacist.</p>
           </div>
+          <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${C.line}` }}>
+            <p style={{ margin: 0, fontSize: 10.5, color: C.inkFaint, lineHeight: 1.5 }}>© {new Date().getFullYear()} Morning Mind LLC. All rights reserved.</p>
+            <button onClick={() => go("policies")} style={{ background: "none", border: "none", padding: "4px 0 0", margin: 0, fontSize: 11, color: C.terra, cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 2 }}>Policies, Terms & Privacy</button>
+          </div>
         </aside>
 
         <div className={"scrim" + (navOpen ? " show" : "")} onClick={() => setNavOpen(false)} />
@@ -3194,8 +3392,9 @@ function App() {
             {page === "schedule" && <ScheduleBuilder meds={meds} setMeds={setMeds} go={go} />}
             {page === "symptom" && <SymptomChecker keys={keys} symptoms={symptoms} setSymptoms={setSymptoms} go={go} />}
             {page === "summary" && <HealthSummary meds={meds} keys={keys} findings={findings} score={score} symptoms={symptoms} />}
-            {page === "notifications" && <Notifications notify={notify} setNotify={setNotify} />}
+            {page === "notifications" && <Notifications notify={notify} setNotify={setNotify} account={account} setAccount={setAccount} />}
             {page === "news" && <DrugSafetyNews meds={meds} keys={keys} findings={findings} score={score} go={go} />}
+            {page === "policies" && <PoliciesPage />}
             {STUBS[page] && <Stub id={page} go={go} />}
           </main>
         </div>
