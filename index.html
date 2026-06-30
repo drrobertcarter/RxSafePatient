@@ -1446,6 +1446,154 @@ function Dashboard({ meds, symptoms, findings, score, go }) {
 }
 
 // ---- My Medications --------------------------------------------------------
+// ---- Camera scanning: barcode (native) + bottle OCR (Tesseract) ------------
+let _tessPromise = null;
+function loadTesseract() {
+  if (typeof window !== "undefined" && window.Tesseract) return Promise.resolve(window.Tesseract);
+  if (_tessPromise) return _tessPromise;
+  _tessPromise = new Promise((res, rej) => {
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"; s.async = true;
+    s.onload = () => res(window.Tesseract); s.onerror = () => rej(new Error("ocr"));
+    document.head.appendChild(s);
+  });
+  return _tessPromise;
+}
+async function lookupNdc(code) {
+  const digits = String(code).replace(/\D/g, "");
+  const cands = [digits, digits.slice(1, 11), digits.slice(0, 11), digits.slice(1, 12)].filter((v, i, a) => v && v.length >= 8 && a.indexOf(v) === i);
+  for (const c of cands) {
+    try {
+      const url = 'https://api.fda.gov/drug/ndc.json?search=packaging.package_ndc:"' + c + '"&limit=1';
+      const r = await fetch(url); if (!r.ok) continue;
+      const d = await r.json(); const hit = d.results && d.results[0];
+      if (hit) return { name: (hit.brand_name || hit.generic_name || "").trim(), generic: hit.generic_name, brand: hit.brand_name };
+    } catch (e) {}
+  }
+  return null;
+}
+function suggestFromText(text) {
+  const words = String(text).split(/[^A-Za-z]+/).filter(w => w.length >= 4);
+  const cand = new Set();
+  words.forEach((w, i) => { cand.add(w); if (words[i + 1]) cand.add(w + " " + words[i + 1]); });
+  const out = []; const seen = new Set();
+  for (const term of cand) {
+    for (const m of searchDirectory(term, null)) {
+      const k = m.name.toLowerCase();
+      if (!seen.has(k)) { seen.add(k); out.push(m); }
+    }
+    if (out.length >= 8) break;
+  }
+  out.sort((a, b) => (a.src === "curated" ? 0 : 1) - (b.src === "curated" ? 0 : 1));
+  return out.slice(0, 6);
+}
+
+function ScannerModal({ mode, onClose, onPick }) {
+  const videoRef = useRef(null); const streamRef = useRef(null); const loopRef = useRef(null);
+  const [status, setStatus] = useState("starting"); // starting|scanning|busy|result|error|denied|unsupported
+  const [msg, setMsg] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    let dead = false;
+    if (mode === "barcode" && !("BarcodeDetector" in window)) { setStatus("unsupported"); }
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false })
+      .then(stream => {
+        if (dead) { stream.getTracks().forEach(t => t.stop()); return; }
+        streamRef.current = stream;
+        if (videoRef.current) { videoRef.current.srcObject = stream; videoRef.current.play().catch(() => {}); }
+        if (mode === "barcode" && "BarcodeDetector" in window) startBarcode();
+        else if (mode === "barcode") setStatus("unsupported");
+        else setStatus("scanning");
+      })
+      .catch(err => setStatus(err && err.name === "NotAllowedError" ? "denied" : "error"));
+    return () => { dead = true; if (loopRef.current) clearInterval(loopRef.current); if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop()); };
+    // eslint-disable-next-line
+  }, [mode]);
+
+  const startBarcode = () => {
+    setStatus("scanning"); setMsg("Point the camera at the barcode.");
+    let det; try { det = new window.BarcodeDetector({ formats: ["upc_a", "upc_e", "ean_13", "ean_8", "code_128", "code_39", "data_matrix", "qr_code"] }); } catch (e) { setStatus("unsupported"); return; }
+    loopRef.current = setInterval(async () => {
+      if (!videoRef.current || videoRef.current.readyState < 2) return;
+      try {
+        const codes = await det.detect(videoRef.current);
+        if (codes && codes.length) {
+          clearInterval(loopRef.current);
+          const code = codes[0].rawValue;
+          setStatus("busy"); setMsg("Read barcode " + code + " — looking it up…");
+          const hit = await lookupNdc(code);
+          if (hit && hit.name) {
+            const dirMatch = searchDirectory(hit.name, null)[0];
+            setSuggestions(dirMatch ? [dirMatch, { name: hit.name, cls: "from barcode", key: null }] : [{ name: hit.name, cls: "from barcode", key: null }]);
+            setMsg("Found a likely match for barcode " + code + ".");
+          } else { setSuggestions([]); setMsg("Read barcode " + code + ", but couldn't match a product automatically. Try Scan bottle, search, or enter it manually."); }
+          setStatus("result");
+        }
+      } catch (e) {}
+    }, 500);
+  };
+
+  const capture = async () => {
+    if (!videoRef.current) return;
+    setStatus("busy"); setProgress(0); setMsg("Reading the label…");
+    const v = videoRef.current; const c = document.createElement("canvas");
+    c.width = v.videoWidth || 720; c.height = v.videoHeight || 960;
+    c.getContext("2d").drawImage(v, 0, 0, c.width, c.height);
+    try {
+      const T = await loadTesseract();
+      const { data } = await T.recognize(c, "eng", { logger: m => { if (m.status === "recognizing text") setProgress(Math.round(m.progress * 100)); } });
+      const sug = suggestFromText(data.text || "");
+      setSuggestions(sug);
+      setMsg(sug.length ? "Found possible medicines on the label — tap to add." : "Couldn't confidently read a medicine name. Try better light, or search/enter manually.");
+      setStatus("result");
+    } catch (e) { setStatus("error"); setMsg("Couldn't run label reading here. You can search or enter the medicine manually."); }
+  };
+
+  const title = mode === "barcode" ? "Scan barcode" : "Scan bottle";
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 80, background: "rgba(20,15,10,0.72)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{ width: 420, maxWidth: "100%", background: C.surface, borderRadius: 20, overflow: "hidden", boxShadow: "0 30px 70px -30px rgba(0,0,0,0.6)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px", borderBottom: `1px solid ${C.line}` }}>
+          <span style={{ fontFamily: serifH, fontSize: 16, color: C.ink }}>{title}</span>
+          <button onClick={onClose} style={{ height: 30, width: 30, borderRadius: 999, border: "none", background: "#E3D8C4", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><X size={15} color={C.ink} /></button>
+        </div>
+
+        <div style={{ position: "relative", background: "#000", aspectRatio: "3/4", maxHeight: 360 }}>
+          <video ref={videoRef} playsInline muted style={{ width: "100%", height: "100%", objectFit: "cover", display: (status === "denied" || status === "error" || status === "unsupported") ? "none" : "block" }} />
+          {mode === "barcode" && (status === "scanning" || status === "starting") && <div style={{ position: "absolute", left: "12%", right: "12%", top: "44%", height: 2, background: "#5FD0A8", boxShadow: "0 0 10px #5FD0A8" }} />}
+          {(status === "denied" || status === "error" || status === "unsupported") && (
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: 22, textAlign: "center" }}>
+              <p style={{ color: "#FBE2DE", fontSize: 13, lineHeight: 1.55 }}>{status === "denied" ? "Camera permission was blocked. Allow camera access in your browser, or enter the medicine manually." : status === "unsupported" ? "Live barcode scanning isn't supported in this browser. Try Scan bottle, or search/enter manually." : "Couldn't start the camera here. On your phone or a supported browser this works; for now, search or enter manually."}</p>
+            </div>
+          )}
+          {status === "busy" && <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.45)", display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ color: "#fff", fontSize: 13 }}>{mode === "bottle" ? "Reading label… " + progress + "%" : "Looking up…"}</span></div>}
+        </div>
+
+        <div style={{ padding: "14px 16px" }}>
+          {msg && <p style={{ margin: "0 0 10px", fontSize: 12.5, color: C.inkSoft, lineHeight: 1.5 }}>{msg}</p>}
+          {status === "scanning" && mode === "bottle" && <button onClick={capture} style={{ ...primaryBtn, width: "100%", justifyContent: "center" }}><ScanLine size={16} /> Capture & read label</button>}
+          {suggestions.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 7, marginTop: 4 }}>
+              {suggestions.map((s, i) => (
+                <button key={i} onClick={() => onPick(s)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, border: `1px solid ${C.line}`, background: "#fff", borderRadius: 11, padding: "10px 12px", cursor: "pointer", textAlign: "left" }}>
+                  <span style={{ fontSize: 14, color: C.ink }}>{s.name}{s.cls ? <span style={{ fontSize: 11.5, color: C.inkFaint }}> · {s.cls}</span> : null}</span>
+                  {s.key ? <span style={{ fontSize: 9.5, fontWeight: 700, color: "#2F8F6B", background: "#2F8F6B15", borderRadius: 999, padding: "1px 6px" }}>ANALYZED</span> : <Plus size={14} color={C.terra} />}
+                </button>
+              ))}
+            </div>
+          )}
+          {(status === "result" || status === "denied" || status === "error" || status === "unsupported") && (
+            <button onClick={() => onPick(null)} style={{ ...ghostBtn, width: "100%", justifyContent: "center", marginTop: 8 }}><Pencil size={14} /> Enter manually instead</button>
+          )}
+          <p style={{ margin: "10px 0 0", fontSize: 10.5, color: C.inkFaint, lineHeight: 1.5 }}>Scanning happens on your device; images aren't uploaded. Always confirm the medicine and strength against the label — scans can misread.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function MyMedications({ meds, setMeds, go }) {
   const [q, setQ] = useState(""); const [open, setOpen] = useState(false); const [active, setActive] = useState(0);
   const [form, setForm] = useState(null); const boxRef = useRef(null);
@@ -1472,15 +1620,17 @@ function MyMedications({ meds, setMeds, go }) {
   const save = () => { setMeds(prev => prev.some(m => m.id === form.id) ? prev.map(m => m.id === form.id ? form : m) : [...prev, form]); setForm(null); };
   const set = (f, v) => setForm(p => ({ ...p, [f]: v }));
   const nameOnly = meds.filter(m => !m.key).length;
+  const [scan, setScan] = useState(null);
   return (
     <div style={{ maxWidth: 860 }}>
       <Journey page="meds" go={go} />
       <PageHead title="My Medications" italic={"\u201cEverything you take, in one quiet list.\u201d"} sub="Build your profile once — every other tool reads from it." />
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
-        {[["Search", ScanLine], ["Scan bottle", ScanLine], ["Scan barcode", ScanLine], ["Import from pharmacy", Upload], ["Manual entry", Pencil]].map(([lbl, Icon], i) => (
-          <button key={lbl} onClick={() => i === 0 ? boxRef.current?.querySelector("input")?.focus() : startAdd(null)} style={{ ...ghostBtn, padding: "8px 12px", fontSize: 12.5 }}><Icon size={14} /> {lbl}</button>
+        {[["Search", Search], ["Scan bottle", ScanLine], ["Scan barcode", ScanLine], ["Import from pharmacy", Upload], ["Manual entry", Pencil]].map(([lbl, Icon], i) => (
+          <button key={lbl} onClick={() => i === 0 ? boxRef.current?.querySelector("input")?.focus() : i === 1 ? setScan("bottle") : i === 2 ? setScan("barcode") : startAdd(null)} style={{ ...ghostBtn, padding: "8px 12px", fontSize: 12.5 }}><Icon size={14} /> {lbl}</button>
         ))}
       </div>
+      {scan && <ScannerModal mode={scan} onClose={() => setScan(null)} onPick={r => { setScan(null); startAdd(r && !r.key && r.cls === "from barcode" ? { ...r, cls: "" } : r); }} />}
       <div ref={boxRef} style={{ position: "relative", maxWidth: 560, marginBottom: 18 }}>
         <Search size={17} color={C.inkFaint} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)" }} />
         <input className="wst-input" value={q} onChange={e => { setQ(e.target.value); setOpen(true); setActive(0); }} onFocus={() => { setOpen(true); rx.load(); }} onKeyDown={e => { if (!open || !matches.length) return; if (e.key === "ArrowDown") { e.preventDefault(); setActive(a => Math.min(a + 1, matches.length - 1)); } else if (e.key === "ArrowUp") { e.preventDefault(); setActive(a => Math.max(a - 1, 0)); } else if (e.key === "Enter") { e.preventDefault(); startAdd(matches[active]); } else if (e.key === "Escape") setOpen(false); }} placeholder="Search any medicine (brand or generic)…" style={{ width: "100%", boxSizing: "border-box", borderRadius: 11, border: `1px solid ${C.line}`, background: C.surface, padding: "13px 14px 13px 42px", fontSize: 15, color: C.ink, outline: "none" }} />
