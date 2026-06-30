@@ -3179,7 +3179,7 @@ function PoliciesPage() {
     </section>
   );
   const jump = id => { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); };
-  const links = [["About", "about"], ["Editorial policy", "editorial"], ["Citation guidelines", "citations"], ["Advertising enquiries", "advertising"], ["Contact us", "contact"], ["Privacy", "privacy"], ["No ads / no tracking", "nodata"]];
+  const links = [["About", "about"], ["Trademarks", "trademarks"], ["Editorial policy", "editorial"], ["Citation guidelines", "citations"], ["Advertising enquiries", "advertising"], ["Contact us", "contact"], ["Privacy", "privacy"], ["No ads / no tracking", "nodata"]];
   return (
     <div style={{ maxWidth: 780 }}>
       <PageHead title="Policies, Terms & Privacy" italic={"\u201cThe plain version of who we are and how this works.\u201d"} sub={"What's Safe Together? is owned and operated by Morning Mind LLC (themorningmind.com), Cedar Park, Texas. Effective " + new Date().toLocaleDateString() + "."} />
@@ -3195,15 +3195,19 @@ function PoliciesPage() {
 
       <Sec title="About Us" id="about">
         <p style={{ margin: "0 0 6px", fontStyle: "italic", color: C.terraDeep, fontFamily: serifH, fontSize: 15, lineHeight: 1.5 }}>{"\u201cEvery medicine a person takes joins a conversation already happening in their body. Morning Mind exists to help patients and caregivers hear it clearly \u2014 turning a scattered list of prescriptions, supplements, and everyday remedies into one honest picture, raising a loud, plain warning for the few combinations that can truly cause harm, and putting the right questions in people's hands before they reach the pharmacy counter. Every search should leave someone a little safer than it found them.\u201d"}</p>
-        <p style={{ margin: "10px 0 0" }}>What's Safe Together? is an <strong>independent, educational</strong> medication-safety tool from <strong>Morning Mind LLC</strong> (themorningmind.com), based in <strong>Cedar Park, Texas</strong>. It helps people and their caregivers see how their medicines, supplements, food, and other substances interact, organized by the part of the body they affect, and prepares clear questions to bring to a prescriber or pharmacist. It organizes information; it does not diagnose, prescribe, or replace professional care.</p>
+        <p style={{ margin: "10px 0 0" }}>What's Safe Together?™ (rxsafecheck.com) is an <strong>independent, educational</strong> medication-safety tool from <strong>Morning Mind LLC</strong> (themorningmind.com), based in <strong>Cedar Park, Texas</strong>. It helps people and their caregivers see how their medicines, supplements, food, and other substances interact, organized by the part of the body they affect, and prepares clear questions to bring to a prescriber or pharmacist. It organizes information; it does not diagnose, prescribe, or replace professional care.</p>
         <p style={{ margin: "10px 0 0" }}><strong>How our information is built.</strong> The interaction logic, drug classes, and body-system effects are a <strong>curated, conservatively-built knowledge base</strong> authored and maintained for this app, covering well-established, widely-recognized pharmacology. It is a deliberately focused <strong>educational subset</strong>, not an exhaustive clinical database. It is <strong>not peer-reviewed</strong>, is not powered by a licensed clinical drug-information service, and is not a validated medical device. "No interactions found" is never a guarantee of safety.</p>
         <p style={{ margin: "10px 0 0" }}><strong>Data sources.</strong> For naming and look-ups, the app draws on public resources from the U.S. National Library of Medicine — <strong>RxNorm</strong> (drug names) and the <strong>Dietary Supplement Label Database</strong> (supplements) — along with <strong>ClinicalTrials.gov</strong> for study listings and <strong>OpenStreetMap</strong> for finding nearby pharmacies and emergency services. These are maintained by others and should be verified with the original source.</p>
         <p style={{ margin: "10px 0 0" }}><strong>News.</strong> The Drug Safety News feature highlights general safety themes relevant to the medicines in your profile and links you to official pages (such as the FDA, EMA, and DailyMed). It is <strong>not a live newswire</strong> and does not publish original reporting or specific recall claims.</p>
         <p style={{ margin: "10px 0 0" }}><strong>Independence.</strong> What's Safe Together? is currently ad-free, and no one can pay to influence the safety information it shows.</p>
       </Sec>
 
-      <Sec title="Ownership">
-        This application, its name "What's Safe Together?", and its content, design, and code are owned by <strong>Morning Mind LLC</strong> (themorningmind.com), Cedar Park, Texas ("we," "us," "the Company") and are protected by copyright and other intellectual-property laws. © {new Date().getFullYear()} Morning Mind LLC. All rights reserved. You may use the app for your own personal, non-commercial, educational purposes; you may not copy, resell, or redistribute it without our written permission.
+      <Sec title="Ownership & copyright">
+        This application, its name "What's Safe Together?", the <strong>rxsafecheck.com</strong> website, and its content, design, text, graphics, and code are owned by <strong>Morning Mind LLC</strong> (themorningmind.com), Cedar Park, Texas ("we," "us," "the Company") and are protected by copyright and other intellectual-property laws. <strong>© {new Date().getFullYear()} Morning Mind LLC. All rights reserved.</strong> You may use the app for your own personal, non-commercial, educational purposes; you may not copy, reproduce, resell, scrape, or redistribute it, in whole or in part, without our prior written permission.
+      </Sec>
+
+      <Sec title="Trademarks" id="trademarks">
+        <strong>What's Safe Together?™</strong> and <strong>RxSafeCheck™</strong>, together with the Company's logos and the look and feel of the app, are trademarks and trade dress of Morning Mind LLC. You may not use these marks without our prior written permission, and you may not use them in any way that suggests our sponsorship or endorsement. All other product names, brand names, drug names, and logos that appear in the app (for example, medication brand names, or the names of data providers such as RxNorm, DSLD, ClinicalTrials.gov, and OpenStreetMap) are the property of their respective owners and are used here only for identification and educational reference; their use does not imply any affiliation with or endorsement by those owners.
       </Sec>
 
       <Sec title="Medical disclaimer — educational only">
@@ -3350,7 +3354,7 @@ function App() {
           <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "4px 8px 18px" }}>
             <span style={{ display: "flex", height: 38, width: 38, alignItems: "center", justifyContent: "center", borderRadius: 11, background: C.terra, boxShadow: "0 8px 18px -8px rgba(181,83,46,0.8)" }}><Stethoscope size={20} color="#FBF6EC" /></span>
             <div>
-              <div style={{ fontFamily: serif, fontWeight: 700, fontSize: 17, color: C.ink, lineHeight: 1.05 }}>What's Safe Together?</div>
+              <div style={{ fontFamily: serif, fontWeight: 700, fontSize: 17, color: C.ink, lineHeight: 1.05 }}>What's Safe Together?<span style={{ fontSize: 9, verticalAlign: "super", fontWeight: 600 }}>™</span></div>
               <div style={{ fontSize: 10, letterSpacing: "0.18em", color: C.inkFaint, fontWeight: 600, marginTop: 2 }}>RXSAFECHECK.COM</div>
             </div>
           </div>
@@ -3366,7 +3370,8 @@ function App() {
           </div>
           <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${C.line}` }}>
             <p style={{ margin: 0, fontSize: 10.5, color: C.inkFaint, lineHeight: 1.5 }}>© {new Date().getFullYear()} Morning Mind LLC. All rights reserved.</p>
-            <button onClick={() => go("policies")} style={{ background: "none", border: "none", padding: "4px 0 0", margin: 0, fontSize: 11, color: C.terra, cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 2 }}>Policies, Terms & Privacy</button>
+            <p style={{ margin: "3px 0 0", fontSize: 10, color: C.inkFaint, lineHeight: 1.5 }}>What's Safe Together?™ and RxSafeCheck™ are trademarks of Morning Mind LLC.</p>
+            <button onClick={() => go("policies")} style={{ background: "none", border: "none", padding: "5px 0 0", margin: 0, fontSize: 11, color: C.terra, cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 2 }}>Policies, Terms & Privacy</button>
           </div>
         </aside>
 
