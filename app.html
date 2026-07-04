@@ -6,6 +6,7 @@
   <title>RxSafeCheck — What's Safe Together? | Medication Safety Tool</title>
   <meta name="description" content="RxSafeCheck's free medication-safety tool: check how your medicines, supplements, and food interact, organized by body system. Educational, private, no account needed." />
   <link rel="canonical" href="https://rxsafecheck.com/app.html" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta property="og:title" content="RxSafeCheck — What's Safe Together?" />
   <meta property="og:description" content="Check how your medicines interact, organized by the part of the body they affect. Educational, private, and free." />
   <meta property="og:type" content="website" />
@@ -4284,10 +4285,12 @@ function App() {
       <div className="shell">
         <aside className={"sidebar" + (navOpen ? " open" : "")}>
           <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "4px 8px 18px" }}>
-            <span style={{ display: "flex", height: 38, width: 38, alignItems: "center", justifyContent: "center", borderRadius: 11, background: C.terra, boxShadow: "0 8px 18px -8px rgba(181,83,46,0.8)" }}><Stethoscope size={20} color="#FBF6EC" /></span>
+            <span style={{ display: "flex", height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 11, background: C.terra, boxShadow: "0 8px 18px -8px rgba(181,83,46,0.8)", fontFamily: serif, fontWeight: 700, fontSize: 19, color: "#F2EADC" }}>Rx</span>
             <div>
-              <div style={{ fontFamily: serif, fontWeight: 700, fontSize: 17, color: C.ink, lineHeight: 1.05 }}>What's Safe Together?<span style={{ fontSize: 9, verticalAlign: "super", fontWeight: 600 }}>™</span></div>
-              <div style={{ fontSize: 10, letterSpacing: "0.18em", color: C.inkFaint, fontWeight: 600, marginTop: 2 }}>RXSAFECHECK.COM</div>
+              <div style={{ fontFamily: serif, fontWeight: 700, fontSize: 17, color: C.ink, lineHeight: 1.05, letterSpacing: "-0.01em" }}>RxSafeCheck<span style={{ fontSize: 9, verticalAlign: "super", fontWeight: 600 }}>™</span></div>
+              <div style={{ fontFamily: serif, fontStyle: "italic", fontSize: 12, color: C.terraDeep, marginTop: 2, lineHeight: 1.1 }}>
+                What's Safe T<span style={{ display: "inline-block", width: 9, height: 9, borderRadius: 999, background: C.terra, position: "relative", verticalAlign: "-1px", margin: "0 0.5px" }}><span style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 4, height: 1.5, background: C.surface, borderRadius: 1 }} /></span>gether<span style={{ color: C.terra, fontWeight: 700, fontStyle: "normal" }}>?</span>
+              </div>
             </div>
           </div>
           <nav style={{ display: "flex", flexDirection: "column", gap: 3 }}>

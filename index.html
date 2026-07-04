@@ -7,6 +7,8 @@
 <meta name="description" content="RxSafeCheck helps you understand how your medicines, supplements, and food interact — organized by the part of the body they affect. Free, private, educational. Bring what you learn to your pharmacist or doctor." />
 <meta name="keywords" content="medication safety, drug interaction checker, medicine interactions, pharmacist questions, senior medication safety, caregiver medication guide, supplement interactions" />
 <link rel="canonical" href="https://rxsafecheck.com/" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<meta property="og:image" content="https://rxsafecheck.com/logo.svg" />
 <meta name="robots" content="index,follow" />
 <meta name="author" content="Morning Mind LLC" />
 <meta property="og:title" content="RxSafeCheck — What's Safe Together? Medication safety made simple." />
@@ -34,6 +36,10 @@ header.site{display:flex;align-items:center;justify-content:space-between;paddin
 .logo{height:42px;width:42px;border-radius:11px;background:var(--teal);display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--serif);font-weight:700;font-size:20px}
 .brand b{font-family:var(--serif);font-size:19px;line-height:1}
 .brand small{display:block;font-size:10px;letter-spacing:.18em;color:var(--inkFaint);font-weight:700;margin-top:2px}
+.wst-tag{font-family:var(--serif);font-style:italic;font-size:12.5px;letter-spacing:0;color:var(--terraDeep);font-weight:400;text-transform:none}
+.pilldot{display:inline-block;width:10px;height:10px;border-radius:999px;background:var(--terra);position:relative;vertical-align:-1px;margin:0 .5px}
+.pilldot i{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:5px;height:1.5px;background:var(--surface);border-radius:1px}
+.wst-tag .qm{color:var(--terra);font-weight:700;font-style:normal}
 nav.top a{margin-left:20px;text-decoration:none;color:var(--inkSoft);font-size:14px;font-weight:600}
 nav.top a:hover{color:var(--ink)}
 .btn{display:inline-flex;align-items:center;gap:8px;border-radius:10px;padding:12px 20px;font-size:15px;font-weight:700;text-decoration:none;cursor:pointer;border:none}
@@ -78,8 +84,8 @@ footer.site a{color:var(--inkSoft);text-decoration:none;margin-right:16px}
 <body>
 <div class="wrap">
   <header class="site">
-    <a class="brand" href="/"><span class="logo">Rx</span><span><b>RxSafeCheck</b><small>WHAT'S SAFE TOGETHER?</small></span></a>
-    <nav class="top"><a href="/app.html">The Tool</a><a href="#guides">Guides</a><a href="#how">How it works</a><a href="#partners">For Partners</a></nav>
+    <a class="brand" href="/"><span class="logo">Rx</span><span><b>RxSafeCheck</b><small class="wst-tag">What's Safe T<span class="pilldot"><i></i></span>gether<span class="qm">?</span></small></span></a>
+    <nav class="top"><a href="/app.html">The Tool</a><a href="#guides">Guides</a><a href="#how">How it works</a><a href="#news">News</a><a href="#partners">For Partners</a></nav>
     <a class="btn btn-primary" href="/app.html">Open the free tool</a>
   </header>
 </div>
@@ -178,6 +184,45 @@ footer.site a{color:var(--inkSoft);text-decoration:none;margin-right:16px}
   </ul>
   <p style="margin:20px 0 0"><a class="btn btn-primary" href="/app.html" style="display:inline-flex">Or jump straight to the free tool →</a></p>
 </section></div>
+
+<div class="wrap"><section id="news">
+  <p class="eyebrow">Live · across the web</p>
+  <h2>Latest health &amp; medication headlines</h2>
+  <p style="color:var(--inkSoft);max-width:640px;margin:0 0 8px">Real, current headlines pulled live from official U.S. government and research sources — FDA drug recalls, ClinicalTrials.gov, and PubMed. Educational only; always confirm with your pharmacist or the official source.</p>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:14px 0 12px">
+    <span id="news-status" style="font-size:12.5px;color:var(--inkFaint)">Loading the latest headlines…</span>
+    <button id="news-refresh" class="btn btn-ghost" style="padding:8px 14px;font-size:13px">↻ Refresh</button>
+  </div>
+  <div id="news-list" style="border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff">
+    <div style="padding:18px;color:var(--inkSoft);font-size:14px">Fetching FDA recalls, clinical trials, and research…</div>
+  </div>
+  <p style="margin:14px 0 0;font-size:12px;color:var(--inkFaint)">Headlines refresh automatically. Want the full interactive feed with filters and search? <a href="/app.html">Open the News Hub in the app →</a></p>
+</section></div>
+
+<script>
+(function(){
+  var listEl=document.getElementById('news-list'),statusEl=document.getElementById('news-status'),btn=document.getElementById('news-refresh');
+  function timeAgo(d){if(!d)return'';var s=Math.floor((Date.now()-d.getTime())/1000);if(s<60)return s+'s ago';var m=Math.floor(s/60);if(m<60)return m+'m ago';var h=Math.floor(m/60);if(h<24)return h+'h ago';var dd=Math.floor(h/24);if(dd===1)return'yesterday';if(dd<30)return dd+'d ago';return d.toLocaleDateString();}
+  function fdaDate(s){if(!s||s.length<8)return null;var d=new Date(s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8));return isNaN(d)?null:d;}
+  function esc(t){var e=document.createElement('div');e.textContent=t==null?'':String(t);return e.innerHTML;}
+  function fdaRecalls(){return fetch('https://api.fda.gov/drug/enforcement.json?sort=report_date:desc&limit=8').then(function(r){if(!r.ok)throw 0;return r.json();}).then(function(d){return (d.results||[]).map(function(x){return{source:'FDA RECALL',color:'#B4332B',title:(x.product_description||'Drug recall').slice(0,130)+(x.reason_for_recall?' — '+x.reason_for_recall.slice(0,80):''),sub:[x.recalling_firm,x.classification].filter(Boolean).join(' · '),date:fdaDate(x.report_date),url:'https://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts'};});});}
+  function trials(){return fetch('https://clinicaltrials.gov/api/v2/studies?sort=LastUpdatePostDate:desc&pageSize=8&fields=NCTId,BriefTitle,Condition,LastUpdatePostDate,OverallStatus').then(function(r){if(!r.ok)throw 0;return r.json();}).then(function(d){return (d.studies||[]).map(function(s){var p=s.protocolSection||{},id=p.identificationModule||{},st=p.statusModule||{},co=p.conditionsModule||{};var dt=st.lastUpdatePostDateStruct&&st.lastUpdatePostDateStruct.date;return{source:'CLINICAL TRIAL',color:'#1F7A6D',title:id.briefTitle||'Study update',sub:[(co.conditions||[]).slice(0,2).join(', '),st.overallStatus].filter(Boolean).join(' · '),date:dt?new Date(dt):null,url:id.nctId?'https://clinicaltrials.gov/study/'+id.nctId:'https://clinicaltrials.gov'};});});}
+  function pubmed(){var term=encodeURIComponent('drug safety OR medication adverse effects OR drug interactions');return fetch('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&sort=date&retmax=8&term='+term).then(function(r){if(!r.ok)throw 0;return r.json();}).then(function(sd){var ids=(sd.esearchresult&&sd.esearchresult.idlist)||[];if(!ids.length)return[];return fetch('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id='+ids.join(',')).then(function(r){if(!r.ok)throw 0;return r.json();}).then(function(d){var res=d.result||{};return ids.map(function(id){return res[id];}).filter(Boolean).map(function(a){return{source:'PUBMED',color:'#5B5BD6',title:a.title||'Research article',sub:[a.fulljournalname||a.source,(a.authors&&a.authors[0]&&a.authors[0].name)].filter(Boolean).join(' · '),date:a.pubdate?new Date(a.pubdate):(a.sortpubdate?new Date(a.sortpubdate):null),url:'https://pubmed.ncbi.nlm.nih.gov/'+a.uid+'/'};});});});}
+  function render(items){if(!items.length){listEl.innerHTML='<div style="padding:18px;color:#6E6253;font-size:14px">Couldn\'t reach the live sources right now. Please try Refresh.</div>';return;}
+    listEl.innerHTML=items.map(function(it,i){return '<a href="'+it.url+'" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:flex;gap:12px;align-items:center;padding:13px 15px;background:'+(i%2?'#FBF7EF':'#fff')+';border-bottom:'+(i<items.length-1?'1px solid #E1D6C2':'none')+'">'+
+      '<div style="flex:1;min-width:0"><span style="font-size:10.5px;font-weight:700;letter-spacing:.06em;color:'+it.color+'">'+esc(it.source)+'</span>'+
+      '<p style="margin:3px 0 0;font-size:14px;color:#2B231C;line-height:1.4">'+esc(it.title)+'</p>'+
+      (it.sub?'<p style="margin:2px 0 0;font-size:11.5px;color:#998C79">'+esc(it.sub)+'</p>':'')+'</div>'+
+      '<span style="font-size:11.5px;color:#998C79;flex-shrink:0">'+timeAgo(it.date)+'</span></a>';}).join('');}
+  function load(){statusEl.textContent='Loading the latest headlines…';
+    Promise.allSettled([fdaRecalls(),trials(),pubmed()]).then(function(rs){
+      var ok=[];rs.forEach(function(r){if(r.status==='fulfilled')ok=ok.concat(r.value);});
+      if(!ok.length){render([]);statusEl.textContent='Live sources unavailable — try Refresh.';return;}
+      ok.sort(function(a,b){return (b.date?b.date.getTime():0)-(a.date?a.date.getTime():0);});
+      render(ok);statusEl.textContent='updated just now';});}
+  btn.addEventListener('click',load);load();setInterval(load,300000);
+})();
+</script>
 
 <div class="wrap"><section><div class="signup">
   <p class="eyebrow" style="text-align:center">Free download</p>
