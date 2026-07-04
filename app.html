@@ -4745,6 +4745,9 @@ function Stub({ id, go }) {
 
 // ---- Navigation ------------------------------------------------------------
 const NAV_GROUPS = [
+  ["Welcome", [
+    ["mission", "Mission & Vision", Star],
+  ]],
   ["My Medicines", [
     ["dashboard", "Dashboard", LayoutDashboard], ["meds", "My Medications", Pill], ["pillid", "Pill Identifier", ScanLine], ["findmed", "Find My Medication", MapPin],
   ]],
@@ -4764,14 +4767,18 @@ const NAV_GROUPS = [
     ["emergency", "Emergency", Siren],
   ]],
   ["About", [
-    ["mission", "Mission & Vision", Star], ["policies", "Policies & Terms", FileText],
+    ["policies", "Policies & Terms", FileText],
   ]],
 ];
 const NAV = NAV_GROUPS.flatMap(([, items]) => items);
 
 // ---- App shell -------------------------------------------------------------
 function App() {
-  const [page, setPage] = useState("dashboard");
+  const validPage = id => NAV.some(([nid]) => nid === id) || ["parkinson"].includes(id);
+  const [page, setPage] = useState(() => {
+    const h = (typeof window !== "undefined" && window.location.hash || "").replace(/^#/, "");
+    return validPage(h) ? h : "dashboard";
+  });
   const [navOpen, setNavOpen] = useState(false);
   const [meds, setMeds] = useState([]);
   const [symptoms, setSymptoms] = useState([]);
@@ -4782,7 +4789,13 @@ function App() {
   const keys = useMemo(() => uniq(meds.map(m => m.key).filter(Boolean)), [meds]);
   const findings = useMemo(() => getFindings(keys), [keys]);
   const score = useMemo(() => computeScore(findings), [findings]);
-  const go = id => { setPage(id); setNavOpen(false); };
+  const go = id => { setPage(id); setNavOpen(false); if (typeof window !== "undefined" && window.location.hash.replace(/^#/, "") !== id) { window.location.hash = id; } };
+  useEffect(() => {
+    const onHash = () => { const h = (window.location.hash || "").replace(/^#/, ""); if (validPage(h)) setPage(h); else if (!h) setPage("dashboard"); };
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+  useEffect(() => { if (typeof window !== "undefined") { try { window.scrollTo({ top: 0, behavior: "instant" }); } catch (e) { window.scrollTo(0, 0); } } }, [page]);
 
   return (
     <RxNormProvider>
