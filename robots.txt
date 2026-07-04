@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RxSafeCheck — Free Medication Safety &amp; Drug Interaction Tool | What's Safe Together?</title>
+<meta name="description" content="RxSafeCheck helps you understand how your medicines, supplements, and food interact — organized by the part of the body they affect. Free, private, educational. Bring what you learn to your pharmacist or doctor." />
+<meta name="keywords" content="medication safety, drug interaction checker, medicine interactions, pharmacist questions, senior medication safety, caregiver medication guide, supplement interactions" />
+<link rel="canonical" href="https://rxsafecheck.com/" />
+<meta name="robots" content="index,follow" />
+<meta name="author" content="Morning Mind LLC" />
+<meta property="og:title" content="RxSafeCheck — What's Safe Together? Medication safety made simple." />
+<meta property="og:description" content="See how your medicines, supplements, and food interact — organized by body system. Free, private, and educational." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://rxsafecheck.com/" />
+<meta property="og:site_name" content="RxSafeCheck" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="RxSafeCheck — What's Safe Together?" />
+<meta name="twitter:description" content="Understand how your medicines interact, organized by the part of the body they affect. Educational and private." />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"RxSafeCheck — What's Safe Together?","url":"https://rxsafecheck.com/","applicationCategory":"HealthApplication","operatingSystem":"Web","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"An educational medication-safety tool that shows how medicines, supplements, and food interact, organized by the part of the body they affect.","publisher":{"@type":"Organization","name":"Morning Mind LLC","url":"https://themorningmind.com"}}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is RxSafeCheck medical advice?","acceptedAnswer":{"@type":"Answer","text":"No. RxSafeCheck is an educational tool that helps you understand possible medication interactions and prepare questions for your pharmacist or prescriber. It does not diagnose, prescribe, or replace professional care."}},{"@type":"Question","name":"Does RxSafeCheck store my medication list?","acceptedAnswer":{"@type":"Answer","text":"No. Your entries stay in your browser for your session only. There is no account required, and your medication list is not stored on our servers or sold to advertisers."}},{"@type":"Question","name":"Is RxSafeCheck free?","acceptedAnswer":{"@type":"Answer","text":"Yes. The medication-safety tool and guides are free to use."}},{"@type":"Question","name":"Does 'no interactions found' mean my medicines are safe together?","acceptedAnswer":{"@type":"Answer","text":"No. The knowledge base covers well-established interactions but is not exhaustive. Always confirm with your pharmacist or prescriber."}}]}
+</script>
+<style>
+:root{--paper:#F2EADC;--surface:#FBF6EC;--ink:#2B231C;--inkSoft:#6E6253;--inkFaint:#998C79;--line:#E1D6C2;--terra:#B5532E;--terraDeep:#94401F;--teal:#0E3A36;--tealMid:#1F5B54;--serif:"Playfair Display",Georgia,serif}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:radial-gradient(1200px 700px at 50% -10%,#FBF3E4,#F2EADC);line-height:1.6}
+a{color:var(--terra)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+header.site{display:flex;align-items:center;justify-content:space-between;padding:20px 0;gap:16px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--ink)}
+.logo{height:42px;width:42px;border-radius:11px;background:var(--teal);display:flex;align-items:center;justify-content:center;color:#fff;font-family:var(--serif);font-weight:700;font-size:20px}
+.brand b{font-family:var(--serif);font-size:19px;line-height:1}
+.brand small{display:block;font-size:10px;letter-spacing:.18em;color:var(--inkFaint);font-weight:700;margin-top:2px}
+nav.top a{margin-left:20px;text-decoration:none;color:var(--inkSoft);font-size:14px;font-weight:600}
+nav.top a:hover{color:var(--ink)}
+.btn{display:inline-flex;align-items:center;gap:8px;border-radius:10px;padding:12px 20px;font-size:15px;font-weight:700;text-decoration:none;cursor:pointer;border:none}
+.btn-primary{background:var(--terra);color:#FBF6EC;box-shadow:0 10px 24px -12px rgba(181,83,46,.7)}
+.btn-ghost{background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+section{padding:44px 0}
+.hero{padding-top:26px}
+.hero h1{font-family:var(--serif);font-size:44px;line-height:1.08;margin:0 0 6px;letter-spacing:-.01em}
+.hero .tag{font-family:var(--serif);font-style:italic;font-size:20px;color:var(--terraDeep);margin:0 0 16px}
+.hero p.lead{font-size:18px;color:var(--inkSoft);max-width:640px;margin:0 0 24px}
+.cta-row{display:flex;gap:12px;flex-wrap:wrap}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--inkSoft);margin:0 0 8px}
+h2{font-family:var(--serif);font-size:30px;margin:0 0 10px;letter-spacing:-.01em}
+.grid{display:grid;gap:16px}
+.g3{grid-template-columns:repeat(3,1fr)}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px}
+.card h3{margin:0 0 6px;font-size:17px}
+.card p{margin:0;color:var(--inkSoft);font-size:14.5px}
+.steps{counter-reset:s;display:grid;gap:16px;grid-template-columns:repeat(3,1fr)}
+.step{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px}
+.step::before{counter-increment:s;content:counter(s);font-family:var(--serif);font-size:15px;font-weight:700;color:#fff;background:var(--terra);height:30px;width:30px;border-radius:999px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.trust{background:var(--teal);color:#EAF3F1;border-radius:20px;padding:34px}
+.trust h2{color:#fff}
+.trust ul{margin:14px 0 0;padding-left:18px}
+.trust li{margin:7px 0;color:#C7DED9;font-size:15px}
+ul.guides{list-style:none;padding:0;margin:0;display:grid;gap:12px;grid-template-columns:repeat(2,1fr)}
+ul.guides a{display:block;text-decoration:none;background:#fff;border:1px solid var(--line);border-radius:12px;padding:15px 17px;color:var(--ink);font-weight:600;font-size:15px}
+ul.guides a:hover{border-color:var(--terra)}
+ul.guides small{display:block;color:var(--inkFaint);font-weight:400;font-size:12.5px;margin-top:3px}
+.signup{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:30px;text-align:center}
+.signup form{display:flex;gap:10px;max-width:460px;margin:16px auto 0;flex-wrap:wrap;justify-content:center}
+.signup input{flex:1;min-width:220px;border:1px solid var(--line);border-radius:10px;padding:13px 14px;font-size:15px}
+.partner{background:linear-gradient(120deg,var(--teal),var(--tealMid));color:#EAF3F1;border-radius:20px;padding:34px;text-align:center}
+.partner h2{color:#fff}
+.partner p{color:#C7DED9;max-width:620px;margin:8px auto 20px}
+.disc{background:#FCF3F1;border:1px solid #EFC6C1;border-radius:14px;padding:16px 18px;color:#7A2A22;font-size:13.5px}
+footer.site{border-top:1px solid var(--line);margin-top:40px;padding:28px 0;color:var(--inkFaint);font-size:13px}
+footer.site a{color:var(--inkSoft);text-decoration:none;margin-right:16px}
+@media(max-width:820px){.g3,.steps,ul.guides{grid-template-columns:1fr}.hero h1{font-size:34px}nav.top{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="site">
+    <a class="brand" href="/"><span class="logo">Rx</span><span><b>RxSafeCheck</b><small>WHAT'S SAFE TOGETHER?</small></span></a>
+    <nav class="top"><a href="/app.html">The Tool</a><a href="#guides">Guides</a><a href="#how">How it works</a><a href="#partners">For Partners</a></nav>
+    <a class="btn btn-primary" href="/app.html">Open the free tool</a>
+  </header>
+</div>
+
+<div class="wrap"><section class="hero">
+  <h1>Understand how your medicines work together.</h1>
+  <p class="tag">"What's Safe Together?"</p>
+  <p class="lead">RxSafeCheck is a free, private tool that helps you see how your prescriptions, over-the-counter medicines, supplements, and even food may interact — organized by the part of the body they affect. Learn what to watch for and bring the right questions to your pharmacist or doctor.</p>
+  <div class="cta-row"><a class="btn btn-primary" href="/app.html">Check my medications →</a><a class="btn btn-ghost" href="#guides">Read the safety guides</a></div>
+</section></div>
+
+<div class="wrap"><section>
+  <p class="eyebrow">Made for real life</p>
+  <h2>Built for patients, caregivers, and families</h2>
+  <div class="grid g3" style="margin-top:18px">
+    <div class="card"><h3>Patients &amp; seniors</h3><p>Keep every medicine in one place and understand interactions in plain language — no jargon, no account required.</p></div>
+    <div class="card"><h3>Caregivers &amp; families</h3><p>Manage a loved one's medicines, spot warning signs, and prepare for appointments with printable summaries.</p></div>
+    <div class="card"><h3>Anyone starting a new medicine</h3><p>Before you fill a new prescription, see what to ask your pharmacist and what to watch for.</p></div>
+  </div>
+</section></div>
+
+<div class="wrap"><section id="how">
+  <p class="eyebrow">Simple by design</p>
+  <h2>How it works</h2>
+  <div class="steps" style="margin-top:18px">
+    <div class="step"><h3 style="margin:0 0 6px;font-size:16px">Add your medicines</h3><p style="margin:0;color:var(--inkSoft);font-size:14px">Search prescriptions, OTC medicines, supplements, and food factors. Scan a bottle or barcode if you like.</p></div>
+    <div class="step"><h3 style="margin:0 0 6px;font-size:16px">See how they interact</h3><p style="margin:0;color:var(--inkSoft);font-size:14px">Results are grouped by the part of the body they affect, with clear explanations and severity flags.</p></div>
+    <div class="step"><h3 style="margin:0 0 6px;font-size:16px">Talk to your pharmacist</h3><p style="margin:0;color:var(--inkSoft);font-size:14px">Get ready-made questions and a printable summary to bring to your pharmacist or prescriber.</p></div>
+  </div>
+  <div style="margin-top:22px"><a class="btn btn-primary" href="/app.html">Try it free →</a></div>
+</section></div>
+
+<div class="wrap"><section><div class="trust">
+  <h2>Educational, honest, and private</h2>
+  <p style="color:#C7DED9;max-width:680px">We built RxSafeCheck to help you learn and start conversations — not to replace your healthcare team.</p>
+  <ul>
+    <li><strong>Not medical advice.</strong> RxSafeCheck is educational. It does not diagnose, prescribe, or replace your pharmacist or doctor.</li>
+    <li><strong>Private by default.</strong> Your medication list stays in your browser for the session only — no account required, and we do not sell your data or use advertising trackers.</li>
+    <li><strong>Grounded in public sources.</strong> Built on well-established pharmacology and public resources like the U.S. National Library of Medicine (RxNorm, DSLD) and ClinicalTrials.gov.</li>
+    <li><strong>"Nothing found" isn't a guarantee.</strong> The knowledge base is curated, not exhaustive — always confirm with your pharmacist.</li>
+  </ul>
+</div></section></div>
+
+<div class="wrap"><section id="guides">
+  <p class="eyebrow">Learn</p>
+  <h2>Popular medication-safety guides</h2>
+  <p style="color:var(--inkSoft);max-width:640px;margin:0 0 18px">Plain-language articles on the questions people ask most. Educational only — always confirm with your pharmacist or prescriber.</p>
+  <p class="eyebrow" style="margin:22px 0 8px;color:var(--terraDeep)">Interactions & safety</p>
+  <ul class="guides">
+    <li><a href="/guides/can-i-take-two-medicines-together.html">Can I take these two medicines together?</a></li>
+    <li><a href="/guides/what-is-a-drug-interaction.html">What is a drug interaction?</a></li>
+    <li><a href="/guides/drug-interaction-warning-signs.html">Drug interaction warning signs to know</a></li>
+    <li><a href="/guides/nsaids-and-blood-thinners.html">NSAIDs and blood thinners: a combination to watch</a></li>
+    <li><a href="/guides/blood-thinners-what-to-avoid.html">Blood thinners: what to watch for</a></li>
+    <li><a href="/guides/grapefruit-and-medications.html">Grapefruit and medications: what to know</a></li>
+    <li><a href="/guides/statins-and-muscle-pain.html">Statins and muscle pain: what to watch for</a></li>
+    <li><a href="/guides/serotonin-syndrome-warning-signs.html">Serotonin syndrome: warning signs and triggers</a></li>
+    <li><a href="/guides/qt-prolongation-explained.html">QT prolongation: medicines and heart rhythm</a></li>
+    <li><a href="/guides/nsaids-and-kidney-health.html">NSAIDs and your kidneys</a></li>
+    <li><a href="/guides/antibiotics-and-birth-control.html">Do antibiotics affect birth control?</a></li>
+    <li><a href="/guides/alcohol-and-medications.html">Alcohol and medications: what to watch for</a></li>
+    <li><a href="/guides/supplements-and-prescription-drugs.html">Do supplements interact with prescription drugs?</a></li>
+    <li><a href="/guides/medications-that-cause-drowsiness.html">Medications that cause drowsiness</a></li>
+    <li><a href="/guides/medication-side-effects-when-to-worry.html">Medication side effects: when to worry</a></li>
+    <li><a href="/guides/drug-allergies-vs-side-effects.html">Drug allergy vs. side effect: what's the difference?</a></li>
+  </ul>
+  <p class="eyebrow" style="margin:22px 0 8px;color:var(--terraDeep)">Using your medicines</p>
+  <ul class="guides">
+    <li><a href="/guides/can-i-crush-my-pills.html">Can I crush my pills?</a></li>
+    <li><a href="/guides/taking-medications-with-or-without-food.html">Should I take my medicine with or without food?</a></li>
+    <li><a href="/guides/when-to-take-your-medications.html">Best time of day to take your medications</a></li>
+    <li><a href="/guides/how-to-store-medications-safely.html">How to store medications safely at home</a></li>
+    <li><a href="/guides/how-to-read-a-prescription-label.html">How to read a prescription label</a></li>
+    <li><a href="/guides/generic-vs-brand-name-drugs.html">Generic vs. brand-name drugs: are they the same?</a></li>
+    <li><a href="/guides/do-i-need-to-finish-all-my-antibiotics.html">Do I need to finish all my antibiotics?</a></li>
+    <li><a href="/guides/acetaminophen-safe-dosage.html">Acetaminophen safe dosage: avoiding accidental overdose</a></li>
+    <li><a href="/guides/metformin-what-to-know.html">Metformin: what to know</a></li>
+    <li><a href="/guides/levothyroxine-timing-and-interactions.html">Levothyroxine: timing and interactions</a></li>
+    <li><a href="/guides/blood-pressure-medications-explained.html">Blood pressure medications explained</a></li>
+    <li><a href="/guides/opioid-safety-at-home.html">Opioid safety at home</a></li>
+  </ul>
+  <p class="eyebrow" style="margin:22px 0 8px;color:var(--terraDeep)">Pharmacy, caregiving & reviews</p>
+  <ul class="guides">
+    <li><a href="/guides/questions-to-ask-your-pharmacist.html">Questions to ask your pharmacist before a new prescription</a></li>
+    <li><a href="/guides/what-information-to-bring-to-the-pharmacy.html">What information to bring to the pharmacy</a></li>
+    <li><a href="/guides/medication-review-checklist.html">Medication review checklist</a></li>
+    <li><a href="/guides/understanding-your-medication-list.html">How to build and keep a medication list</a></li>
+    <li><a href="/guides/medication-safety-for-seniors.html">Medication safety for seniors and caregivers</a></li>
+    <li><a href="/guides/how-to-organize-prescriptions-for-elderly-parents.html">How to organize prescriptions for elderly parents</a></li>
+    <li><a href="/guides/prescription-safety-guide-for-caregivers.html">Prescription safety guide for caregivers</a></li>
+    <li><a href="/guides/what-to-do-if-you-miss-a-dose.html">What to do if you miss a dose</a></li>
+    <li><a href="/guides/polypharmacy-in-older-adults.html">Polypharmacy: taking many medicines at once</a></li>
+    <li><a href="/guides/what-is-deprescribing.html">What is deprescribing?</a></li>
+    <li><a href="/guides/traveling-with-medications.html">Traveling with medications: a safety checklist</a></li>
+    <li><a href="/guides/mixing-household-chemicals-safety.html">Which household chemicals should never be mixed?</a></li>
+  </ul>
+  <p style="margin:20px 0 0"><a class="btn btn-primary" href="/app.html" style="display:inline-flex">Or jump straight to the free tool →</a></p>
+</section></div>
+
+<div class="wrap"><section><div class="signup">
+  <p class="eyebrow" style="text-align:center">Free download</p>
+  <h2 style="margin:0 0 6px">Get the Medication Safety Checklist</h2>
+  <p style="color:var(--inkSoft);margin:0 auto;max-width:520px">A one-page printable checklist for you or someone you care for — plus occasional safety tips. No spam.</p>
+  <form action="#" method="post" onsubmit="alert('Connect this form to your email provider (e.g., Mailchimp) to collect signups.');return false;">
+    <input type="email" name="email" placeholder="you@example.com" aria-label="Email address" required />
+    <button class="btn btn-primary" type="submit">Send me the checklist</button>
+  </form>
+  <p style="font-size:12px;color:var(--inkFaint);margin:14px 0 0">We use your email only to send what you requested. See our <a href="/app.html">privacy policy</a>.</p>
+</div></section></div>
+
+<div class="wrap"><section id="partners"><div class="partner">
+  <h2>For pharmacies, senior care &amp; caregiver organizations</h2>
+  <p>Share a trusted, ad-free medication-safety resource with the people you serve — or explore co-branded checklists and partnerships.</p>
+  <a class="btn btn-ghost" href="mailto:hello@themorningmind.com?subject=RxSafeCheck%20Partnership">Contact us about partnering</a>
+</div></section></div>
+
+<div class="wrap"><section style="padding-top:0"><div class="disc"><strong>Important:</strong> RxSafeCheck is an educational tool and does not provide medical advice, diagnosis, or treatment. Always consult a qualified pharmacist or prescriber about your medicines, and call your local emergency number for emergencies. In the U.S., reach Poison Control at 1-800-222-1222.</div></section></div>
+
+<footer class="site"><div class="wrap">
+  <div style="margin-bottom:10px"><a href="/app.html">The Tool</a><a href="#guides">Guides</a><a href="#partners">Partners</a><a href="/app.html">Policies &amp; Privacy</a><a href="https://themorningmind.com">Morning Mind LLC</a></div>
+  © 2026 Morning Mind LLC. All rights reserved. RxSafeCheck&trade; and What's Safe Together?&trade; are trademarks of Morning Mind LLC, Cedar Park, Texas. Educational only — not medical advice.
+</div></footer>
+</body>
+</html>
