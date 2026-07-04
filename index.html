@@ -1703,6 +1703,16 @@ function Dashboard({ meds, symptoms, findings, score, go }) {
         </button>
       </div>
 
+      {/* Self-Management Guide — easy to find on the landing page */}
+      <button onClick={() => go("guide")} style={{ width: "100%", marginTop: 14, display: "flex", alignItems: "center", gap: 15, textAlign: "left", cursor: "pointer", border: "none", borderRadius: 18, padding: "18px 20px", background: "linear-gradient(120deg,#0E3A36,#1F5B54)", color: "#EAF3F1", boxShadow: "0 18px 40px -22px rgba(14,58,54,0.7)" }}>
+        <span style={{ height: 48, width: 48, borderRadius: 13, background: "rgba(255,255,255,0.14)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><HeartPulse size={26} color="#fff" /></span>
+        <span style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ display: "block", fontFamily: serifH, fontSize: 20, fontWeight: 700, color: "#fff", lineHeight: 1.1 }}>Self-Management Guide</span>
+          <span style={{ display: "block", fontSize: 13, color: "#C7DED9", marginTop: 3 }}>Living with diabetes, high blood pressure, heart, COPD, arthritis, kidney, mood, Parkinson's & more — plain-language plans, trackers & checklists.</span>
+        </span>
+        <ArrowRight size={20} color="#fff" style={{ flexShrink: 0 }} />
+      </button>
+
       {meds.length === 0 ? (
         <div style={{ marginTop: 28, borderRadius: 18, border: `1px solid ${C.line}`, background: "linear-gradient(180deg,#F8EFE1,#F4ECDD)", padding: 22 }}>
           <h2 style={{ fontFamily: serifH, fontSize: 20, fontWeight: 600, color: C.ink, margin: 0 }}>Get started</h2>
@@ -3589,6 +3599,39 @@ const EMERGENCY_SIGNS = [
   ["Little or no urine output", "acute kidney failure, which some drug combinations can trigger"],
 ];
 
+function PoisonControlPanel() {
+  const [what, setWhat] = useState("");
+  const triageUrl = "https://triage.webpoisoncontrol.org/";
+  return (
+    <div style={{ borderRadius: 16, border: "1px solid #C9B7D6", background: "#F4EFF8", padding: "16px 17px", marginBottom: 18 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
+        <span style={{ display: "flex", height: 44, width: 44, borderRadius: 12, background: "#6B4E8E", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><FlaskConical size={22} color="#fff" /></span>
+        <div>
+          <p style={{ margin: 0, fontFamily: serifH, fontSize: 17, color: "#3E2C55" }}>Poison Control — get help now</p>
+          <p style={{ margin: "2px 0 0", fontSize: 12, color: "#5B4A6E" }}>Suspected poisoning, overdose, wrong dose, or chemical exposure. Free &amp; 24/7 in the U.S.</p>
+        </div>
+      </div>
+
+      <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", color: "#6B4E8E", display: "block", marginBottom: 5 }}>What was swallowed or exposed? (optional — to have ready)</label>
+      <input value={what} onChange={e => setWhat(e.target.value)} placeholder="e.g., 'child ate 3 ibuprofen', 'bleach + ammonia fumes'"
+        style={{ width: "100%", boxSizing: "border-box", borderRadius: 10, border: "1px solid #C9B7D6", background: "#fff", padding: "10px 12px", fontSize: 13.5, color: C.ink, outline: "none", marginBottom: 11 }} />
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }} className="pc-grid">
+        <a href="tel:18002221222" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, textDecoration: "none", borderRadius: 11, background: "#6B4E8E", color: "#fff", padding: "12px 14px", fontSize: 13.5, fontWeight: 600 }}>
+          <Phone size={16} /> Call 1-800-222-1222
+        </a>
+        <a href={triageUrl} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, textDecoration: "none", borderRadius: 11, background: "#fff", border: "1px solid #6B4E8E", color: "#4A3568", padding: "12px 14px", fontSize: 13.5, fontWeight: 600 }}>
+          <ArrowRight size={16} /> Open online triage
+        </a>
+      </div>
+
+      <p style={{ margin: "11px 0 0", fontSize: 11, color: "#7A6A8E", lineHeight: 1.5 }}>
+        "Open online triage" takes you to <strong>webPOISONCONTROL</strong> (triage.webpoisoncontrol.org), the official Poison Control web tool — it will ask its own questions and give guidance. This app doesn't provide poison triage itself. If the person is collapsed, seizing, or not breathing, call your local emergency number instead.
+      </p>
+    </div>
+  );
+}
+
 function EmergencyPage({ go }) {
   return (
     <div style={{ maxWidth: 760 }}>
@@ -3605,16 +3648,7 @@ function EmergencyPage({ go }) {
       <EmergencyServices />
 
       {/* Poison Control */}
-      <a href="tel:18002221222" style={{ textDecoration: "none", display: "block", marginBottom: 18 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 13, borderRadius: 16, border: "1px solid #C9B7D6", background: "#F4EFF8", padding: "15px 17px" }}>
-          <span style={{ display: "flex", height: 44, width: 44, borderRadius: 12, background: "#6B4E8E", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><FlaskConical size={22} color="#fff" /></span>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ margin: 0, fontFamily: serifH, fontSize: 17, color: "#3E2C55" }}>Poison Control — 1-800-222-1222</p>
-            <p style={{ margin: "2px 0 0", fontSize: 12.5, color: "#5B4A6E", lineHeight: 1.45 }}>For a suspected poisoning, overdose, or chemical exposure or mixture. Free, 24/7 (U.S.). Tap to call. If someone is collapsed or not breathing, call your local emergency number instead.</p>
-          </div>
-          <Phone size={18} color="#6B4E8E" />
-        </div>
-      </a>
+      <PoisonControlPanel />
 
       <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
         {EMERGENCY_SIGNS.map(([sign, why], i) => (
@@ -3845,6 +3879,172 @@ function ParkinsonGuide({ go }) {
   );
 }
 
+const CONDITIONS = {
+  diabetes: {"name": "Type 2 Diabetes", "icon": "Droplets", "accent": "#B5560A", "what": "Type 2 diabetes means your body has trouble using insulin, so sugar (glucose) builds up in your blood instead of fueling your cells. Over time, high blood sugar can harm your eyes, kidneys, nerves, and heart. The good news: day-to-day choices and medicines can keep it well controlled.", "symptoms": ["Feeling very thirsty or hungry", "Peeing a lot, especially at night", "Blurry vision", "Tiredness", "Cuts or sores that heal slowly", "Tingling or numbness in hands or feet"], "numbers": [["A1C (3-month average)", "Often under 7% (ask your doctor for your goal)"], ["Fasting blood sugar", "Commonly 80–130 mg/dL"], ["After-meal sugar", "Usually under 180 mg/dL 2 hours after eating"], ["Blood pressure", "Often under 130/80"], ["Feet", "Check daily for cuts or sores"]], "meds": [["Metformin", "Usually the first pill; lowers sugar your liver makes. Take with food to ease your stomach."], ["SGLT2 inhibitors (e.g., -flozin)", "Help kidneys remove sugar; also protect heart and kidneys. Drink enough water."], ["GLP-1 agonists (e.g., -tide)", "Injections or pills that lower sugar and appetite. Start low to avoid nausea."], ["Sulfonylureas / insulin", "Can lower sugar strongly — know the signs of low sugar (shaky, sweaty, confused)."]], "adherence": ["Take medicines at the same times daily", "Never skip insulin doses without asking first", "Keep fast-acting sugar (juice, tablets) nearby for lows", "Don't stop a medicine because you 'feel fine'"], "lifestyle": ["Fill half your plate with vegetables", "Choose water over sugary drinks", "Move for 30 minutes most days (even walking)", "Aim for steady, modest weight loss if advised", "Get enough sleep — poor sleep raises sugar"], "trackers": ["Morning fasting blood sugar", "Any low-sugar episodes", "Steps or minutes active", "Foot check (any sores?)", "Medication taken?"], "redflags": ["Blood sugar over 300 or very high with vomiting", "Signs of very low sugar that won't come up with juice", "Confusion, trouble staying awake", "Chest pain or trouble breathing", "A foot sore that's red, swollen, or won't heal"], "prep": ["Bring your glucose log or meter", "List all medicines and doses", "Note any low-sugar episodes", "Write down your questions", "Bring your blood pressure readings"], "questions": ["What's my A1C goal?", "Which medicine is best for my heart and kidneys?", "How do I treat a low?", "Should I check my sugar more often?", "Do I need to see an eye doctor or foot specialist?"], "caregiver": ["Learn the signs of high and low sugar", "Know where fast sugar and glucagon are kept", "Help keep a simple medicine and sugar log", "Encourage movement together — a daily walk counts"]},
+  hypertension: {"name": "High Blood Pressure", "icon": "Activity", "accent": "#B4332B", "what": "Blood pressure is the force of blood pushing on your artery walls. When it stays high, it quietly strains your heart, brain, and kidneys — which is why it's called a 'silent' condition. Most people feel fine, so tracking the numbers is how you stay ahead of it.", "symptoms": ["Usually none — that's why it's silent", "Sometimes headaches or dizziness when very high", "Rarely, nosebleeds or vision changes"], "numbers": [["Blood pressure goal", "Often under 130/80 (ask your doctor)"], ["Top number (systolic)", "The pressure when the heart beats"], ["Bottom number (diastolic)", "The pressure between beats"], ["Home readings", "Take at the same time, seated, arm supported"]], "meds": [["ACE inhibitors / ARBs (-pril, -sartan)", "Relax blood vessels; also protect kidneys. A dry cough can happen with -prils."], ["Calcium channel blockers (-dipine)", "Relax vessels; may cause ankle swelling."], ["Diuretics ('water pills')", "Remove extra fluid and salt. Take in the morning to avoid night bathroom trips."], ["Beta blockers (-olol)", "Slow the heart; don't stop suddenly."]], "adherence": ["Take at the same time every day", "Don't stop when readings look good — that's the medicine working", "Use a pill organizer or phone reminder", "Refill before you run out"], "lifestyle": ["Cut back on salt (watch canned and packaged foods)", "Move most days — even brisk walking helps", "Limit alcohol", "Manage stress with rest and breathing", "Lose a little weight if advised"], "trackers": ["Morning blood pressure", "Evening blood pressure", "Salt/sodium awareness", "Medication taken?", "Any dizziness?"], "redflags": ["Reading of 180/120 or higher", "Chest pain or trouble breathing", "Sudden weakness, slurred speech, face droop (stroke signs)", "Severe headache with vision changes", "Fainting"], "prep": ["Bring your home blood pressure log", "List medicines and doses", "Note any side effects", "Write your questions down"], "questions": ["What's my blood pressure goal?", "Which readings should worry me?", "Are my medicines causing side effects?", "How much salt is okay?", "Should I check at home more often?"], "caregiver": ["Help take and record home readings", "Watch for stroke signs (F.A.S.T.)", "Support low-salt cooking", "Remind about refills and doses"]},
+  heart: {"name": "Heart Disease / Heart Failure", "icon": "Heart", "accent": "#B4332B", "what": "Heart disease covers problems with the heart's blood vessels or pumping. In heart failure, the heart doesn't pump as well as it should, so fluid can back up into the lungs and legs. Careful daily habits — especially watching weight and salt — keep you steadier and out of the hospital.", "symptoms": ["Shortness of breath, especially lying flat", "Swelling in legs, ankles, or belly", "Sudden weight gain from fluid", "Tiredness or weakness", "Fast or fluttering heartbeat"], "numbers": [["Daily weight", "Same time each morning — sudden gain means fluid"], ["Blood pressure", "Follow your doctor's target"], ["Heart rate", "Note if unusually fast or irregular"], ["Salt intake", "Often limited — ask for your number"], ["Swelling", "Check ankles and belly daily"]], "meds": [["ACE inhibitors / ARBs / ARNI", "Ease the heart's workload."], ["Beta blockers", "Slow and protect the heart; don't stop suddenly."], ["Diuretics ('water pills')", "Remove extra fluid; weigh yourself to see them working."], ["SGLT2 inhibitors", "Now used to protect the heart even without diabetes."]], "adherence": ["Take water pills early so you're not up at night", "Never stop heart medicines on your own", "Keep a current medicine list with you", "Ask before using NSAIDs (ibuprofen) — they hold fluid"], "lifestyle": ["Weigh yourself every morning and log it", "Limit salt and watch fluid if told to", "Stay gently active as advised", "Rest when tired, but keep moving daily", "Quit smoking — support is available"], "trackers": ["Morning weight", "Swelling (legs/belly)", "Breathing (harder than usual?)", "Medication taken?", "Salt awareness"], "redflags": ["Weight gain of 3+ lbs in a day or 5 in a week", "Severe shortness of breath", "Chest pain", "Fainting or a racing, irregular heartbeat", "Coughing pink, frothy fluid"], "prep": ["Bring your daily weight log", "List all medicines", "Note swelling or breathing changes", "Bring your questions"], "questions": ["What weight gain should I report?", "How much salt and fluid is safe?", "Which activities are okay?", "Do any of my other medicines affect my heart?", "When should I call versus go to the ER?"], "caregiver": ["Help with the daily weigh-in and log", "Learn the fluid warning signs", "Support low-salt meals", "Keep the medicine list updated for emergencies"]},
+  copd: {"name": "COPD / Chronic Asthma", "icon": "Wind", "accent": "#1F7A6D", "what": "COPD and asthma make it harder to move air in and out of your lungs, so you may feel short of breath or wheezy. Triggers like smoke, cold air, or infections can cause flare-ups. Using inhalers correctly and avoiding triggers keeps your breathing steadier.", "symptoms": ["Shortness of breath", "Wheezing or a whistling sound", "Ongoing cough, sometimes with mucus", "Chest tightness", "Getting winded easily"], "numbers": [["Peak flow (if used)", "How fast you can blow air out"], ["Oxygen level (if you have a monitor)", "Often 92%+ — ask your doctor"], ["Rescue inhaler use", "Needing it often means poor control"], ["Flare-ups", "Count per year"]], "meds": [["Rescue inhaler (albuterol)", "Quick relief for sudden symptoms. Carry it always."], ["Daily controller inhalers (steroid/LABA/LAMA)", "Prevent symptoms — use every day even when fine."], ["Rinse your mouth", "After steroid inhalers, to avoid thrush."], ["Nebulizer or oxygen", "If prescribed, use exactly as directed."]], "adherence": ["Learn correct inhaler technique — ask for a demo", "Use a spacer if provided", "Take controllers daily, not just when short of breath", "Keep a rescue inhaler with you and one that isn't expired"], "lifestyle": ["Avoid smoke and known triggers", "Get flu and pneumonia vaccines", "Stay active within comfort — pulmonary rehab helps", "Practice pursed-lip breathing", "Wash hands to avoid infections"], "trackers": ["Breathing (better/same/worse)", "Rescue inhaler puffs used", "Peak flow or oxygen (if measured)", "Controller inhaler taken?", "Any new mucus color?"], "redflags": ["Rescue inhaler isn't helping", "Lips or fingertips look blue or gray", "Struggling to speak in full sentences", "Confusion or extreme sleepiness", "Mucus turns green/bloody with fever"], "prep": ["Bring all inhalers so technique can be checked", "Note flare-ups and triggers", "List rescue inhaler use", "Bring your questions"], "questions": ["Is my inhaler technique correct?", "Which inhaler is rescue vs. daily?", "Do I have an action plan for flare-ups?", "Should I have oxygen or a nebulizer?", "Which vaccines do I need?"], "caregiver": ["Learn to spot a flare-up early", "Help check inhaler technique", "Keep the home smoke- and trigger-free", "Know when breathing is an emergency"]},
+  arthritis: {"name": "Arthritis / Chronic Pain", "icon": "Bone", "accent": "#94401F", "what": "Arthritis is joint pain and stiffness from wear, inflammation, or both. Chronic pain can wear on mood and sleep too. Gentle movement, pacing, and the right medicines can lower pain and keep you doing what you love.", "symptoms": ["Joint pain or aching", "Stiffness, especially in the morning", "Swelling or warmth in joints", "Less range of motion", "Tiredness with inflammatory types"], "numbers": [["Pain level (0–10)", "Track to see patterns"], ["Morning stiffness", "How long it lasts"], ["Function", "What you can/can't do that day"], ["Flare days", "Count per week"]], "meds": [["Acetaminophen (Tylenol)", "Often first for pain; watch total daily dose for your liver."], ["NSAIDs (ibuprofen, naproxen)", "Ease pain and swelling; can affect stomach, kidneys, blood pressure."], ["DMARDs / biologics", "For inflammatory arthritis; need monitoring and infection awareness."], ["Topical creams", "Rubbed on joints with fewer whole-body effects."]], "adherence": ["Don't exceed acetaminophen limits (check combo products)", "Take NSAIDs with food", "Keep up DMARDs even when you feel good", "Report infections if on biologics"], "lifestyle": ["Keep moving — gentle activity eases stiffness", "Try heat for stiffness, cold for swelling", "Protect joints; pace your tasks", "Maintain a healthy weight to ease joint load", "Prioritize good sleep"], "trackers": ["Pain level (0–10)", "Morning stiffness time", "Activity done", "Medication taken?", "Flare today?"], "redflags": ["A hot, red, very swollen joint (possible infection)", "Fever with joint pain", "Sudden severe pain or inability to move a joint", "Black stools or stomach pain on NSAIDs", "New infection while on a biologic"], "prep": ["Bring a pain and flare log", "List all pain relievers (including OTC)", "Note what helps and what doesn't", "Bring your questions"], "questions": ["What's a safe daily acetaminophen limit for me?", "Are NSAIDs okay with my other medicines?", "Should I see a rheumatologist?", "What exercises are safe?", "How do I handle a flare?"], "caregiver": ["Help with pacing and joint-friendly tasks", "Track pain patterns together", "Watch for medicine side effects", "Encourage gentle daily movement"]},
+  ckd: {"name": "Chronic Kidney Disease", "icon": "Droplets", "accent": "#1F7A6D", "what": "Your kidneys filter waste and extra fluid from your blood. In chronic kidney disease they work less well over time. Protecting them means controlling blood pressure and sugar, and being careful with certain medicines and salt.", "symptoms": ["Often none early on", "Swelling in legs or around eyes", "Tiredness", "Foamy urine or changes in how much you pee", "Poor appetite or nausea (later)"], "numbers": [["eGFR", "Shows kidney function — higher is better"], ["Urine albumin (ACR)", "Protein leaking is a warning sign"], ["Blood pressure", "Often under 130/80"], ["Potassium", "Can rise dangerously — watch salt substitutes"], ["Blood sugar (if diabetic)", "Keep in your target range"]], "meds": [["ACE inhibitors / ARBs", "Protect kidneys and lower blood pressure."], ["SGLT2 inhibitors", "Now used to slow kidney decline."], ["Diuretics", "Manage fluid and blood pressure."], ["Avoid or adjust", "NSAIDs, some contrast dyes, and certain antibiotics need caution."]], "adherence": ["Ask before any new medicine or supplement", "Avoid NSAIDs (ibuprofen, naproxen) unless cleared", "Watch potassium (salt substitutes are high in it)", "Keep blood pressure and sugar controlled"], "lifestyle": ["Limit salt", "Follow any protein or potassium guidance", "Stay hydrated as advised", "Control blood pressure and sugar", "Don't smoke"], "trackers": ["Blood pressure", "Swelling", "Weight", "Medication taken?", "Salt/potassium awareness"], "redflags": ["Very little or no urine", "Severe swelling or sudden shortness of breath", "Confusion or extreme fatigue", "Muscle weakness or irregular heartbeat (high potassium)", "Chest pain"], "prep": ["Bring recent lab results if you have them", "List all medicines and supplements", "Note blood pressure readings", "Bring your questions"], "questions": ["What's my eGFR and what does it mean?", "Which medicines should I avoid?", "How much salt, potassium, and protein is right?", "Do I need to see a kidney specialist?", "How often should labs be checked?"], "caregiver": ["Help track blood pressure and weight", "Learn which medicines to avoid", "Support low-salt meals", "Keep an updated medicine and supplement list"]},
+  mental: {"name": "Depression / Anxiety", "icon": "Brain", "accent": "#5B5BD6", "what": "Depression and anxiety are common, real medical conditions — not a weakness. Depression brings low mood and loss of interest; anxiety brings ongoing worry or fear. Both are very treatable with support, healthy routines, and often medicine or therapy.", "symptoms": ["Feeling down, empty, or hopeless", "Losing interest in things you enjoyed", "Trouble sleeping or sleeping too much", "Constant worry, restlessness, or dread", "Trouble concentrating", "Changes in appetite or energy"], "numbers": [["Mood check (0–10)", "Track daily to see patterns"], ["Sleep", "Hours and quality"], ["Anxiety level", "Note triggers"], ["Therapy/med routine", "Kept up?"]], "meds": [["SSRIs / SNRIs", "Common first choices; can take 4–6 weeks to fully help."], ["Give it time", "Don't stop early if it feels slow — talk to your prescriber."], ["Don't stop suddenly", "Stopping abruptly can cause withdrawal; taper with guidance."], ["Watch interactions", "Tell your doctor about all medicines and supplements (including St. John's Wort)."]], "adherence": ["Take at the same time daily", "Expect a few weeks before full effect", "Report side effects rather than quitting", "Never stop abruptly — ask about tapering"], "lifestyle": ["Keep a regular sleep schedule", "Move your body — even a short walk lifts mood", "Stay connected to people you trust", "Limit alcohol", "Consider talk therapy alongside medicine"], "trackers": ["Mood (0–10)", "Sleep hours", "Anxiety level", "Medication taken?", "Did I connect with someone?"], "redflags": ["Thoughts of harming yourself or that life isn't worth living", "Feeling unable to keep yourself safe", "Not eating, drinking, or getting out of bed", "Severe panic that won't settle", "Hearing or seeing things others don't"], "prep": ["Note your mood and sleep patterns", "List medicines and any side effects", "Write down what's been hardest", "Bring your questions"], "questions": ["How long until this medicine helps?", "What side effects should I expect?", "Would therapy help too?", "How do I stop safely if needed?", "What should I do on a very bad day?"], "caregiver": ["Listen without judging or fixing", "Take any talk of suicide seriously — get help right away", "Help keep routines and appointments", "Encourage treatment and connection"], "crisis": true},
+  obesity: {"name": "Obesity / Metabolic Syndrome", "icon": "Activity", "accent": "#B5560A", "what": "Metabolic syndrome is a cluster — extra belly weight, higher blood sugar, blood pressure, and cholesterol — that together raise the risk of heart disease and diabetes. Small, steady changes and, for some, medicine can meaningfully lower that risk.", "symptoms": ["Often no obvious symptoms", "Extra weight around the middle", "Higher blood pressure or sugar readings", "Feeling tired or short of breath with effort"], "numbers": [["Waist size", "A key marker of belly fat"], ["Blood pressure", "Often under 130/80"], ["Fasting blood sugar / A1C", "Watch for prediabetes"], ["Cholesterol", "Know your LDL and triglycerides"], ["Weight trend", "Slow, steady change beats crash diets"]], "meds": [["GLP-1 / GIP medicines (-tide)", "Lower appetite and weight; start low to ease nausea."], ["Blood pressure and cholesterol medicines", "Treat the other parts of the cluster."], ["Metformin", "Sometimes used for blood sugar and weight."], ["Take as directed", "These work best alongside food and activity changes."]], "adherence": ["Pair medicines with realistic food and movement goals", "Start weight medicines slowly to reduce nausea", "Keep blood pressure and cholesterol medicines going", "Track progress by habits, not just the scale"], "lifestyle": ["Build meals around vegetables, protein, and fiber", "Cut sugary drinks", "Aim for 150 minutes of activity a week", "Prioritize sleep and stress control", "Set small, steady goals"], "trackers": ["Weight (weekly)", "Activity minutes", "Sugary drinks avoided", "Blood pressure", "Medication taken?"], "redflags": ["Chest pain or shortness of breath with activity", "Very high blood pressure or sugar readings", "Severe or persistent vomiting on weight medicine", "Signs of gallbladder trouble (upper-right belly pain)", "Fainting"], "prep": ["Bring weight, blood pressure, and any lab numbers", "List all medicines", "Note your eating and activity patterns", "Bring your questions"], "questions": ["Is a weight medicine right for me?", "What are healthy targets for me?", "How do I manage side effects?", "Should my cholesterol or sugar be treated too?", "What realistic goal should I start with?"], "caregiver": ["Support healthy meals for the whole household", "Be an activity partner", "Encourage progress by habits, not just weight", "Help track the numbers"]},
+  dementia: {"name": "Dementia / Alzheimer's", "icon": "Brain", "accent": "#5B5BD6", "what": "Dementia is a gradual decline in memory and thinking that affects daily life; Alzheimer's is the most common cause. It affects the whole family. Routines, safety steps, and steady support help the person live as well as possible for as long as possible.", "symptoms": ["Memory loss that disrupts daily life", "Trouble with words, names, or following steps", "Getting confused about time or place", "Misplacing things or getting lost", "Changes in mood, judgment, or personality"], "numbers": [["Function", "What they can still do safely"], ["Weight", "Watch for unintended loss"], ["Sleep", "Note day/night reversal"], ["Behavior changes", "Track triggers and timing"]], "meds": [["Cholinesterase inhibitors (donepezil, rivastigmine)", "May help symptoms for a time."], ["Memantine", "Sometimes added in moderate–severe stages."], ["Newer infusions", "Some newer treatments exist — ask a specialist if appropriate."], ["Simplify the routine", "Use a pill organizer and set reminders; a caregiver often manages doses."]], "adherence": ["Use a locked pill organizer or blister pack", "Set alarms and supervise doses", "Keep a simple, current medicine list", "Watch for medicines that worsen confusion (some 'anticholinergics')"], "lifestyle": ["Keep steady daily routines", "Make the home safe (lighting, remove trip hazards, secure exits)", "Stay socially and mentally engaged", "Support good sleep, food, and hydration", "Plan ahead for care and legal decisions"], "trackers": ["Mood / behavior", "Sleep", "Eating and drinking", "Medication given?", "Any new confusion?"], "redflags": ["Sudden, sharp change in confusion (could be infection or medicine)", "Wandering or getting lost", "Not eating or drinking", "Aggression that risks safety", "Falls or injuries"], "prep": ["Bring a symptom and behavior log", "List all medicines (including OTC and supplements)", "Note what's changed since last visit", "Bring questions and a support person"], "questions": ["Could any medicine be worsening confusion?", "What stage are we in and what's next?", "How do we keep the home safe?", "What support and respite exists for caregivers?", "Should we plan care and legal decisions now?"], "caregiver": ["Keep routines calm and consistent", "Simplify choices and use short, kind reminders", "Take breaks — respite care is not failing", "Watch for sudden confusion (often infection)", "Join a caregiver support group"], "caregiverFirst": true},
+  parkinsons: {"name": "Parkinson's Disease", "icon": "PersonStanding", "accent": "#1F7A6D", "what": "Parkinson's affects the brain cells that control movement, causing tremor, stiffness, and slowness. It can also bring non-movement symptoms like sleep or mood changes. Medicine timing and daily movement make a real difference in how you feel.", "symptoms": ["Tremor, often in a hand at rest", "Stiffness or rigidity", "Slowness of movement", "Balance problems or shuffling walk", "Smaller handwriting, softer voice", "Sleep, mood, or constipation changes"], "numbers": [["'On/off' time", "When medicine is working vs. wearing off"], ["Falls", "Count and note causes"], ["Movement", "Note stiffness and slowness patterns"], ["Blood pressure", "Watch for drops when standing"]], "meds": [["Carbidopa/levodopa", "The main medicine — timing is everything. Take on schedule."], ["Take before protein meals", "Protein can blunt levodopa; ask about spacing."], ["Dopamine agonists", "Can cause sleepiness or impulse-control issues — report these."], ["MAO-B / COMT inhibitors", "Extend levodopa; watch for interactions (tell every doctor)."]], "adherence": ["Take levodopa exactly on time — set alarms", "Separate doses from high-protein meals", "Don't stop Parkinson's medicines suddenly", "Tell every prescriber (some drugs badly interact)"], "lifestyle": ["Move daily — walking, stretching, balance work", "Consider physical, occupational, or speech therapy", "Make the home fall-safe", "Eat fiber and fluids for constipation", "Watch for dizziness when standing up"], "trackers": ["'On/off' times", "Tremor/stiffness level", "Falls or near-falls", "Medication taken on time?", "Mood/sleep"], "redflags": ["A fall with injury or hitting the head", "Sudden confusion or hallucinations", "New compulsive behaviors (gambling, spending)", "Dizziness or fainting on standing", "High fever with stiffness (rare but urgent)"], "prep": ["Bring an 'on/off' and medicine-timing log", "List all medicines and exact times", "Note falls and non-movement symptoms", "Bring your questions"], "questions": ["Is my medicine timing right?", "How do I handle 'off' periods?", "Could any drug interact with my Parkinson's medicines?", "Would therapy (PT/OT/speech) help?", "How do I lower my fall risk?"], "caregiver": ["Help keep medicines exactly on schedule", "Make the home fall-safe", "Watch for new compulsive behaviors and report them", "Support movement and therapy routines"]}
+};
+
+
+// ---- Self-Management Guide (interactive) -----------------------------------
+const GUIDE_ICON = { Droplets, Activity, Heart, Wind, Bone, Brain, PersonStanding };
+const NEEDS = [
+  ["understand", "Understand my condition", BookOpen],
+  ["meds", "Manage my medications", Pill],
+  ["track", "Track symptoms & key numbers", Activity],
+  ["visit", "Prepare for a doctor visit", ClipboardList],
+  ["redflags", "Warning signs & red flags", AlertTriangle],
+  ["lifestyle", "Build a lifestyle plan", Sparkles],
+  ["caregiver", "Get caregiver support", HeartPulse],
+];
+
+function GuideTracker({ items, accent }) {
+  const [checks, setChecks] = useState({});
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      {items.map((it, i) => {
+        const on = checks[i];
+        return (
+          <button key={i} onClick={() => setChecks(c => ({ ...c, [i]: !c[i] }))}
+            style={{ display: "flex", alignItems: "center", gap: 11, textAlign: "left", cursor: "pointer", border: `1px solid ${on ? accent : C.line}`, background: on ? accent + "12" : "#fff", borderRadius: 11, padding: "11px 13px" }}>
+            <span style={{ height: 20, width: 20, borderRadius: 6, border: `2px solid ${on ? accent : C.inkFaint}`, background: on ? accent : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{on && <Check size={13} color="#fff" />}</span>
+            <span style={{ fontSize: 13.5, color: C.ink }}>{it}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function printGuide(c) {
+  const w = window.open("", "_blank"); if (!w) return;
+  const li = a => a.map(x => "<li>" + (Array.isArray(x) ? "<strong>" + x[0] + ":</strong> " + x[1] : x) + "</li>").join("");
+  w.document.write(
+    "<html><head><title>" + c.name + " — One-Page Guide</title><style>body{font-family:Georgia,serif;max-width:760px;margin:32px auto;color:#2B231C;line-height:1.5}h1{color:#0E3A36}h2{border-bottom:1px solid #ccc;padding-bottom:4px;margin-top:22px;font-size:16px}ul{margin:6px 0}li{margin:3px 0;font-size:13px}small{color:#666}</style></head><body>" +
+    "<h1>" + c.name + " — Self-Management Guide</h1>" +
+    "<p>" + c.what + "</p>" +
+    "<h2>Common symptoms</h2><ul>" + li(c.symptoms) + "</ul>" +
+    "<h2>Key numbers to track</h2><ul>" + li(c.numbers) + "</ul>" +
+    "<h2>Medications & adherence</h2><ul>" + li(c.meds) + li(c.adherence) + "</ul>" +
+    "<h2>Lifestyle & self-management</h2><ul>" + li(c.lifestyle) + "</ul>" +
+    "<h2>Red flags — seek help</h2><ul>" + li(c.redflags) + "</ul>" +
+    "<h2>Prepare for your visit</h2><ul>" + li(c.prep) + "</ul>" +
+    "<h2>Questions to ask</h2><ul>" + li(c.questions) + "</ul>" +
+    "<h2>Caregiver tips</h2><ul>" + li(c.caregiver) + "</ul>" +
+    "<p><small>Educational only — not medical advice. For personal decisions contact your healthcare provider; for emergencies call your local emergency number.</small></p>" +
+    "</body></html>");
+  w.document.close(); w.focus(); setTimeout(() => w.print(), 300);
+}
+
+function SelfCareGuide({ go }) {
+  const [cond, setCond] = useState(null);
+  const [need, setNeed] = useState(null);
+  const c = cond ? CONDITIONS[cond] : null;
+  const Section = ({ title, children }) => (<div style={{ ...card, marginBottom: 14 }}><h3 style={{ fontFamily: serifH, fontSize: 16.5, margin: "0 0 10px", color: C.ink }}>{title}</h3>{children}</div>);
+  const Bullets = ({ items }) => (<ul style={{ margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6 }}>{items.map((x, i) => <li key={i} style={{ fontSize: 13.5, color: "#4F4233", lineHeight: 1.55 }}>{Array.isArray(x) ? <><strong style={{ color: C.ink }}>{x[0]}:</strong> {x[1]}</> : x}</li>)}</ul>);
+
+  // Step 1 — choose condition
+  if (!cond) return (
+    <div style={{ maxWidth: 860 }}>
+      <PageHead title="Self-Management Guide" italic={"\u201cPick your condition. Get a plan you can actually use.\u201d"} sub="A friendly, step-by-step guide for living well with common conditions — in plain language, for patients and caregivers. Educational only; it never replaces your healthcare provider." />
+      <div style={{ ...card, marginBottom: 16, background: "#FCF3F1", border: "1px solid #EFC6C1" }}>
+        <p style={{ fontSize: 12.5, color: "#7A2A22", margin: 0, lineHeight: 1.55 }}><AlertTriangle size={13} style={{ verticalAlign: "-2px", marginRight: 5 }} />This tool does not diagnose or replace medical advice. Contact your provider for personal decisions, and call your local emergency number for serious symptoms.</p>
+      </div>
+      <p style={{ ...eyebrow, marginBottom: 10 }}>Which condition do you want help with?</p>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px,1fr))", gap: 12 }}>
+        {Object.keys(CONDITIONS).map(k => { const cc = CONDITIONS[k]; const Ic = GUIDE_ICON[cc.icon] || Pill; return (
+          <button key={k} onClick={() => { setCond(k); setNeed(null); }} style={{ display: "flex", alignItems: "center", gap: 12, textAlign: "left", cursor: "pointer", border: `1px solid ${C.line}`, background: "#fff", borderRadius: 14, padding: "15px 16px" }}>
+            <span style={{ height: 40, width: 40, borderRadius: 11, background: cc.accent + "1A", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Ic size={20} color={cc.accent} /></span>
+            <span style={{ fontFamily: serifH, fontSize: 15.5, color: C.ink, lineHeight: 1.15 }}>{cc.name}</span>
+          </button>
+        ); })}
+      </div>
+    </div>
+  );
+
+  const Ic = GUIDE_ICON[c.icon] || Pill;
+  // Step 2 — choose need
+  if (!need) return (
+    <div style={{ maxWidth: 860 }}>
+      <button onClick={() => setCond(null)} style={{ ...ghostBtn, padding: "7px 13px", fontSize: 12.5, marginBottom: 14 }}>← All conditions</button>
+      <div style={{ display: "flex", alignItems: "center", gap: 13, marginBottom: 6 }}>
+        <span style={{ height: 46, width: 46, borderRadius: 12, background: c.accent + "1A", display: "flex", alignItems: "center", justifyContent: "center" }}><Ic size={24} color={c.accent} /></span>
+        <h1 style={{ fontFamily: serifH, fontSize: 26, margin: 0, color: C.ink }}>{c.name}</h1>
+      </div>
+      <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "0 0 16px" }}>What would you like to do?</p>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px,1fr))", gap: 11 }}>
+        {(c.caregiverFirst ? [...NEEDS].sort((a, b) => (a[0] === "caregiver" ? -1 : 0) - (b[0] === "caregiver" ? -1 : 0)) : NEEDS).map(([id, label, NIc]) => (
+          <button key={id} onClick={() => setNeed(id)} style={{ display: "flex", alignItems: "center", gap: 11, textAlign: "left", cursor: "pointer", border: `1px solid ${C.line}`, background: "#fff", borderRadius: 12, padding: "13px 15px" }}>
+            <NIc size={18} color={c.accent} />
+            <span style={{ fontSize: 14, color: C.ink, fontWeight: 500 }}>{label}</span>
+            <ArrowRight size={15} color={C.inkFaint} style={{ marginLeft: "auto" }} />
+          </button>
+        ))}
+      </div>
+      <div style={{ ...card, marginTop: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+        <span style={{ fontSize: 13, color: C.inkSoft }}>Want it all on one page to print or bring along?</span>
+        <button onClick={() => printGuide(c)} style={{ ...primaryBtn, padding: "8px 14px", fontSize: 13 }}><Printer size={15} /> Printable summary</button>
+      </div>
+    </div>
+  );
+
+  // Step 3 — content per need
+  const back = <button onClick={() => setNeed(null)} style={{ ...ghostBtn, padding: "7px 13px", fontSize: 12.5, marginBottom: 14 }}>← {c.name} menu</button>;
+  const header = (t) => <h2 style={{ fontFamily: serifH, fontSize: 22, margin: "0 0 14px", color: c.accent }}>{t}</h2>;
+  return (
+    <div style={{ maxWidth: 780 }}>
+      {back}
+      {need === "understand" && <>{header("Understanding " + c.name)}
+        <Section title="What it is"><p style={{ fontSize: 14, color: "#4F4233", lineHeight: 1.65, margin: 0 }}>{c.what}</p></Section>
+        <Section title="Common symptoms"><Bullets items={c.symptoms} /></Section>
+        <Section title="Key numbers & health markers"><Bullets items={c.numbers} /></Section>
+      </>}
+      {need === "meds" && <>{header("Managing your medications")}
+        <Section title="Medication categories"><Bullets items={c.meds} /></Section>
+        <Section title="Tips for sticking with them"><Bullets items={c.adherence} /></Section>
+        <div style={{ ...card, background: "#FBF6EC" }}><p style={{ fontSize: 13, color: "#4F4233", margin: 0, lineHeight: 1.6 }}>Add your actual medicines to check them for interactions and see them on the Body Impact Map.</p><button onClick={() => go("meds")} style={{ ...primaryBtn, marginTop: 12, padding: "8px 14px", fontSize: 13 }}>Go to My Medications <ArrowRight size={15} /></button></div>
+      </>}
+      {need === "track" && <>{header("Track symptoms & key numbers")}
+        <Section title="Your key numbers"><Bullets items={c.numbers} /></Section>
+        <div style={{ ...card }}><h3 style={{ fontFamily: serifH, fontSize: 16.5, margin: "0 0 4px", color: C.ink }}>Daily / weekly check-in</h3><p style={{ fontSize: 12, color: C.inkSoft, margin: "0 0 12px" }}>Tap what you've done today. This is a personal checklist — it isn't saved.</p><GuideTracker items={c.trackers} accent={c.accent} /></div>
+      </>}
+      {need === "visit" && <>{header("Prepare for your visit")}
+        <Section title="Bring / do before you go"><GuideTracker items={c.prep} accent={c.accent} /></Section>
+        <Section title="Questions to ask your provider"><Bullets items={c.questions} /></Section>
+        <button onClick={() => printGuide(c)} style={{ ...primaryBtn }}><Printer size={16} /> Print one-page summary</button>
+      </>}
+      {need === "redflags" && <>{header("Warning signs & red flags")}
+        <div style={{ borderRadius: 14, border: "1px solid #EFC6C1", background: "#FCF3F1", padding: "16px 18px", marginBottom: 14 }}>
+          <p style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 600, color: "#7A2A22" }}>Call your provider or seek urgent care for:</p>
+          <ul style={{ margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 7 }}>{c.redflags.map((r, i) => <li key={i} style={{ fontSize: 13.5, color: "#5A1410", lineHeight: 1.5 }}>{r}</li>)}</ul>
+        </div>
+        <div style={{ ...card, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+          <span style={{ fontSize: 13, color: C.inkSoft, flex: 1 }}>For anything sudden or severe, don't wait.</span>
+          <button onClick={() => go("emergency")} style={{ ...primaryBtn, padding: "8px 14px", fontSize: 13, background: "#9A1B14" }}><Siren size={15} /> Emergency page</button>
+        </div>
+        {c.crisis && <div style={{ marginTop: 14, borderRadius: 12, border: "1px solid #C9B7D6", background: "#F4EFF8", padding: "13px 15px" }}><p style={{ fontSize: 12.5, color: "#3E2C55", margin: 0, lineHeight: 1.55 }}>If you're thinking about harming yourself, you deserve support now. In the U.S., call or text <strong>988</strong> (Suicide &amp; Crisis Lifeline), any time. Elsewhere, contact your local emergency number or crisis line.</p></div>}
+      </>}
+      {need === "lifestyle" && <>{header("Build a lifestyle plan")}
+        <Section title="Steps that help"><Bullets items={c.lifestyle} /></Section>
+        <div style={{ ...card }}><h3 style={{ fontFamily: serifH, fontSize: 16.5, margin: "0 0 4px", color: C.ink }}>Turn it into habits</h3><p style={{ fontSize: 12, color: C.inkSoft, margin: "0 0 12px" }}>Pick the ones you'll start with this week.</p><GuideTracker items={c.lifestyle} accent={c.accent} /></div>
+      </>}
+      {need === "caregiver" && <>{header("Caregiver support")}
+        <Section title="Ways to help"><Bullets items={c.caregiver} /></Section>
+        <div style={{ ...card, background: "#FBF6EC" }}><p style={{ fontSize: 13, color: "#4F4233", margin: 0, lineHeight: 1.6 }}>Caring for someone is real work — look after your own rest and support too. You can bring the printable summary to appointments.</p><button onClick={() => printGuide(c)} style={{ ...ghostBtn, marginTop: 12, padding: "8px 14px", fontSize: 13 }}><Printer size={15} /> Printable summary</button></div>
+      </>}
+      <p style={{ marginTop: 14, fontSize: 11.5, color: C.inkFaint, lineHeight: 1.55 }}>Educational only, written in plain language. It does not diagnose or replace medical advice — contact your provider for personal decisions and seek emergency care for serious symptoms.</p>
+    </div>
+  );
+}
+
+
 // ---- Stubs -----------------------------------------------------------------
 const STUBS = {
   plan: { Icon: CalendarCheck, title: "Plan ahead", italic: "\u201cA little preparation makes the next visit easier.\u201d", body: "Before a pharmacy or clinic visit, generate a one-page summary of your medicines, interactions, schedule, suggested labs, and questions to ask — then print it, save it as a PDF, or download it to bring along.", cta: "summary", ctaLabel: "Open Health Summary to export" },
@@ -3873,7 +4073,7 @@ const NAV = [
   ["bodymap", "Body Impact Map", PersonStanding], ["treatment", "Treatment Options", ListChecks], ["trials", "Clinical Trials", FlaskConical], ["food", "Food Interactions", Apple], ["schedule", "Schedule Builder", CalendarClock],
   ["symptom", "Symptom Checker", Stethoscope], ["summary", "Health Summary", Gauge], ["notifications", "Notifications", Bell],
   ["emergency", "Emergency", Siren], ["plan", "Plan ahead", CalendarCheck], ["pharmacist", "AI Pharmacist", MessageCircle],
-  ["news", "Drug Safety News", Newspaper], ["learn", "Learn & FAQ", BookOpen], ["parkinson", "Parkinson's Guide", BookOpen], ["policies", "Policies & Terms", FileText],
+  ["news", "Drug Safety News", Newspaper], ["learn", "Learn & FAQ", BookOpen], ["guide", "Self-Management Guide", HeartPulse], ["parkinson", "Parkinson's Guide", BookOpen], ["policies", "Policies & Terms", FileText],
 ];
 
 // ---- App shell -------------------------------------------------------------
@@ -3906,7 +4106,7 @@ function App() {
         .wst-row:hover { background:#F4EAD8 !important; }
         .hero { display:grid; grid-template-columns:1.1fr 0.9fr; gap:34px; align-items:center; }
         .hero-figure { aspect-ratio:4/3; margin:0; }
-        @media (max-width:760px){ .hero{ grid-template-columns:1fr; } .hero-figure{ aspect-ratio:16/10; order:-1; } .pill-grid{ grid-template-columns:1fr !important; } .emerg-grid{ grid-template-columns:1fr 1fr !important; } .emerg-grid > button:first-child{ grid-column:1 / -1; } }
+        @media (max-width:760px){ .hero{ grid-template-columns:1fr; } .hero-figure{ aspect-ratio:16/10; order:-1; } .pill-grid{ grid-template-columns:1fr !important; } .emerg-grid{ grid-template-columns:1fr 1fr !important; } .emerg-grid > button:first-child{ grid-column:1 / -1; } .pc-grid{ grid-template-columns:1fr !important; } }
         .shell { display:grid; grid-template-columns:268px 1fr; min-height:100vh; }
         .sidebar { position:sticky; top:0; height:100vh; overflow-y:auto; border-right:1px solid ${C.line}; background:${C.sidebar}; padding:22px 16px; }
         .topbar { display:none; }
@@ -3971,6 +4171,7 @@ function App() {
             {page === "summary" && <HealthSummary meds={meds} keys={keys} findings={findings} score={score} symptoms={symptoms} />}
             {page === "notifications" && <Notifications notify={notify} setNotify={setNotify} account={account} setAccount={setAccount} />}
             {page === "news" && <DrugSafetyNews meds={meds} keys={keys} findings={findings} score={score} go={go} />}
+            {page === "guide" && <SelfCareGuide go={go} />}
             {page === "parkinson" && <ParkinsonGuide go={go} />}
             {page === "policies" && <PoliciesPage />}
             {STUBS[page] && <Stub id={page} go={go} />}
