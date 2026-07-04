@@ -44,7 +44,7 @@ import {
   Utensils, GlassWater, Calendar, Download, Printer, Check, CheckCircle2, TrendingUp,
   ClipboardList, FileText, Phone, Mail, Trash2, Pencil, ScanLine, Upload, ListChecks,
   Gauge, HeartPulse, Sparkles, ChevronRight, Star, Droplet,
-  RefreshCw, Bookmark, Share2, Globe, MapPin, ChevronUp, Navigation,
+  RefreshCw, Bookmark, Share2, Globe, MapPin, ChevronUp, Navigation, Flame,
 } from "lucide-react";
 
 /* ============================================================================
@@ -68,7 +68,7 @@ const C = {
   sidebar:  "#ECE2D0",
   ink:      "#2B231C",
   inkSoft:  "#6E6253",
-  inkFaint: "#998C79",
+  inkFaint: "#726753",
   line:     "#E1D6C2",
   terra:    "#B5532E",
   terraDeep:"#94401F",
@@ -1696,7 +1696,7 @@ function Dashboard({ meds, symptoms, findings, score, go }) {
 
       {/* Emergency quick-access — large, reachable in a hurry */}
       <div style={{ marginTop: 22, display: "grid", gridTemplateColumns: "1.4fr 1fr 1fr", gap: 12 }} className="emerg-grid">
-        <button onClick={() => go("emergency")} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, border: "none", cursor: "pointer", borderRadius: 16, padding: "22px 18px", background: "linear-gradient(180deg,#9A1B14,#7A1410)", color: "#fff", boxShadow: "0 16px 36px -18px rgba(122,20,16,0.6)" }}>
+        <button onClick={() => go("emergency")} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, border: "none", cursor: "pointer", borderRadius: 16, padding: "22px 18px", background: "linear-gradient(180deg,#8A160F,#5E0F0B)", color: "#fff", boxShadow: "0 16px 36px -18px rgba(94,15,11,0.65)" }}>
           <Siren size={30} color="#fff" />
           <span style={{ textAlign: "left" }}><span style={{ display: "block", fontFamily: serifH, fontSize: 22, fontWeight: 700, lineHeight: 1.1 }}>Emergency</span><span style={{ fontSize: 12.5, color: "#FBE2DE" }}>Warning signs & help near me</span></span>
         </button>
@@ -3692,6 +3692,48 @@ function EmergencyPage({ go }) {
 }
 
 // ---- Policies, Terms & Privacy ---------------------------------------------
+function MissionPage({ go }) {
+  const P = ({ children, style }) => <p style={{ fontSize: 14.5, color: "#4F4233", lineHeight: 1.7, margin: "0 0 14px", ...style }}>{children}</p>;
+  return (
+    <div style={{ maxWidth: 760 }}>
+      <PageHead title="Mission & Vision" italic={"\u201cSafer healthcare happens when we work as one team.\u201d"} sub="Why RxSafeCheck exists, and the belief behind What's Safe Together?" />
+
+      <div style={{ ...card, marginBottom: 16 }}>
+        <h2 style={{ fontFamily: serifH, fontSize: 19, color: C.terraDeep, margin: "0 0 10px" }}>Our mission</h2>
+        <P>Our mission is to help patients, caregivers, and families better understand medication safety, treatment complexity, and the questions they should ask their healthcare teams.</P>
+        <P>Through <strong>RxSafeCheck\u2122</strong>, we provide clear, accessible information that supports safer conversations between patients, physicians, pharmacists, specialists, and caregivers. We do not replace medical advice, diagnose conditions, or recommend treatments. Instead, we help people become better prepared, better informed, and better equipped to participate in meaningful discussions about their care.</P>
+      </div>
+
+      <div style={{ ...card, marginBottom: 16 }}>
+        <h2 style={{ fontFamily: serifH, fontSize: 19, color: C.terraDeep, margin: "0 0 10px" }}>Our vision</h2>
+        <P style={{ margin: 0 }}>A healthcare world where every patient has the knowledge, confidence, and support needed to ask the right questions about medications, diagnoses, treatment changes, side effects, drug interactions, and risks.</P>
+      </div>
+
+      <div style={{ borderRadius: 16, border: "1px solid #C9B7D6", background: "#F4EFF8", padding: "20px 22px", marginBottom: 16 }}>
+        <h2 style={{ fontFamily: serifH, fontSize: 19, color: "#3E2C55", margin: "0 0 10px" }}>What's Safe Together?</h2>
+        <P style={{ color: "#3E2C55" }}>Safe Together is the belief that safer healthcare happens when patients, caregivers, and medical teams communicate openly and work as one team.</P>
+        <P style={{ color: "#3E2C55", margin: 0 }}>Because safety is not something patients should have to figure out alone. Safety happens when patients, caregivers, and medical teams are informed, prepared, and <strong>safe together</strong>.</P>
+      </div>
+
+      <div style={{ ...card, marginBottom: 16 }}>
+        <h2 style={{ fontFamily: serifH, fontSize: 19, color: C.terraDeep, margin: "0 0 10px" }}>Why we built this</h2>
+        <P>RxSafeCheck was built by a physician and a biomedical scientist whose personal experience shaped this mission. After losing his father to prostate cancer following more than nine years of changing diagnoses, new medications, new treatments, emergency room visits, and complex medication interactions, he saw firsthand how difficult it can be for families to navigate modern healthcare.</P>
+        <P>His father was fortunate to have a son with experience in public health, physiology, and access to a large network of healthcare providers and world experts. Most patients and families do not have that same support.</P>
+        <P style={{ fontFamily: serifH, fontStyle: "italic", color: C.terraDeep, fontSize: 15.5 }}>That is why RxSafeCheck\u2122 was created.</P>
+        <P>This platform is not designed to tell patients what treatment to choose. It is designed to help patients and caregivers understand <strong>what questions to ask</strong> their doctors, pharmacists, nurses, specialists, and other healthcare providers.</P>
+        <P style={{ margin: 0 }}>RxSafeCheck\u2122 is a <strong>conversation tool \u2014 not a diagnosis or treatment tool</strong>. It helps identify important topics worth discussing, including medication interactions, side effects, treatment changes, chronic drug exposure, acute reactions, and risks that may require closer attention.</P>
+      </div>
+
+      <div style={{ ...card, display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+        <span style={{ fontSize: 13.5, color: C.inkSoft, flex: 1, minWidth: 200 }}>Ready to prepare for your next conversation with your care team?</span>
+        <button onClick={() => go("meds")} style={{ ...primaryBtn, padding: "9px 15px", fontSize: 13 }}>Add my medications <ArrowRight size={15} /></button>
+      </div>
+
+      <p style={{ marginTop: 16, fontSize: 11.5, color: C.inkFaint, lineHeight: 1.55 }}>RxSafeCheck\u2122 and What's Safe Together?\u2122 are trademarks of Morning Mind LLC, Cedar Park, Texas. Educational only \u2014 not medical advice, diagnosis, or treatment.</p>
+    </div>
+  );
+}
+
 function PoliciesPage() {
   const Sec = ({ title, id, children }) => (
     <section id={id} style={{ ...card, marginBottom: 14, scrollMarginTop: 16 }}>
@@ -3898,12 +3940,34 @@ const CONDITIONS = {
   mental: {"name": "Depression / Anxiety", "icon": "Brain", "accent": "#5B5BD6", "what": "Depression and anxiety are common, real medical conditions — not a weakness. Depression brings low mood and loss of interest; anxiety brings ongoing worry or fear. Both are very treatable with support, healthy routines, and often medicine or therapy.", "symptoms": ["Feeling down, empty, or hopeless", "Losing interest in things you enjoyed", "Trouble sleeping or sleeping too much", "Constant worry, restlessness, or dread", "Trouble concentrating", "Changes in appetite or energy"], "numbers": [["Mood check (0–10)", "Track daily to see patterns"], ["Sleep", "Hours and quality"], ["Anxiety level", "Note triggers"], ["Therapy/med routine", "Kept up?"]], "meds": [["SSRIs / SNRIs", "Common first choices; can take 4–6 weeks to fully help."], ["Give it time", "Don't stop early if it feels slow — talk to your prescriber."], ["Don't stop suddenly", "Stopping abruptly can cause withdrawal; taper with guidance."], ["Watch interactions", "Tell your doctor about all medicines and supplements (including St. John's Wort)."]], "adherence": ["Take at the same time daily", "Expect a few weeks before full effect", "Report side effects rather than quitting", "Never stop abruptly — ask about tapering"], "lifestyle": ["Keep a regular sleep schedule", "Move your body — even a short walk lifts mood", "Stay connected to people you trust", "Limit alcohol", "Consider talk therapy alongside medicine"], "trackers": ["Mood (0–10)", "Sleep hours", "Anxiety level", "Medication taken?", "Did I connect with someone?"], "redflags": ["Thoughts of harming yourself or that life isn't worth living", "Feeling unable to keep yourself safe", "Not eating, drinking, or getting out of bed", "Severe panic that won't settle", "Hearing or seeing things others don't"], "prep": ["Note your mood and sleep patterns", "List medicines and any side effects", "Write down what's been hardest", "Bring your questions"], "questions": ["How long until this medicine helps?", "What side effects should I expect?", "Would therapy help too?", "How do I stop safely if needed?", "What should I do on a very bad day?"], "caregiver": ["Listen without judging or fixing", "Take any talk of suicide seriously — get help right away", "Help keep routines and appointments", "Encourage treatment and connection"], "crisis": true},
   obesity: {"name": "Obesity / Metabolic Syndrome", "icon": "Activity", "accent": "#B5560A", "what": "Metabolic syndrome is a cluster — extra belly weight, higher blood sugar, blood pressure, and cholesterol — that together raise the risk of heart disease and diabetes. Small, steady changes and, for some, medicine can meaningfully lower that risk.", "symptoms": ["Often no obvious symptoms", "Extra weight around the middle", "Higher blood pressure or sugar readings", "Feeling tired or short of breath with effort"], "numbers": [["Waist size", "A key marker of belly fat"], ["Blood pressure", "Often under 130/80"], ["Fasting blood sugar / A1C", "Watch for prediabetes"], ["Cholesterol", "Know your LDL and triglycerides"], ["Weight trend", "Slow, steady change beats crash diets"]], "meds": [["GLP-1 / GIP medicines (-tide)", "Lower appetite and weight; start low to ease nausea."], ["Blood pressure and cholesterol medicines", "Treat the other parts of the cluster."], ["Metformin", "Sometimes used for blood sugar and weight."], ["Take as directed", "These work best alongside food and activity changes."]], "adherence": ["Pair medicines with realistic food and movement goals", "Start weight medicines slowly to reduce nausea", "Keep blood pressure and cholesterol medicines going", "Track progress by habits, not just the scale"], "lifestyle": ["Build meals around vegetables, protein, and fiber", "Cut sugary drinks", "Aim for 150 minutes of activity a week", "Prioritize sleep and stress control", "Set small, steady goals"], "trackers": ["Weight (weekly)", "Activity minutes", "Sugary drinks avoided", "Blood pressure", "Medication taken?"], "redflags": ["Chest pain or shortness of breath with activity", "Very high blood pressure or sugar readings", "Severe or persistent vomiting on weight medicine", "Signs of gallbladder trouble (upper-right belly pain)", "Fainting"], "prep": ["Bring weight, blood pressure, and any lab numbers", "List all medicines", "Note your eating and activity patterns", "Bring your questions"], "questions": ["Is a weight medicine right for me?", "What are healthy targets for me?", "How do I manage side effects?", "Should my cholesterol or sugar be treated too?", "What realistic goal should I start with?"], "caregiver": ["Support healthy meals for the whole household", "Be an activity partner", "Encourage progress by habits, not just weight", "Help track the numbers"]},
   dementia: {"name": "Dementia / Alzheimer's", "icon": "Brain", "accent": "#5B5BD6", "what": "Dementia is a gradual decline in memory and thinking that affects daily life; Alzheimer's is the most common cause. It affects the whole family. Routines, safety steps, and steady support help the person live as well as possible for as long as possible.", "symptoms": ["Memory loss that disrupts daily life", "Trouble with words, names, or following steps", "Getting confused about time or place", "Misplacing things or getting lost", "Changes in mood, judgment, or personality"], "numbers": [["Function", "What they can still do safely"], ["Weight", "Watch for unintended loss"], ["Sleep", "Note day/night reversal"], ["Behavior changes", "Track triggers and timing"]], "meds": [["Cholinesterase inhibitors (donepezil, rivastigmine)", "May help symptoms for a time."], ["Memantine", "Sometimes added in moderate–severe stages."], ["Newer infusions", "Some newer treatments exist — ask a specialist if appropriate."], ["Simplify the routine", "Use a pill organizer and set reminders; a caregiver often manages doses."]], "adherence": ["Use a locked pill organizer or blister pack", "Set alarms and supervise doses", "Keep a simple, current medicine list", "Watch for medicines that worsen confusion (some 'anticholinergics')"], "lifestyle": ["Keep steady daily routines", "Make the home safe (lighting, remove trip hazards, secure exits)", "Stay socially and mentally engaged", "Support good sleep, food, and hydration", "Plan ahead for care and legal decisions"], "trackers": ["Mood / behavior", "Sleep", "Eating and drinking", "Medication given?", "Any new confusion?"], "redflags": ["Sudden, sharp change in confusion (could be infection or medicine)", "Wandering or getting lost", "Not eating or drinking", "Aggression that risks safety", "Falls or injuries"], "prep": ["Bring a symptom and behavior log", "List all medicines (including OTC and supplements)", "Note what's changed since last visit", "Bring questions and a support person"], "questions": ["Could any medicine be worsening confusion?", "What stage are we in and what's next?", "How do we keep the home safe?", "What support and respite exists for caregivers?", "Should we plan care and legal decisions now?"], "caregiver": ["Keep routines calm and consistent", "Simplify choices and use short, kind reminders", "Take breaks — respite care is not failing", "Watch for sudden confusion (often infection)", "Join a caregiver support group"], "caregiverFirst": true},
-  parkinsons: {"name": "Parkinson's Disease", "icon": "PersonStanding", "accent": "#1F7A6D", "what": "Parkinson's affects the brain cells that control movement, causing tremor, stiffness, and slowness. It can also bring non-movement symptoms like sleep or mood changes. Medicine timing and daily movement make a real difference in how you feel.", "symptoms": ["Tremor, often in a hand at rest", "Stiffness or rigidity", "Slowness of movement", "Balance problems or shuffling walk", "Smaller handwriting, softer voice", "Sleep, mood, or constipation changes"], "numbers": [["'On/off' time", "When medicine is working vs. wearing off"], ["Falls", "Count and note causes"], ["Movement", "Note stiffness and slowness patterns"], ["Blood pressure", "Watch for drops when standing"]], "meds": [["Carbidopa/levodopa", "The main medicine — timing is everything. Take on schedule."], ["Take before protein meals", "Protein can blunt levodopa; ask about spacing."], ["Dopamine agonists", "Can cause sleepiness or impulse-control issues — report these."], ["MAO-B / COMT inhibitors", "Extend levodopa; watch for interactions (tell every doctor)."]], "adherence": ["Take levodopa exactly on time — set alarms", "Separate doses from high-protein meals", "Don't stop Parkinson's medicines suddenly", "Tell every prescriber (some drugs badly interact)"], "lifestyle": ["Move daily — walking, stretching, balance work", "Consider physical, occupational, or speech therapy", "Make the home fall-safe", "Eat fiber and fluids for constipation", "Watch for dizziness when standing up"], "trackers": ["'On/off' times", "Tremor/stiffness level", "Falls or near-falls", "Medication taken on time?", "Mood/sleep"], "redflags": ["A fall with injury or hitting the head", "Sudden confusion or hallucinations", "New compulsive behaviors (gambling, spending)", "Dizziness or fainting on standing", "High fever with stiffness (rare but urgent)"], "prep": ["Bring an 'on/off' and medicine-timing log", "List all medicines and exact times", "Note falls and non-movement symptoms", "Bring your questions"], "questions": ["Is my medicine timing right?", "How do I handle 'off' periods?", "Could any drug interact with my Parkinson's medicines?", "Would therapy (PT/OT/speech) help?", "How do I lower my fall risk?"], "caregiver": ["Help keep medicines exactly on schedule", "Make the home fall-safe", "Watch for new compulsive behaviors and report them", "Support movement and therapy routines"]}
+  parkinsons: {"name": "Parkinson's Disease", "icon": "PersonStanding", "accent": "#1F7A6D", "what": "Parkinson's affects the brain cells that control movement, causing tremor, stiffness, and slowness. It can also bring non-movement symptoms like sleep or mood changes. Medicine timing and daily movement make a real difference in how you feel.", "symptoms": ["Tremor, often in a hand at rest", "Stiffness or rigidity", "Slowness of movement", "Balance problems or shuffling walk", "Smaller handwriting, softer voice", "Sleep, mood, or constipation changes"], "numbers": [["'On/off' time", "When medicine is working vs. wearing off"], ["Falls", "Count and note causes"], ["Movement", "Note stiffness and slowness patterns"], ["Blood pressure", "Watch for drops when standing"]], "meds": [["Carbidopa/levodopa", "The main medicine — timing is everything. Take on schedule."], ["Take before protein meals", "Protein can blunt levodopa; ask about spacing."], ["Dopamine agonists", "Can cause sleepiness or impulse-control issues — report these."], ["MAO-B / COMT inhibitors", "Extend levodopa; watch for interactions (tell every doctor)."]], "adherence": ["Take levodopa exactly on time — set alarms", "Separate doses from high-protein meals", "Don't stop Parkinson's medicines suddenly", "Tell every prescriber (some drugs badly interact)"], "lifestyle": ["Move daily — walking, stretching, balance work", "Consider physical, occupational, or speech therapy", "Make the home fall-safe", "Eat fiber and fluids for constipation", "Watch for dizziness when standing up"], "trackers": ["'On/off' times", "Tremor/stiffness level", "Falls or near-falls", "Medication taken on time?", "Mood/sleep"], "redflags": ["A fall with injury or hitting the head", "Sudden confusion or hallucinations", "New compulsive behaviors (gambling, spending)", "Dizziness or fainting on standing", "High fever with stiffness (rare but urgent)"], "prep": ["Bring an 'on/off' and medicine-timing log", "List all medicines and exact times", "Note falls and non-movement symptoms", "Bring your questions"], "questions": ["Is my medicine timing right?", "How do I handle 'off' periods?", "Could any drug interact with my Parkinson's medicines?", "Would therapy (PT/OT/speech) help?", "How do I lower my fall risk?"], "caregiver": ["Help keep medicines exactly on schedule", "Make the home fall-safe", "Watch for new compulsive behaviors and report them", "Support movement and therapy routines"]},
+  asthma: {"name": "Asthma", "icon": "Wind", "accent": "#1F7A6D", "what": "Asthma makes the airways in your lungs tighten and swell, so breathing gets harder during a flare. Triggers like allergens, cold air, smoke, or exercise set it off. With the right daily inhaler and trigger control, most people breathe well and stay active.", "symptoms": ["Wheezing or a whistling sound", "Coughing, often at night or early morning", "Chest tightness", "Shortness of breath", "Getting winded with exercise"], "numbers": [["Peak flow (if used)", "How fast you can blow air out — track your personal best"], ["Rescue inhaler use", "Needing it more than twice a week means poor control"], ["Nighttime symptoms", "Waking from asthma is a warning sign"], ["Flare-ups", "Note triggers and how often"]], "meds": [["Rescue inhaler (albuterol)", "Fast relief for symptoms. Carry it everywhere."], ["Daily controller (inhaled steroid)", "Prevents flares — use every day even when you feel fine."], ["Combination inhalers", "Steroid plus a long-acting opener for tougher asthma."], ["Rinse your mouth", "After steroid inhalers, to avoid thrush."]], "adherence": ["Use your controller daily, not just during flares", "Learn correct inhaler technique — ask for a demo", "Use a spacer if provided", "Keep an unexpired rescue inhaler on hand"], "lifestyle": ["Identify and avoid your triggers", "Get the flu vaccine yearly", "Keep an asthma action plan from your doctor", "Warm up before exercise if it triggers you", "Don't smoke and avoid secondhand smoke"], "trackers": ["Breathing (better/same/worse)", "Rescue inhaler puffs used", "Nighttime waking?", "Controller taken?", "Peak flow (if measured)"], "redflags": ["Rescue inhaler isn't helping or wears off fast", "Lips or fingertips look blue", "Too breathless to speak in full sentences", "Peak flow in your red zone", "Symptoms after a known severe allergen"], "prep": ["Bring all inhalers to check technique", "Note triggers and flare frequency", "List rescue inhaler use", "Bring your questions"], "questions": ["Is my inhaler technique right?", "Do I have an action plan for flares?", "Which is my controller vs. rescue inhaler?", "Should I see an allergist?", "What should I do during a bad attack?"], "caregiver": ["Learn to spot a flare early", "Help check inhaler technique", "Keep the home free of triggers and smoke", "Know when breathing is an emergency"]},
+  cholesterol: {"name": "High Cholesterol", "icon": "Droplet", "accent": "#B5560A", "what": "Cholesterol is a fatty substance in your blood. Too much of the 'bad' kind (LDL) can build up in arteries and raise the risk of heart attack and stroke. It usually has no symptoms, so numbers and daily habits are how you manage it.", "symptoms": ["Usually none — it's silent", "Found through a blood test", "Very high levels can rarely cause fatty skin bumps"], "numbers": [["LDL ('bad')", "Lower is better — ask your doctor for your target"], ["HDL ('good')", "Higher is protective"], ["Triglycerides", "Another blood fat to watch"], ["Total cholesterol", "The overall number"]], "meds": [["Statins", "The main medicine; lowers LDL and heart risk. Report muscle pain."], ["Ezetimibe", "Often added to statins for extra LDL lowering."], ["PCSK9 inhibitors", "Injections for high-risk people or when statins aren't enough."], ["Take consistently", "These work best taken every day as directed."]], "adherence": ["Take statins daily — some work best in the evening", "Don't stop for mild aches without asking", "Report muscle pain or weakness", "Check new medicines against your statin (some interact)"], "lifestyle": ["Eat more fiber, vegetables, and whole grains", "Cut saturated and trans fats", "Move most days", "Lose a little weight if advised", "Don't smoke"], "trackers": ["Medication taken?", "Activity minutes", "Saturated-fat awareness", "Weight (weekly)", "Any muscle aches?"], "redflags": ["Severe muscle pain or weakness on a statin", "Dark, cola-colored urine", "Chest pain or pressure", "Sudden weakness or slurred speech (stroke signs)", "Yellowing of skin or eyes"], "prep": ["Bring recent cholesterol labs", "List all medicines and supplements", "Note any muscle symptoms", "Bring your questions"], "questions": ["What's my LDL target?", "Is my statin dose right?", "Are muscle aches from my medicine?", "Do I need my cholesterol rechecked?", "What foods help most?"], "caregiver": ["Support heart-healthy meals", "Encourage daily movement together", "Watch for muscle side effects", "Help remember daily doses"]},
+  gerd: {"name": "GERD / Acid Reflux", "icon": "Flame", "accent": "#B45309", "what": "GERD is when stomach acid flows back up into the food pipe, causing heartburn and irritation. Occasional reflux is normal; frequent reflux can damage the esophagus over time. Diet, timing, and medicines usually control it well.", "symptoms": ["Burning in the chest (heartburn)", "Sour or bitter taste in the mouth", "Regurgitating food or liquid", "Trouble swallowing", "Chronic cough or hoarseness"], "numbers": [["Symptom frequency", "How many days a week you get heartburn"], ["Trigger foods", "Note which foods set it off"], ["Nighttime symptoms", "Reflux lying down is worth flagging"], ["Weight", "Extra weight worsens reflux"]], "meds": [["Antacids (Tums)", "Fast, short relief for occasional heartburn."], ["H2 blockers (famotidine)", "Reduce acid for several hours."], ["Proton pump inhibitors (PPIs)", "Stronger acid reducers for frequent reflux; use the lowest effective dose."], ["Don't overuse", "Long-term daily acid reducers should be reviewed with your doctor."]], "adherence": ["Take PPIs 30–60 minutes before a meal", "Use the lowest dose that controls symptoms", "Don't stop a PPI abruptly if you've used it long-term", "Tell your doctor if you need it daily for weeks"], "lifestyle": ["Eat smaller meals; don't lie down for 3 hours after", "Raise the head of your bed", "Avoid trigger foods (spicy, fatty, caffeine, alcohol, chocolate)", "Lose a little weight if advised", "Don't smoke"], "trackers": ["Heartburn today?", "Trigger foods eaten", "Nighttime symptoms?", "Medication taken?", "Late meals?"], "redflags": ["Trouble or pain swallowing", "Vomiting blood or black stools", "Unintended weight loss", "Chest pain (rule out the heart first)", "Choking or food sticking"], "prep": ["Note symptom frequency and triggers", "List all medicines (including OTC antacids)", "Mention any swallowing trouble", "Bring your questions"], "questions": ["Do I need an endoscopy?", "How long should I stay on a PPI?", "Which foods should I avoid?", "Could my other medicines worsen reflux?", "When is chest pain an emergency?"], "caregiver": ["Help plan smaller, earlier meals", "Support trigger-food awareness", "Watch for swallowing trouble or weight loss", "Keep the medicine list current"]},
+  hypothyroid: {"name": "Hypothyroidism", "icon": "Activity", "accent": "#5B5BD6", "what": "Your thyroid gland makes hormones that set your body's pace. In hypothyroidism it makes too little, so things slow down — energy, weight, mood, and temperature. A daily hormone pill usually restores normal levels, with periodic blood tests to fine-tune.", "symptoms": ["Tiredness and sluggishness", "Weight gain", "Feeling cold", "Dry skin and hair", "Constipation", "Low mood or foggy thinking"], "numbers": [["TSH", "The main blood test to guide your dose"], ["Free T4", "Sometimes checked alongside TSH"], ["Weight", "Track trends"], ["Energy/mood", "Note patterns between tests"]], "meds": [["Levothyroxine", "The standard hormone replacement. Timing matters — take consistently."], ["Empty stomach", "Usually 30–60 minutes before breakfast, separate from coffee."], ["Separate from minerals", "Calcium and iron block absorption — space by 4 hours."], ["Same brand", "Try to stay on one product; tell your doctor if it changes."]], "adherence": ["Take it the same way every day", "Separate from calcium, iron, and antacids", "Don't switch brand/generic without telling your doctor", "Get TSH rechecked as advised"], "lifestyle": ["Keep a consistent routine for your pill", "Eat a balanced diet", "Stay active to support energy and mood", "Don't take extra iodine without advice", "Manage other conditions that affect thyroid"], "trackers": ["Medication taken (empty stomach)?", "Energy level", "Weight", "Mood", "Constipation?"], "redflags": ["Racing heart, sweating, tremor (dose too high)", "Extreme fatigue, cold, confusion (dose too low)", "Chest pain or palpitations", "Swelling in the neck", "Severe depression"], "prep": ["Bring recent thyroid labs", "Note how you take your pill and when", "List all medicines and supplements", "Bring your questions"], "questions": ["What's my TSH and target?", "Is my dose right?", "How should I time my pill?", "Which supplements interfere?", "How often should I be retested?"], "caregiver": ["Help keep a consistent pill routine", "Support timing away from coffee and minerals", "Watch for over- or under-treatment signs", "Track energy and mood between tests"]},
+  osteoporosis: {"name": "Osteoporosis", "icon": "Bone", "accent": "#94401F", "what": "Osteoporosis means bones become thinner and more fragile, raising the risk of fractures — often in the hip, spine, or wrist. It's usually silent until a break happens. Bone-strengthening habits, the right nutrients, and sometimes medicine lower that risk.", "symptoms": ["Usually none until a fracture", "Loss of height over time", "Stooped posture", "Back pain from a spine fracture"], "numbers": [["Bone density (DEXA T-score)", "Measures bone strength"], ["Calcium and vitamin D", "Key nutrients for bone"], ["Fall risk", "Fewer falls means fewer fractures"], ["Height", "Track for loss over time"]], "meds": [["Bisphosphonates", "Common bone-strengthening pills or infusions. Follow the special dosing instructions."], ["Take upright", "Oral bisphosphonates: take with water, stay upright 30–60 minutes."], ["Denosumab", "An injection option; don't skip or delay doses."], ["Calcium + vitamin D", "Often recommended alongside; ask about your amounts."]], "adherence": ["Follow the exact dosing steps for bisphosphonates", "Don't lie down after taking oral ones", "Don't miss denosumab injections", "Keep up calcium and vitamin D as advised"], "lifestyle": ["Do weight-bearing and balance exercises", "Get enough calcium and vitamin D", "Fall-proof your home (lighting, rugs, grab bars)", "Don't smoke; limit alcohol", "Get vision checked to prevent falls"], "trackers": ["Medication taken (correct steps)?", "Calcium/vitamin D taken?", "Weight-bearing exercise done?", "Any falls or near-falls?", "Balance practice?"], "redflags": ["Sudden back pain (possible spine fracture)", "A fall with pain or inability to bear weight", "Loss of height with pain", "Jaw pain or dental problems on bone medicine", "New difficulty walking"], "prep": ["Bring your DEXA results if you have them", "List all medicines and supplements", "Note any falls", "Bring your questions"], "questions": ["What's my T-score and fracture risk?", "How long should I take this medicine?", "How much calcium and vitamin D do I need?", "What exercises are safe?", "How do I lower my fall risk?"], "caregiver": ["Help fall-proof the home", "Support balance and strength exercises", "Ensure correct bisphosphonate dosing steps", "Encourage calcium, vitamin D, and eye checks"]},
+  migraine: {"name": "Migraine", "icon": "Brain", "accent": "#5B5BD6", "what": "Migraine is more than a bad headache — it's a neurological condition with throbbing pain, often with nausea and sensitivity to light and sound. Attacks can be disabling. Identifying triggers, treating early, and sometimes daily prevention can reduce how often and how badly they hit.", "symptoms": ["Throbbing or pulsing head pain, often one-sided", "Nausea or vomiting", "Sensitivity to light and sound", "Aura (visual changes) before some attacks", "Tiredness and foggy thinking after"], "numbers": [["Attack frequency", "Days per month with migraine"], ["Triggers", "Note patterns — sleep, food, stress, hormones"], ["Rescue medicine use", "Using it too often can cause rebound headaches"], ["Disability", "How much attacks limit your day"]], "meds": [["Triptans", "Stop attacks when taken early. Watch limits to avoid rebound."], ["NSAIDs / acetaminophen", "Can help mild attacks; don't overuse."], ["Anti-nausea medicines", "Ease the sick feeling."], ["Preventives", "Daily options (including CGRP medicines) if attacks are frequent."]], "adherence": ["Treat attacks early — don't wait", "Don't overuse rescue medicines (limit days per week)", "Take preventives daily as prescribed", "Track use to spot rebound headaches"], "lifestyle": ["Keep regular sleep and meals", "Stay hydrated", "Identify and manage triggers", "Manage stress and screen breaks", "Limit alcohol and caffeine swings"], "trackers": ["Migraine today? Severity", "Likely triggers", "Rescue medicine used", "Preventive taken?", "Sleep hours"], "redflags": ["The 'worst headache of your life' (sudden, severe)", "Headache with fever, stiff neck, or confusion", "Weakness, numbness, or trouble speaking", "A new headache pattern after age 50", "Headache after a head injury"], "prep": ["Bring a headache diary", "List all medicines and how often you use them", "Note triggers and disability", "Bring your questions"], "questions": ["Am I overusing rescue medicine?", "Would daily prevention help me?", "What are my likely triggers?", "When is a headache an emergency?", "Should I see a neurologist?"], "caregiver": ["Help track attacks and triggers", "Support a calm, dark space during attacks", "Watch for rescue-medicine overuse", "Know the emergency headache signs"]},
+  afib: {"name": "Atrial Fibrillation (AFib)", "icon": "Heart", "accent": "#B4332B", "what": "AFib is an irregular, often fast heartbeat from the top chambers of the heart. It can cause palpitations and raises the risk of stroke because blood can pool and clot. Managing the rhythm or rate, and often a blood thinner, keeps you safer.", "symptoms": ["Fluttering or racing heartbeat", "Palpitations", "Shortness of breath", "Tiredness or weakness", "Dizziness", "Sometimes no symptoms at all"], "numbers": [["Heart rate", "Note if fast or very irregular"], ["Blood pressure", "Follow your target"], ["Stroke risk score", "Guides whether you need a blood thinner"], ["Symptoms", "Track episodes and how long they last"]], "meds": [["Blood thinners (anticoagulants)", "Lower stroke risk — take exactly as prescribed."], ["Rate-control (beta blockers, etc.)", "Slow the heart rate."], ["Rhythm-control", "Help keep a normal rhythm in some people."], ["Don't skip doses", "Missing a blood thinner raises stroke risk quickly."]], "adherence": ["Never skip blood thinner doses", "Take rate/rhythm medicines consistently", "Tell every provider you're on a blood thinner", "Ask before adding NSAIDs or supplements that affect bleeding"], "lifestyle": ["Limit alcohol and caffeine if they trigger episodes", "Manage blood pressure and weight", "Treat sleep apnea if present", "Stay active as advised", "Manage stress"], "trackers": ["Heart rate / rhythm", "Palpitation episodes", "Medication taken?", "Any dizziness or breathlessness?", "Alcohol/caffeine?"], "redflags": ["Chest pain", "Fainting or severe dizziness", "Sudden weakness, slurred speech, face droop (stroke)", "Severe shortness of breath", "Signs of bleeding on a blood thinner"], "prep": ["Note episode frequency and length", "List all medicines", "Bring blood pressure and any heart-rate readings", "Bring your questions"], "questions": ["Do I need a blood thinner?", "What's my stroke risk?", "Should we control rate or rhythm?", "Which symptoms mean call 911?", "Do my other medicines interact?"], "caregiver": ["Learn stroke signs (F.A.S.T.)", "Ensure blood thinner doses aren't missed", "Help track episodes", "Watch for bleeding signs"]},
+  gout: {"name": "Gout", "icon": "Bone", "accent": "#94401F", "what": "Gout is a form of arthritis caused by uric acid crystals building up in a joint — often the big toe — causing sudden, intense pain and swelling. Between attacks you may feel fine. Lowering uric acid and managing triggers prevents future flares.", "symptoms": ["Sudden, severe joint pain (often the big toe)", "Redness, warmth, and swelling", "Tenderness — even a sheet hurts", "Attacks often start at night", "Symptom-free between flares"], "numbers": [["Uric acid level", "Often a target below 6 mg/dL"], ["Flare frequency", "How often attacks happen"], ["Trigger foods/drinks", "Note patterns"], ["Kidney function", "Gout and kidneys are linked"]], "meds": [["Flare treatment", "NSAIDs, colchicine, or steroids ease an attack — start early."], ["Urate-lowering (allopurinol, febuxostat)", "Taken daily long-term to prevent flares."], ["Keep taking during a flare", "Don't stop your daily urate-lowering medicine mid-attack."], ["Colchicine cautions", "Interacts with some medicines — check before combining."]], "adherence": ["Take urate-lowering medicine daily, even when you feel fine", "Start flare treatment at the first sign", "Don't stop allopurinol during an attack", "Check colchicine against your other medicines"], "lifestyle": ["Limit red meat, organ meats, and shellfish", "Cut back on alcohol, especially beer", "Avoid sugary drinks", "Stay well hydrated", "Lose a little weight if advised"], "trackers": ["Flare today? Which joint", "Trigger foods/drinks", "Medication taken?", "Water intake", "Pain level (0–10)"], "redflags": ["A hot, red, very swollen joint with fever (rule out infection)", "A first-ever attack (confirm the diagnosis)", "Attacks despite treatment", "Kidney stones or flank pain", "Severe pain not improving"], "prep": ["Note flare frequency and triggers", "Bring recent uric acid and kidney labs", "List all medicines", "Bring your questions"], "questions": ["What's my uric acid target?", "Should I be on daily preventive medicine?", "Which foods and drinks trigger me?", "Does colchicine interact with my medicines?", "Is my kidney function okay?"], "caregiver": ["Support low-purine meals and hydration", "Help keep daily preventive medicine going", "Encourage early flare treatment", "Track triggers and flares"]},
+  ibs: {"name": "Irritable Bowel Syndrome (IBS)", "icon": "Flame", "accent": "#B45309", "what": "IBS is a common gut condition causing belly pain with changes in bowel habits — diarrhea, constipation, or both. It's real and can be uncomfortable, but it doesn't damage the bowel. Managing triggers, stress, and sometimes medicines helps most people feel better.", "symptoms": ["Belly pain or cramping", "Bloating and gas", "Diarrhea, constipation, or alternating", "Relief after a bowel movement", "Mucus in the stool"], "numbers": [["Symptom pattern", "Note diarrhea vs. constipation days"], ["Trigger foods", "Track what worsens symptoms"], ["Stress levels", "Stress strongly affects IBS"], ["Fiber intake", "Adjust based on your type"]], "meds": [["Fiber / laxatives", "For constipation-type; add fiber slowly."], ["Anti-diarrheals", "For diarrhea-type flares."], ["Antispasmodics", "Ease cramping."], ["Prescription options", "Specific medicines exist for each IBS type — ask your doctor."]], "adherence": ["Add fiber gradually to avoid gas", "Use anti-diarrheals as directed, not constantly", "Give dietary changes a few weeks", "Take prescribed IBS medicines consistently"], "lifestyle": ["Try a structured plan like low-FODMAP (with guidance)", "Eat regular meals; don't skip", "Manage stress (exercise, relaxation, therapy)", "Stay hydrated and active", "Keep a food-symptom diary"], "trackers": ["Pain/bloating today?", "Bowel pattern", "Trigger foods", "Stress level", "Medication taken?"], "redflags": ["Blood in the stool", "Unintended weight loss", "Symptoms that wake you at night", "New symptoms after age 50", "A family history of bowel disease with new changes"], "prep": ["Bring a food and symptom diary", "Note your main pattern (diarrhea/constipation)", "List all medicines and supplements", "Bring your questions"], "questions": ["Which IBS type do I have?", "Would a low-FODMAP diet help?", "Are my symptoms IBS or something else?", "Which medicine fits my type?", "Could stress management help?"], "caregiver": ["Support trigger-food awareness and meal routines", "Encourage stress management", "Help keep a symptom diary", "Watch for alarm signs like bleeding or weight loss"]},
+  backpain: {"name": "Chronic Low Back Pain", "icon": "PersonStanding", "accent": "#94401F", "what": "Chronic low back pain lasts more than a few months and can wear on daily life and mood. Most back pain isn't from a dangerous cause, and staying gently active usually helps more than rest. Movement, strengthening, and pacing are the foundation.", "symptoms": ["Aching or stiffness in the lower back", "Pain that worsens with certain movements", "Stiffness after sitting or waking", "Sometimes pain into the buttock or leg", "Muscle tightness"], "numbers": [["Pain level (0–10)", "Track patterns and what helps"], ["Function", "What you can/can't do that day"], ["Activity", "Aim to keep moving within comfort"], ["Flare days", "Note frequency and triggers"]], "meds": [["Acetaminophen", "Often tried first; mind the daily liver limit."], ["NSAIDs", "Ease pain and inflammation; watch stomach and kidneys."], ["Topical creams", "Fewer whole-body effects."], ["Avoid long-term opioids", "Generally not recommended for chronic back pain — ask about safer options."]], "adherence": ["Don't exceed acetaminophen limits (check combo products)", "Take NSAIDs with food", "Use medicines as part of a movement plan, not instead of it", "Be cautious with opioids and muscle relaxants"], "lifestyle": ["Keep moving — gentle activity beats bed rest", "Do core and back-strengthening exercises", "Improve posture and lifting technique", "Maintain a healthy weight", "Manage stress and sleep (both affect pain)"], "trackers": ["Pain level (0–10)", "Activity/exercise done", "What helped today", "Medication taken?", "Flare today?"], "redflags": ["Loss of bladder or bowel control", "Numbness in the groin/inner thighs", "Leg weakness that's getting worse", "Pain with fever or unexplained weight loss", "Pain after a significant injury"], "prep": ["Bring a pain and activity log", "List all pain relievers (including OTC)", "Note what helps and worsens it", "Bring your questions"], "questions": ["Do I need imaging, or is it not necessary?", "What exercises are safe and helpful?", "Would physical therapy help?", "How do I manage flares?", "Are there non-drug options?"], "caregiver": ["Encourage gentle daily movement, not bed rest", "Help with pacing and safe lifting", "Watch for the emergency red flags", "Support exercise and good sleep"]},
+  sleepapnea: {"name": "Sleep Apnea", "icon": "Wind", "accent": "#5B5BD6", "what": "In sleep apnea, breathing repeatedly pauses during sleep, lowering oxygen and disrupting rest. It causes loud snoring, daytime sleepiness, and — untreated — raises blood pressure and heart risks. Treatment (often CPAP) can dramatically improve energy and health.", "symptoms": ["Loud snoring", "Gasping or choking during sleep", "Pauses in breathing (noticed by others)", "Daytime sleepiness and fatigue", "Morning headaches", "Trouble concentrating"], "numbers": [["AHI (apnea-hypopnea index)", "From a sleep study — measures severity"], ["CPAP use hours", "More nightly hours means better results"], ["Blood pressure", "Often improves with treatment"], ["Daytime sleepiness", "Track how rested you feel"]], "meds": [["Usually not pill-based", "The main treatment is CPAP or an oral device, not medicine."], ["Treat related conditions", "Blood pressure and other issues may need medicines."], ["Avoid sedatives", "Sleep aids and alcohol can worsen apnea — ask first."], ["Weight and nasal care", "Support treatments your doctor recommends."]], "adherence": ["Use CPAP every night, all night", "Clean the mask and equipment regularly", "Ask for help if the mask is uncomfortable — fit matters", "Avoid alcohol and sedatives near bedtime"], "lifestyle": ["Lose a little weight if advised (can greatly help)", "Sleep on your side if back-sleeping worsens it", "Avoid alcohol before bed", "Keep a regular sleep schedule", "Treat nasal congestion"], "trackers": ["CPAP used all night?", "How rested this morning", "Snoring/gasping noted?", "Alcohol before bed?", "Daytime sleepiness"], "redflags": ["Falling asleep while driving", "Severe morning headaches", "Chest pain or irregular heartbeat at night", "Worsening daytime function", "Depression or memory problems"], "prep": ["Bring your sleep study results and CPAP data if you have them", "List all medicines (including sleep aids)", "Note daytime sleepiness", "Bring your questions"], "questions": ["How severe is my apnea?", "Is my CPAP working well?", "Would a different mask or device help?", "Could weight loss reduce it?", "Are my sedatives safe with apnea?"], "caregiver": ["Notice snoring, gasping, or breathing pauses", "Support nightly CPAP use", "Encourage side-sleeping and no alcohol before bed", "Watch for dangerous daytime sleepiness"]},
+  anemia: {"name": "Iron-Deficiency Anemia", "icon": "Droplet", "accent": "#9A1F4B", "what": "Anemia means too few healthy red blood cells to carry oxygen, often from low iron. It leaves you tired and pale and can cause shortness of breath. Finding the cause of the iron loss matters as much as replacing the iron.", "symptoms": ["Tiredness and weakness", "Pale skin", "Shortness of breath with activity", "Dizziness or lightheadedness", "Cold hands and feet", "Craving ice or unusual items"], "numbers": [["Hemoglobin", "The main anemia number"], ["Ferritin", "Reflects iron stores"], ["Energy level", "Track improvement over weeks"], ["Cause", "Finding the source of iron loss is key"]], "meds": [["Iron supplements", "Replace iron; take as directed — effects take weeks."], ["Take with vitamin C", "Helps absorption; take on an empty stomach if tolerated."], ["Separate from some things", "Calcium, coffee, tea, and antacids reduce iron absorption."], ["IV iron or other", "For those who can't absorb or tolerate pills."]], "adherence": ["Take iron consistently — improvement is gradual", "Pair with vitamin C, separate from calcium/coffee/tea", "Expect dark stools (normal) and manage constipation", "Finish the full course and recheck labs"], "lifestyle": ["Eat iron-rich foods (lean meat, beans, leafy greens)", "Add vitamin C foods to meals", "Limit tea/coffee with iron-rich meals", "Address the underlying cause with your doctor", "Manage any heavy menstrual bleeding"], "trackers": ["Iron taken (with vitamin C)?", "Energy level", "Any constipation?", "Iron-rich foods eaten", "Symptoms improving?"], "redflags": ["Black or bloody stools (possible bleeding source)", "Chest pain or severe shortness of breath", "Fainting", "Very heavy menstrual bleeding", "Rapid heartbeat"], "prep": ["Bring recent blood counts and ferritin", "List all medicines and supplements", "Note any bleeding (stool, periods)", "Bring your questions"], "questions": ["What's causing my iron loss?", "How should I take my iron?", "How long until I feel better?", "Do I need tests for a bleeding source?", "When should labs be rechecked?"], "caregiver": ["Support iron-rich meals and correct supplement timing", "Watch for bleeding signs", "Encourage finishing the course and rechecks", "Help track energy improvement"]},
+  prediabetes: {"name": "Prediabetes", "icon": "Droplets", "accent": "#B5560A", "what": "Prediabetes means blood sugar is higher than normal but not yet diabetes. It's a warning — and an opportunity. With steady lifestyle changes, many people bring their numbers back to normal and prevent or delay type 2 diabetes.", "symptoms": ["Usually none — found by a blood test", "Sometimes increased thirst or tiredness", "Often silent until it progresses"], "numbers": [["A1C", "Prediabetes is roughly 5.7–6.4%"], ["Fasting blood sugar", "Often 100–125 mg/dL in prediabetes"], ["Weight", "Even modest loss helps a lot"], ["Waist size", "A marker of risk"]], "meds": [["Often lifestyle first", "Many people manage prediabetes without medicine."], ["Metformin", "Sometimes offered for higher-risk people."], ["Take as directed", "If prescribed, pair it with food and activity changes."], ["Manage related risks", "Blood pressure and cholesterol may also be treated."]], "adherence": ["Focus on consistent lifestyle changes", "If prescribed metformin, take with food", "Keep blood pressure and cholesterol medicines going", "Track progress by habits, not just the scale"], "lifestyle": ["Aim for modest weight loss (even 5–7% helps a lot)", "Move at least 150 minutes a week", "Cut sugary drinks and refined carbs", "Fill half your plate with vegetables", "Prioritize sleep and stress control"], "trackers": ["Activity minutes", "Sugary drinks avoided", "Weight (weekly)", "Vegetables at meals", "Sleep hours"], "redflags": ["Symptoms of diabetes (thirst, frequent urination, blurry vision)", "Blood sugar readings in the diabetes range", "Numbness or tingling in feet", "Slow-healing sores", "Rapid, unexplained weight change"], "prep": ["Bring recent A1C or glucose results", "List all medicines", "Note your activity and eating patterns", "Bring your questions"], "questions": ["What's my A1C and risk level?", "What weight goal should I aim for?", "Would metformin help me?", "How often should I be retested?", "What lifestyle change matters most?"], "caregiver": ["Support healthy meals for the household", "Be an activity partner", "Encourage progress by habits", "Help track the numbers over time"]},
+  menopause: {"name": "Menopause", "icon": "Activity", "accent": "#9A1F4B", "what": "Menopause is the natural end of menstrual periods, usually in the late 40s to 50s. Shifting hormones can bring hot flashes, sleep and mood changes, and long-term effects on bones and heart. Many symptoms are manageable, and it's a good time to focus on bone and heart health.", "symptoms": ["Hot flashes and night sweats", "Irregular then absent periods", "Sleep problems", "Mood changes or irritability", "Vaginal dryness", "Brain fog"], "numbers": [["Symptom pattern", "Track hot flashes and sleep"], ["Bone health", "Menopause raises osteoporosis risk"], ["Blood pressure & cholesterol", "Heart risk rises after menopause"], ["Weight", "Metabolism often shifts"]], "meds": [["Hormone therapy (HT)", "Effective for many symptoms; benefits and risks depend on you — discuss with your doctor."], ["Non-hormonal options", "Certain antidepressants and other medicines ease hot flashes."], ["Vaginal estrogen", "Low-dose, local option for dryness."], ["Bone and heart care", "Calcium, vitamin D, and risk-factor management matter now."]], "adherence": ["Take hormone or non-hormonal medicines as prescribed", "Don't start or stop HT without discussing risks/benefits", "Keep up bone-supporting nutrients", "Manage blood pressure and cholesterol"], "lifestyle": ["Dress in layers; note hot-flash triggers", "Keep a cool bedroom for better sleep", "Do weight-bearing exercise for bones", "Eat for heart and bone health", "Limit alcohol and caffeine if they worsen symptoms"], "trackers": ["Hot flashes today", "Sleep quality", "Mood", "Exercise done", "Medication taken?"], "redflags": ["Any bleeding after periods have stopped for a year", "Severe mood changes or depression", "Chest pain or new heart symptoms", "A fragility fracture", "Severe, disabling symptoms"], "prep": ["Note your main symptoms and their impact", "List all medicines and supplements", "Bring blood pressure and any bone/cholesterol results", "Bring your questions"], "questions": ["Is hormone therapy right for me?", "What non-hormonal options exist?", "How do I protect my bones and heart now?", "What helps hot flashes and sleep?", "Is any bleeding normal?"], "caregiver": ["Be understanding about symptoms and mood", "Support good sleep and a cool environment", "Encourage bone and heart-healthy habits", "Note any post-menopausal bleeding to report"]},
+  bph: {"name": "Enlarged Prostate (BPH)", "icon": "Droplet", "accent": "#475569", "what": "BPH is a common, non-cancerous enlargement of the prostate as men age. It can squeeze the urinary tube and make urinating harder — weak stream, frequency, and night-time trips. It's manageable, and treatment ranges from watchful waiting to medicines or procedures.", "symptoms": ["Weak or interrupted urine stream", "Trouble starting urination", "Frequent urination, especially at night", "Feeling the bladder isn't empty", "Urgency", "Dribbling after urinating"], "numbers": [["Symptom score", "Track how much it bothers you"], ["Night-time trips", "How often you wake to urinate"], ["PSA", "A prostate blood test (discuss meaning with your doctor)"], ["Stream/emptying", "Note changes over time"]], "meds": [["Alpha blockers (-osin)", "Relax the prostate/bladder neck for easier flow; can cause dizziness."], ["5-alpha reductase inhibitors", "Shrink the prostate over months."], ["Combination therapy", "Sometimes both are used."], ["Watch other medicines", "Some decongestants and antihistamines can worsen symptoms."]], "adherence": ["Take alpha blockers at the time advised (often bedtime) to limit dizziness", "Give prostate-shrinking medicines months to work", "Don't stop without asking", "Check cold/allergy medicines — some worsen symptoms"], "lifestyle": ["Limit fluids in the evening", "Cut back on caffeine and alcohol", "Don't rush — take time to empty the bladder", "Stay active and maintain a healthy weight", "Avoid decongestants that worsen symptoms"], "trackers": ["Night-time urination trips", "Stream strength", "Urgency episodes", "Medication taken?", "Evening fluids/caffeine?"], "redflags": ["Unable to urinate at all (medical emergency)", "Blood in the urine", "Painful urination or fever (possible infection)", "Severe, sudden worsening", "Bladder pain with inability to empty"], "prep": ["Note your urinary symptoms and night trips", "List all medicines (including cold/allergy)", "Bring any PSA results", "Bring your questions"], "questions": ["How bothersome is my BPH and what are my options?", "Which medicine fits me?", "Do any of my medicines worsen symptoms?", "What does my PSA mean?", "When would a procedure be considered?"], "caregiver": ["Support evening fluid and caffeine limits", "Help track night-time trips and symptoms", "Watch for inability to urinate (an emergency)", "Review cold/allergy medicines together"]},
+  eczema: {"name": "Eczema (Atopic Dermatitis)", "icon": "Sparkles", "accent": "#B45309", "what": "Eczema is a chronic condition where skin becomes dry, itchy, and inflamed, often in flares. It's linked to a sensitive skin barrier and triggers. Gentle skin care, moisturizing, and treating flares early keep it under control.", "symptoms": ["Dry, itchy skin", "Red or discolored patches", "Rough, scaly, or thickened skin", "Itching that worsens at night", "Flares triggered by irritants or stress"], "numbers": [["Flare frequency", "How often and where"], ["Triggers", "Note soaps, fabrics, weather, stress"], ["Itch level", "Track severity"], ["Skin barrier", "Moisturizing consistency matters"]], "meds": [["Moisturizers", "The foundation — apply liberally and often, especially after bathing."], ["Topical steroids", "Calm flares; use as directed on the right areas."], ["Non-steroid creams", "Options for sensitive areas or long-term control."], ["Antihistamines", "May ease itch and help sleep."]], "adherence": ["Moisturize daily, not just during flares", "Use topical steroids correctly — right strength, right area, right duration", "Don't overuse strong steroids on the face", "Follow flare plans early"], "lifestyle": ["Take short, lukewarm showers; moisturize right after", "Use gentle, fragrance-free products", "Identify and avoid triggers", "Wear soft, breathable fabrics", "Manage stress and keep nails short to limit scratching"], "trackers": ["Itch/flare level", "Moisturized today?", "Likely triggers", "Medication applied?", "Sleep affected?"], "redflags": ["Signs of skin infection (oozing, crusting, warmth, fever)", "Widespread painful rash", "Rash with blisters or spreading fast", "Eczema not responding to usual care", "Eye area involvement affecting vision"], "prep": ["Note flare frequency and triggers", "List all creams and medicines used", "Bring photos of flares if helpful", "Bring your questions"], "questions": ["What's my daily skin-care routine?", "Which steroid strength for which area?", "What are my main triggers?", "When is it infected?", "Are there newer treatment options?"], "caregiver": ["Help keep a consistent moisturizing routine", "Support trigger avoidance", "Watch for signs of skin infection", "Keep nails short to reduce scratching damage (especially children)"]},
+  psoriasis: {"name": "Psoriasis", "icon": "Sparkles", "accent": "#9A1F4B", "what": "Psoriasis is an immune-driven skin condition that speeds up skin cell growth, causing thick, scaly patches. It can also affect joints (psoriatic arthritis). It's chronic but very treatable, and managing triggers and stress helps.", "symptoms": ["Raised, scaly patches (often elbows, knees, scalp)", "Itching or burning", "Dry, cracked skin that may bleed", "Thickened or pitted nails", "Joint pain or stiffness (psoriatic arthritis)"], "numbers": [["Body area affected", "Track how much skin is involved"], ["Flare triggers", "Note stress, infections, skin injury"], ["Joint symptoms", "Watch for psoriatic arthritis"], ["Itch/discomfort", "Track severity"]], "meds": [["Topical treatments", "Steroids and vitamin-D creams for patches."], ["Phototherapy", "Light treatment for wider involvement."], ["Systemic / biologics", "For moderate-severe disease or joint involvement; need monitoring."], ["Infection awareness", "Biologics lower infection defenses — report infections."]], "adherence": ["Apply topicals as directed", "Keep up systemic medicines and monitoring", "Report infections if on biologics", "Don't stop abruptly without asking"], "lifestyle": ["Moisturize to reduce scaling and itch", "Identify and manage triggers (stress, smoking, alcohol)", "Avoid skin injury where possible", "Maintain a healthy weight", "Manage stress"], "trackers": ["Skin flare level", "Joint pain/stiffness?", "Moisturized/treated today?", "Likely triggers", "Medication taken?"], "redflags": ["New or worsening joint pain and swelling", "Widespread, painful, or pustular flares", "Signs of infection on biologics", "Fever with a spreading rash", "Rapid worsening"], "prep": ["Note affected areas and triggers", "Mention any joint symptoms", "List all medicines", "Bring your questions"], "questions": ["Which treatment fits my severity?", "Do I have psoriatic arthritis?", "What are my triggers?", "What monitoring do biologics need?", "How do I handle flares?"], "caregiver": ["Support a moisturizing and treatment routine", "Watch for joint symptoms to report", "Encourage trigger management and stress relief", "Watch for infection signs on biologics"]},
+  crohns: {"name": "Crohn's Disease", "icon": "Flame", "accent": "#B45309", "what": "Crohn's disease is a chronic inflammatory bowel disease that can inflame any part of the digestive tract. It runs in flares and remissions, causing belly pain, diarrhea, and fatigue. Staying on maintenance treatment even when you feel well is key to preventing flares and complications.", "symptoms": ["Belly pain and cramping", "Frequent or urgent diarrhea", "Fatigue", "Unintended weight loss", "Blood in the stool", "Reduced appetite", "Mouth sores or joint aches"], "numbers": [["Flare frequency", "Track symptoms and remission periods"], ["Weight", "Watch for unintended loss"], ["Inflammation markers", "Labs like CRP or fecal calprotectin (your team tracks these)"], ["Nutrition", "Crohn's can affect absorption"]], "meds": [["Maintenance therapy", "Keeps inflammation down — take it even when you feel well."], ["Biologics / immunomodulators", "Common maintenance options; need monitoring and infection awareness."], ["Steroids", "For flares, short-term — not for long-term control."], ["Don't stop on your own", "Stopping maintenance treatment is a common cause of flares."]], "adherence": ["Stay on maintenance treatment during remission", "Don't rely on steroids long-term", "Report infections if on biologics or immunomodulators", "Keep up monitoring labs and appointments"], "lifestyle": ["Learn your personal trigger foods (they vary)", "Eat smaller, frequent meals during flares", "Stay hydrated, especially with diarrhea", "Don't smoke — it worsens Crohn's", "Address fatigue, stress, and nutrition"], "trackers": ["Belly pain/diarrhea today?", "Blood in stool?", "Weight", "Medication taken?", "Energy level"], "redflags": ["Severe belly pain or a hard, swollen abdomen", "Heavy rectal bleeding", "High fever with belly pain", "Persistent vomiting or inability to keep fluids down", "Signs of a blockage (severe cramping, no gas/stool)"], "prep": ["Bring a symptom and flare diary", "List all medicines (including biologics)", "Note weight changes and bleeding", "Bring your questions and recent labs"], "questions": ["Am I in remission, and how do we keep it?", "Is my maintenance treatment working?", "What monitoring do my medicines need?", "Which foods should I focus on?", "When should I call versus go to the ER?"], "caregiver": ["Support staying on maintenance treatment in remission", "Help track symptoms, weight, and bleeding", "Watch for infection signs on biologics", "Know the emergency signs (blockage, heavy bleeding, high fever)"]},
+  uc: {"name": "Ulcerative Colitis", "icon": "Flame", "accent": "#9A1F4B", "what": "Ulcerative colitis is a chronic inflammatory bowel disease affecting the colon and rectum, causing inflammation and ulcers. It runs in flares and remissions with diarrhea (often bloody) and urgency. Ongoing maintenance treatment keeps it calm and lowers long-term risks.", "symptoms": ["Diarrhea, often with blood or mucus", "Urgent need to have a bowel movement", "Belly cramping", "Fatigue", "Unintended weight loss", "Feeling of incomplete emptying"], "numbers": [["Flare frequency", "Track symptoms and remission"], ["Bleeding", "Note blood in the stool"], ["Inflammation markers", "Labs your team follows"], ["Colon-cancer surveillance", "Long-standing UC needs periodic checks"]], "meds": [["Maintenance therapy (e.g., mesalamine)", "Keeps inflammation down — take it even in remission."], ["Biologics / immunomodulators", "For moderate-severe disease; need monitoring."], ["Steroids", "For flares, short-term only."], ["Don't stop on your own", "Stopping maintenance is a common flare trigger."]], "adherence": ["Stay on maintenance treatment during remission", "Use steroids only short-term for flares", "Report infections if on biologics", "Keep colonoscopy surveillance appointments"], "lifestyle": ["Note personal trigger foods during flares", "Stay hydrated, especially with diarrhea", "Manage stress (it can worsen symptoms)", "Don't skip appointments and labs", "Address fatigue and nutrition"], "trackers": ["Diarrhea/urgency today?", "Blood in stool?", "Belly cramping", "Medication taken?", "Energy level"], "redflags": ["Heavy or persistent rectal bleeding", "Severe belly pain with a swollen abdomen", "High fever with many bloody stools", "Signs of dehydration (dizziness, little urine)", "Rapid worsening"], "prep": ["Bring a symptom and flare diary", "List all medicines (including biologics)", "Note bleeding and weight changes", "Bring recent labs and your questions"], "questions": ["Are we keeping me in remission?", "Is my maintenance treatment enough?", "When is my next surveillance colonoscopy?", "What monitoring do my medicines need?", "When should I go to the ER?"], "caregiver": ["Support staying on maintenance treatment", "Help track bleeding, urgency, and weight", "Watch for dehydration and severe flares", "Keep surveillance appointments on the calendar"]},
+  fibromyalgia: {"name": "Fibromyalgia", "icon": "Brain", "accent": "#5B5BD6", "what": "Fibromyalgia causes widespread body pain, fatigue, and sleep and memory problems. The pain is real and comes from how the nervous system processes pain signals. There's no single cure, but a combination of movement, sleep, stress care, and sometimes medicine helps most people function better.", "symptoms": ["Widespread aching pain", "Deep fatigue", "Poor, unrefreshing sleep", "Trouble concentrating ('fibro fog')", "Sensitivity to touch, light, or sound", "Stiffness"], "numbers": [["Pain level (0–10)", "Track patterns and flares"], ["Sleep quality", "Poor sleep worsens symptoms"], ["Activity/pacing", "Balance is key — not too much or too little"], ["Mood/stress", "Strongly linked to symptoms"]], "meds": [["Certain antidepressants", "Can reduce pain and improve sleep (used for pain, not just mood)."], ["Nerve-pain medicines", "Options like gabapentin/pregabalin for some people."], ["Limited role for opioids", "Generally not recommended for fibromyalgia."], ["Give it time", "Medicines are one part of a broader plan."]], "adherence": ["Take prescribed medicines consistently — effects build over weeks", "Don't expect medicine alone to fix it", "Avoid relying on opioids", "Report side effects rather than stopping abruptly"], "lifestyle": ["Start gentle, gradual exercise (walking, water, stretching)", "Pace activities — avoid boom-and-bust", "Prioritize sleep routines", "Use stress management and relaxation", "Consider cognitive behavioral therapy"], "trackers": ["Pain level (0–10)", "Sleep quality", "Activity (paced?)", "Mood/stress", "Medication taken?"], "redflags": ["New symptoms unlike your usual (don't assume it's fibro)", "Signs of another condition (swollen joints, fever, weakness)", "Severe depression or thoughts of self-harm", "Sudden severe pain", "Unexplained weight loss"], "prep": ["Bring a symptom, sleep, and activity log", "List all medicines tried", "Note what helps and worsens it", "Bring your questions"], "questions": ["What's the best mix of treatments for me?", "Which exercise is safe to start?", "Would therapy or a pain program help?", "How do I improve sleep?", "Could another condition be adding to this?"], "caregiver": ["Understand the pain and fatigue are real", "Support gentle, paced activity and good sleep", "Encourage stress management and therapy", "Watch for depression and new, different symptoms"]},
+  chronicpain: {"name": "Chronic Pain (General)", "icon": "Activity", "accent": "#94401F", "what": "Chronic pain is pain lasting beyond normal healing, often months or more. It's influenced by the body, sleep, mood, and stress together. Management focuses on improving function and quality of life through a mix of movement, coping skills, and careful use of medicines.", "symptoms": ["Ongoing pain in one or more areas", "Fatigue and poor sleep", "Reduced activity and mood changes", "Stiffness or tension", "Pain that varies with stress and sleep"], "numbers": [["Pain level (0–10)", "Track patterns and triggers"], ["Function", "What you can do that day"], ["Sleep", "Poor sleep amplifies pain"], ["Mood/stress", "Both strongly affect pain"]], "meds": [["Non-opioid options first", "Acetaminophen, NSAIDs, topical, and nerve-pain medicines depending on the cause."], ["Careful with opioids", "Long-term opioids have limited benefit and real risks — discuss carefully."], ["Treat contributors", "Sleep and mood medicines sometimes help the whole picture."], ["Combine with non-drug care", "Medicine works best alongside movement and coping skills."]], "adherence": ["Use medicines as part of a broader plan", "Don't exceed acetaminophen limits", "Be cautious and honest about opioids", "Report side effects and what's working"], "lifestyle": ["Keep moving with gentle, paced activity", "Prioritize sleep", "Use relaxation, mindfulness, or therapy for coping", "Maintain social connection and enjoyable activity", "Set realistic function goals"], "trackers": ["Pain level (0–10)", "Function/activity", "Sleep quality", "Mood/stress", "Medication taken?"], "redflags": ["New or sudden severe pain unlike your usual", "Pain with fever, weakness, or weight loss", "Loss of bladder/bowel control (with back pain)", "Thoughts of self-harm", "Signs of a new medical problem"], "prep": ["Bring a pain, sleep, and activity log", "List all pain medicines (including OTC)", "Note what helps and worsens it", "Bring your questions"], "questions": ["What's driving my pain and how do we treat it?", "What non-drug options help?", "Would a pain program or therapy help?", "How do I improve sleep?", "Are my medicines the safest choice?"], "caregiver": ["Support gentle activity and pacing", "Encourage sleep and coping skills", "Watch for mood changes and self-harm signs", "Help track patterns and triggers"]},
+  anxiety: {"name": "Anxiety Disorders", "icon": "Brain", "accent": "#5B5BD6", "what": "Anxiety disorders involve excessive worry or fear that interferes with daily life. They're common and very treatable. Therapy, healthy routines, and sometimes medicine help most people regain calm and control.", "symptoms": ["Constant worry or dread", "Restlessness or feeling on edge", "Racing heart, sweating, or shortness of breath", "Trouble concentrating or sleeping", "Muscle tension", "Avoiding feared situations"], "numbers": [["Anxiety level (0–10)", "Track daily patterns and triggers"], ["Sleep", "Poor sleep worsens anxiety"], ["Avoidance", "Note what you're avoiding"], ["Therapy/med routine", "Kept up?"]], "meds": [["SSRIs / SNRIs", "Common first-choice; can take 4–6 weeks to fully help."], ["Give it time", "Don't stop early if it feels slow — talk to your prescriber."], ["Caution with benzodiazepines", "Fast-acting but habit-forming; usually short-term only."], ["Don't stop suddenly", "Taper with guidance to avoid withdrawal."]], "adherence": ["Take daily medicines consistently", "Expect a few weeks before full effect", "Use fast-acting medicines only as directed", "Never stop abruptly — ask about tapering"], "lifestyle": ["Practice relaxation and breathing skills", "Keep regular sleep and movement", "Limit caffeine and alcohol", "Consider cognitive behavioral therapy (very effective)", "Stay connected to supportive people"], "trackers": ["Anxiety level (0–10)", "Sleep hours", "Caffeine/alcohol?", "Medication taken?", "Used a coping skill?"], "redflags": ["Panic that feels like a heart attack (get chest pain checked)", "Thoughts of self-harm", "Unable to work or function", "Severe, constant dread", "New physical symptoms that worry you"], "prep": ["Note your triggers and patterns", "List medicines and any side effects", "Write down what's been hardest", "Bring your questions"], "questions": ["Would therapy help alongside medicine?", "How long until medicine works?", "What coping skills should I start?", "How do I stop safely if needed?", "Is my racing heart anxiety or something else?"], "caregiver": ["Listen without judging or minimizing", "Take any talk of self-harm seriously — get help", "Support routines, therapy, and coping skills", "Encourage professional help for severe symptoms"], "crisis": true}
 };
 
 
 // ---- Self-Management Guide (interactive) -----------------------------------
-const GUIDE_ICON = { Droplets, Activity, Heart, Wind, Bone, Brain, PersonStanding };
+const GUIDE_ICON = { Droplets, Activity, Heart, Wind, Bone, Brain, PersonStanding, Droplet, Flame, Sparkles };
 const NEEDS = [
   ["understand", "Understand my condition", BookOpen],
   ["meds", "Manage my medications", Pill],
@@ -4036,7 +4100,7 @@ function SelfCareGuide({ go }) {
         </div>
         <div style={{ ...card, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
           <span style={{ fontSize: 13, color: C.inkSoft, flex: 1 }}>For anything sudden or severe, don't wait.</span>
-          <button onClick={() => go("emergency")} style={{ ...primaryBtn, padding: "8px 14px", fontSize: 13, background: "#9A1B14" }}><Siren size={15} /> Emergency page</button>
+          <button onClick={() => go("emergency")} style={{ ...primaryBtn, padding: "8px 14px", fontSize: 13, background: "#8A160F" }}><Siren size={15} /> Emergency page</button>
         </div>
         {c.crisis && <div style={{ marginTop: 14, borderRadius: 12, border: "1px solid #C9B7D6", background: "#F4EFF8", padding: "13px 15px" }}><p style={{ fontSize: 12.5, color: "#3E2C55", margin: 0, lineHeight: 1.55 }}>If you're thinking about harming yourself, you deserve support now. In the U.S., call or text <strong>988</strong> (Suicide &amp; Crisis Lifeline), any time. Elsewhere, contact your local emergency number or crisis line.</p></div>}
       </>}
@@ -4049,6 +4113,457 @@ function SelfCareGuide({ go }) {
         <div style={{ ...card, background: "#FBF6EC" }}><p style={{ fontSize: 13, color: "#4F4233", margin: 0, lineHeight: 1.6 }}>Caring for someone is real work — look after your own rest and support too. You can bring the printable summary to appointments.</p><button onClick={() => printGuide(c)} style={{ ...ghostBtn, marginTop: 12, padding: "8px 14px", fontSize: 13 }}><Printer size={15} /> Printable summary</button></div>
       </>}
       <p style={{ marginTop: 14, fontSize: 11.5, color: C.inkFaint, lineHeight: 1.55 }}>Educational only, written in plain language. It does not diagnose or replace medical advice — contact your provider for personal decisions and seek emergency care for serious symptoms.</p>
+    </div>
+  );
+}
+
+
+
+// ---- RxSafeTravel — International & Domestic Travel Planning ----------------
+const TRAVEL_CONDITIONS = [
+  "Heart disease","High blood pressure","Heart failure","Atrial fibrillation / arrhythmia","History of heart attack",
+  "Stroke or TIA history","Blood clot history","Clotting disorder","Diabetes (type 1)","Diabetes (type 2)",
+  "Kidney disease / dialysis","Liver disease","Cancer (active treatment)","Cancer history / remission",
+  "Immunocompromised","Organ transplant","Autoimmune / rheumatologic disease","Asthma","COPD","Sleep apnea",
+  "Oxygen use","Severe allergies / anaphylaxis","Seizure disorder","Migraine","Parkinson's disease",
+  "Dementia / cognitive impairment","Chronic pain","Anxiety / depression","Pregnancy","Recent surgery or hospitalization",
+  "Inflammatory bowel disease (Crohn's / colitis)","Anemia","Other condition",
+];
+const TRAVEL_MEDCATS = [
+  ["anticoag","Blood thinner / anticoagulant"],["antiplatelet","Antiplatelet"],["insulin","Insulin"],["diabetes","Other diabetes medication"],
+  ["bp","Blood pressure medication"],["diuretic","Diuretic / water pill"],["rhythm","Heart rhythm medication"],["seizure","Seizure medication"],
+  ["steroid","Steroid"],["immuno","Immune suppressant / biologic"],["cancer","Cancer / chemotherapy medication"],["opioid","Opioid pain medication"],
+  ["benzo","Benzodiazepine / anti-anxiety"],["sleep","Sleep medication"],["stimulant","ADHD stimulant"],["psych","Antidepressant / antipsychotic"],
+  ["parkinson","Parkinson's medication"],["inhaler","Inhaler / respiratory"],["injectable","Injectable medication"],["refrigerated","Refrigerated medication"],
+  ["controlled","Controlled medication"],["hormone","Hormone therapy"],["otc","Over-the-counter / supplement"],
+];
+const TRAVEL_RISKS = [
+  ["longflight","Long flights or long car rides"],["timezone","Crossing time zones"],["heat","Hot climate"],["cold","Cold climate"],
+  ["altitude","High altitude"],["cruise","Cruise travel"],["remote","Remote / rural travel"],["foodwater","Food & water concerns"],
+  ["mosquito","Mosquito exposure"],["crowds","Crowded events"],["adventure","Adventure / hiking / diving"],["limitedcare","Limited healthcare access"],
+  ["language","Language barrier"],["medabroad","Medical/dental procedure abroad"],
+];
+
+function TravelChip({ on, onClick, children, accent }) {
+  return <button onClick={onClick} style={{ display: "inline-flex", alignItems: "center", gap: 7, cursor: "pointer", borderRadius: 999, padding: "7px 13px", fontSize: 13, fontWeight: on ? 600 : 400, border: `1px solid ${on ? (accent || C.terra) : C.line}`, background: on ? (accent || C.terra) : "#fff", color: on ? "#fff" : C.inkSoft }}>{on && <Check size={13} />}{children}</button>;
+}
+
+function buildTravelPlan(state) {
+  const { intl, domestic, conds, medcats, risks } = state;
+  const has = (arr, k) => arr.includes(k);
+  const hasCond = name => conds.includes(name);
+  const docQ = [], pharmQ = [], tmQ = [], careQ = [], special = [], warnings = [];
+  const pre = [], during = [], post = [];
+
+  // universal doctor/pharmacist questions
+  docQ.push("Are my conditions stable enough for this trip and the activities I'm planning?",
+    "What symptoms should prompt urgent care while I'm away?",
+    "Do I need any labs, updated prescriptions, or a medical letter before I go?",
+    "Should any medication timing change for time zones?",
+    "What should I do if I get sick, miss a dose, or vomit after taking a medicine?");
+  pharmQ.push("Could any of my medicines interact with travel-related medicines (anti-nausea, diarrhea, antibiotics, sleep aids)?",
+    "Are any of my medicines affected by heat, cold, sunlight, dehydration, or food changes?",
+    "How should I store my medicines during travel and long flights?",
+    "Which of my medicines should never be stopped suddenly?",
+    "How much extra medication should I bring, and can you print my medication list?");
+
+  // international
+  if (intl) {
+    special.push("Medication laws vary by country and can change. Verify your medicines with official government, embassy, consulate, customs, or destination-country sources before you travel.");
+    docQ.push("Do I need a destination-specific vaccine or infection-prevention review?", "Are live vaccines a concern given my conditions or medicines?");
+    tmQ.push("What destination-specific health risks should I know about?",
+      "Are any vaccines recommended or required — and are any unsafe for me?",
+      "Do I need malaria prevention or mosquito precautions?",
+      "What is my traveler's-diarrhea and food/water plan?",
+      "Do I need documentation for any medicines, devices, injections, or supplies?");
+    pre.push("Check medication laws for your destination and any transit countries (official sources).",
+      "Carry generic and brand names for every medicine.",
+      "Bring copies of prescriptions and a clinician letter if advised.",
+      "Consider a travel-medicine clinic visit for vaccines and destination risks.",
+      "Note your nearest embassy/consulate and destination emergency number.");
+  }
+  if (domestic) {
+    pre.push("Confirm your pharmacy can refill across state lines, and locate a pharmacy near your destination.",
+      "Check insurance in-network coverage and the nearest hospital where you're going.",
+      "For controlled medicines, ask about refill limits before you travel.");
+  }
+
+  // medication-category triggers
+  if (has(medcats,"controlled") || has(medcats,"opioid") || has(medcats,"benzo") || has(medcats,"sleep") || has(medcats,"stimulant")) {
+    special.push("Ask your doctor, pharmacist, and destination-country official sources whether your controlled medicine is restricted, requires documentation, or may be illegal in your destination or transit countries.");
+    pharmQ.push("Is my controlled medicine restricted anywhere I'm going, and what documentation do I need?");
+    pre.push("Keep controlled medicines in original labeled containers with a clinician letter.",
+      "Have a written plan for lost, stolen, delayed, or confiscated medication.");
+    docQ.push("Do I need a physician letter for my controlled or high-risk medicines?");
+  }
+  if (has(medcats,"anticoag") || has(medcats,"antiplatelet")) {
+    special.push("You take a blood thinner or antiplatelet — bleeding and injury need extra planning.");
+    docQ.push("What bleeding symptoms need urgent care, and what should I do after a fall or head injury?",
+      "Should I discuss blood-clot prevention for long flights or long drives?",
+      "Do I need INR monitoring during or after travel?");
+    warnings.push("Unusual bleeding, black stools, blood in urine, vomiting blood, or a fall/head injury");
+  }
+  if (has(medcats,"insulin") || has(medcats,"diabetes")) {
+    special.push("Diabetes travel needs a plan for time zones, meals, storage, and low blood sugar.");
+    docQ.push("How should I handle insulin/medication timing across time zones and delayed meals?", "What's my sick-day and low-blood-sugar plan while traveling?");
+    pre.push("Pack extra glucose supplies (sensors, strips, needles, batteries, chargers) for the full trip plus delays.",
+      "Carry fast-acting sugar and a hypoglycemia plan.",
+      "Get a medical letter for insulin, syringes, a pump, or CGM if needed.");
+    if (has(medcats,"refrigerated") || has(medcats,"insulin")) pre.push("Prepare a cold-chain plan (travel cooler, temperature check) for insulin/refrigerated medicines.");
+  }
+  if (has(medcats,"immuno") || has(medcats,"steroid") || has(medcats,"cancer") || hasCond("Cancer (active treatment)") || hasCond("Immunocompromised") || hasCond("Organ transplant")) {
+    special.push("With a weakened immune system, infection prevention and vaccine safety need clinician review.");
+    docQ.push("Is this a safe time to travel given my treatment schedule, blood counts, or immune status?",
+      "Are any vaccines (especially live vaccines) unsafe for me?",
+      "What's my fever action plan, and which infection symptoms need urgent care?");
+    tmQ.push("Which vaccines are safe given my immune status?");
+    warnings.push("Fever or signs of infection while immunocompromised");
+    pre.push("Ask whether to carry a treatment summary or specialist letter and recent labs.");
+  }
+  if (has(medcats,"diuretic") || has(medcats,"bp") || hasCond("Heart failure") || hasCond("Kidney disease / dialysis")) {
+    docQ.push("Do heat, altitude, salt, dehydration, or alcohol pose risks with my heart/kidney condition or medicines?");
+    if (has(risks,"heat")) special.push("In hot climates, water pills and blood-pressure medicines can raise dehydration and dizziness risk — ask about monitoring.");
+  }
+  if (has(medcats,"seizure") || has(medcats,"parkinson") || has(medcats,"psych")) {
+    special.push("These medicines shouldn't be stopped suddenly — plan supply and dose continuity.");
+    docQ.push("What should I do if I miss a dose, and could sleep loss, alcohol, or illness trigger symptoms?");
+    pre.push("Pack more than enough of medicines that must not be missed, split between bags.");
+  }
+  if (has(medcats,"inhaler") || hasCond("Asthma") || hasCond("COPD") || hasCond("Oxygen use") || hasCond("Sleep apnea")) {
+    docQ.push("Do I need an updated asthma/COPD action plan, extra inhalers, or oxygen/CPAP documentation?");
+    pre.push("For oxygen or CPAP: check airline policies, power adapters, backup supplies, and destination power access.");
+    if (has(risks,"altitude")) special.push("Altitude can affect breathing and heart/lung conditions — review with your clinician.");
+  }
+  if (has(medcats,"injectable")) {
+    pre.push("For injectables: bring a sharps plan, documentation, and ask about airport screening and safe disposal.");
+    pharmQ.push("What documentation do I need for injectable medicines and needles at security?");
+  }
+  if (has(medcats,"refrigerated")) {
+    pharmQ.push("How do I keep my refrigerated medicine cold and monitor its temperature during travel?");
+    pre.push("Pack a cooling plan and a backup for delays for refrigerated medicines.");
+  }
+
+  // risk triggers
+  if (has(risks,"longflight")) { docQ.push("Should I take steps to prevent blood clots on long flights (movement, hydration, compression stockings)?"); during.push("On long flights/drives, move regularly and stay hydrated as advised."); }
+  if (has(risks,"heat")) during.push("Avoid overheating and dehydration; protect temperature-sensitive medicines from heat.");
+  if (has(risks,"altitude")) docQ.push("Do heart, lung, blood-pressure, anemia, pregnancy, or neurologic conditions need extra altitude planning?");
+  if (has(risks,"foodwater")) { tmQ.push("What food and water precautions and traveler's-diarrhea plan apply to my destination?"); pharmQ.push("Are anti-diarrhea or standby antibiotics safe with my current medicines?"); }
+  if (has(risks,"mosquito")) tmQ.push("What mosquito precautions or antimalarials apply, and do they interact with my medicines?");
+  if (has(risks,"cruise")) { special.push("Cruise ships have limited onboard pharmacies and medical care — plan supply and evacuation coverage."); docQ.push("Are motion-sickness medicines safe with my current medicines?"); }
+  if (has(risks,"remote")) { special.push("Remote travel means limited care — plan extra supply, evacuation coverage, and offline records."); pre.push("Confirm medical-evacuation coverage and the distance to the nearest hospital."); }
+  if (has(risks,"medabroad")) special.push("For any medical, dental, or cosmetic procedure abroad, discuss infection, clot, medication, records, and follow-up plans with your clinician first.");
+
+  if (hasCond("Pregnancy")) { docQ.push("Is travel appropriate for my pregnancy stage, and which medicines are safe for nausea, pain, allergies, or infection?"); }
+  if (hasCond("Severe allergies / anaphylaxis")) { special.push("Carry enough emergency allergy medicine — ask if you need more than one epinephrine auto-injector and allergy translation cards."); warnings.push("Severe allergic reaction (trouble breathing, throat/face swelling, widespread hives)"); }
+
+  // universal checklist scaffolding
+  pre.unshift("Schedule a pre-travel discussion with your primary clinician, specialist, pharmacist, or travel-medicine clinic.",
+    "Pack medicines in your carry-on, in original labeled containers, with extra for delays.",
+    "Assemble your documents: medication list, allergies, condition summary, provider and pharmacy contacts, prescriptions, insurance, and emergency numbers.");
+  during.unshift("Follow the medication schedule you discussed with your healthcare team; use alarms or caregiver reminders.",
+    "Keep medicines and emergency contacts accessible; don't start unfamiliar medicines or supplements without checking first.");
+  post.push("If you develop fever, persistent diarrhea, rash, cough, breathlessness, jaundice, new swelling, or symptoms that began during travel, contact a healthcare provider — and tell them where and when you traveled.",
+    "Review any medicines, antibiotics, or remedies you took while away, replace used emergency medicines, and update your medication list.",
+    "Ask your care team whether you need labs or follow-up, and what to do differently before your next trip.");
+
+  // baseline warning signs
+  const baseWarn = ["Chest pain","Severe shortness of breath","Fainting or new confusion","Signs of stroke (face droop, arm weakness, speech trouble)","Severe dehydration or persistent vomiting","Severe or bloody diarrhea","Swelling, pain, or redness in one leg","Severe headache with fever, stiff neck, or weakness","A new seizure","Any symptom your healthcare team told you needs urgent care"];
+  const allWarn = uniq([...warnings, ...baseWarn]);
+
+  return { docQ: uniq(docQ), pharmQ: uniq(pharmQ), tmQ: uniq(tmQ), special: uniq(special), pre: uniq(pre), during: uniq(during), post: uniq(post), warnings: allWarn };
+}
+
+function RxSafeTravel({ go, meds }) {
+  const [step, setStep] = useState(0);
+  const [intl, setIntl] = useState(false);
+  const [domestic, setDomestic] = useState(false);
+  const [dest, setDest] = useState("");
+  const [depart, setDepart] = useState("");
+  const [ret, setRet] = useState("");
+  const [conds, setConds] = useState([]);
+  const [medcats, setMedcats] = useState([]);
+  const [risks, setRisks] = useState([]);
+  const [caregiver, setCaregiver] = useState(false);
+  const [emergency, setEmergency] = useState({ contact: "", doctor: "", pharmacy: "", insurance: "", allergies: "" });
+
+  const toggle = (setter, arr, v) => setter(arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v]);
+  const plan = useMemo(() => buildTravelPlan({ intl, domestic, conds, medcats, risks }), [intl, domestic, conds, medcats, risks]);
+
+  const STEPS = ["Trip", "Health", "Medicines", "Risks", "Caregiver & Emergency", "Your Travel Plan"];
+  const Disc = ({ children }) => <div style={{ borderRadius: 12, border: "1px solid #EFC6C1", background: "#FCF3F1", padding: "12px 15px", fontSize: 12.5, color: "#7A2A22", lineHeight: 1.55, margin: "0 0 16px" }}>{children}</div>;
+  const Sec = ({ title, children }) => <div style={{ ...card, marginBottom: 14 }}><h3 style={{ fontFamily: serifH, fontSize: 16.5, margin: "0 0 12px", color: C.ink }}>{title}</h3>{children}</div>;
+  const Field = ({ label, value, onChange, type = "text", placeholder }) => (
+    <div style={{ marginBottom: 12 }}>
+      <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: C.inkSoft, marginBottom: 5 }}>{label}</label>
+      <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={{ width: "100%", boxSizing: "border-box", borderRadius: 10, border: `1px solid ${C.line}`, background: "#fff", padding: "10px 12px", fontSize: 14, color: C.ink, outline: "none" }} />
+    </div>
+  );
+
+  function printTravelPlan() {
+    const w = window.open("", "_blank"); if (!w) return;
+    const ul = a => a.length ? "<ul>" + a.map(x => "<li>" + x + "</li>").join("") + "</ul>" : "<p><em>None flagged.</em></p>";
+    const medList = (meds || []).map(m => (m.name || m.key) + (m.dose ? " — " + m.dose : "")).join("<br>") || "<em>Add your medicines in My Medications to include them.</em>";
+    w.document.write("<html><head><title>RxSafeTravel Plan</title><style>body{font-family:Georgia,serif;max-width:780px;margin:30px auto;color:#2B231C;line-height:1.5;padding:0 20px}h1{color:#0E3A36}h2{border-bottom:1px solid #ccc;padding-bottom:4px;margin-top:22px;font-size:16px}li{margin:3px 0;font-size:13px}small{color:#666}.warn{background:#FCF3F1;border:1px solid #EFC6C1;padding:10px 14px;border-radius:8px}</style></head><body>" +
+      "<h1>RxSafeTravel\u2122 Plan</h1>" +
+      "<p><small>Generated " + new Date().toLocaleDateString() + " \u00b7 Prepared by RxSafeTravel\u2122 inside RxSafeCheck\u2122 \u00b7 For discussion with your healthcare team</small></p>" +
+      "<p><strong>Trip:</strong> " + (intl ? "International" : "") + (intl && domestic ? " & " : "") + (domestic ? "Domestic" : "") + (dest ? " \u2014 " + dest : "") + (depart ? " \u2014 depart " + depart : "") + (ret ? ", return " + ret : "") + "</p>" +
+      "<h2>Conditions to discuss</h2>" + ul(conds) +
+      "<h2>My medicines</h2><p style='font-size:13px'>" + medList + "</p>" +
+      "<h2>Medicines / situations needing special attention</h2>" + ul(plan.special) +
+      "<h2>Questions for my doctor</h2>" + ul(plan.docQ) +
+      "<h2>Questions for my pharmacist</h2>" + ul(plan.pharmQ) +
+      (plan.tmQ.length ? "<h2>Questions for a travel-medicine clinician</h2>" + ul(plan.tmQ) : "") +
+      "<h2>Before you travel</h2>" + ul(plan.pre) +
+      "<h2>During travel</h2>" + ul(plan.during) +
+      "<h2>After travel</h2>" + ul(plan.post) +
+      "<h2>Seek urgent care if you have</h2><div class='warn'>" + ul(plan.warnings) + "</div>" +
+      "<h2>Emergency card</h2><p style='font-size:13px'>Contact: " + (emergency.contact || "___") + "<br>Doctor: " + (emergency.doctor || "___") + "<br>Pharmacy: " + (emergency.pharmacy || "___") + "<br>Insurance: " + (emergency.insurance || "___") + "<br>Allergies: " + (emergency.allergies || "___") + "</p>" +
+      "<p style='margin-top:20px'><small><strong>RxSafeTravel\u2122 is an educational and planning tool.</strong> It does not provide medical advice, diagnose, recommend medicines or vaccines, or replace a licensed healthcare professional. Medication laws vary by country and may change \u2014 verify with official government, embassy, customs, or destination sources. Do not start, stop, skip, or change any medicine unless instructed by a licensed professional. For emergencies, seek care immediately.</small></p>" +
+      "</body></html>");
+    w.document.close(); w.focus(); setTimeout(() => w.print(), 300);
+  }
+
+  return (
+    <div style={{ maxWidth: 860 }}>
+      <PageHead title={"RxSafeTravel\u2122"} italic={"\u201cKnow before you go. Plan before problems happen. Travel safer together.\u201d"} sub="Medication, condition, and caregiver planning before, during, and after travel \u2014 organized into questions and checklists for your healthcare team." />
+
+      <Disc><strong>RxSafeTravel\u2122 is an educational and planning tool.</strong> It does not provide medical advice, diagnose, recommend medicines or vaccines, or replace a licensed healthcare professional. Always speak with your doctor, pharmacist, specialist, or travel-medicine clinician before making health or medication decisions. Do not start, stop, skip, or change any medicine unless instructed by a professional. For a medical emergency, seek care immediately.</Disc>
+
+      {/* progress */}
+      <div style={{ display: "flex", gap: 6, marginBottom: 18, flexWrap: "wrap" }}>
+        {STEPS.map((s, i) => (
+          <button key={s} onClick={() => setStep(i)} style={{ flex: "1 1 auto", minWidth: 90, cursor: "pointer", borderRadius: 8, padding: "7px 8px", fontSize: 11.5, fontWeight: i === step ? 700 : 500, border: `1px solid ${i === step ? C.terra : C.line}`, background: i === step ? C.terra : (i < step ? "#EDE3D1" : "#fff"), color: i === step ? "#fff" : C.inkSoft }}>{i + 1}. {s}</button>
+        ))}
+      </div>
+
+      {step === 0 && (<>
+        <Sec title="Where are you going?">
+          <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+            <TravelChip on={intl} onClick={() => setIntl(!intl)}>International</TravelChip>
+            <TravelChip on={domestic} onClick={() => setDomestic(!domestic)}>Domestic</TravelChip>
+          </div>
+          <Field label="Destination(s)" value={dest} onChange={setDest} placeholder="e.g., Italy; or Denver, CO" />
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <Field label="Departure date" value={depart} onChange={setDepart} type="date" />
+            <Field label="Return date" value={ret} onChange={setRet} type="date" />
+          </div>
+        </Sec>
+        {intl && <Disc>Medication rules vary by country and may change. Before international travel, verify your medicines through official government, embassy, consulate, customs, or destination-country sources, and consider a travel-medicine clinic.</Disc>}
+      </>)}
+
+      {step === 1 && (
+        <Sec title="Which conditions apply to you?">
+          <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "0 0 12px" }}>Select all that apply. This shapes the questions and checklist you'll get. You can pick "Other condition" if yours isn't listed.</p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+            {TRAVEL_CONDITIONS.map(c => <TravelChip key={c} on={conds.includes(c)} onClick={() => toggle(setConds, conds, c)} accent="#5B5BD6">{c}</TravelChip>)}
+          </div>
+        </Sec>
+      )}
+
+      {step === 2 && (
+        <Sec title="What kinds of medicines do you take?">
+          <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "0 0 12px" }}>Pick the categories that apply. If you've added medicines under <button onClick={() => go("meds")} style={{ background: "none", border: "none", color: C.terra, textDecoration: "underline", cursor: "pointer", padding: 0, fontSize: 12.5 }}>My Medications</button>, they'll be included in your printed plan too.</p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+            {TRAVEL_MEDCATS.map(([k, label]) => <TravelChip key={k} on={medcats.includes(k)} onClick={() => toggle(setMedcats, medcats, k)} accent="#B5560A">{label}</TravelChip>)}
+          </div>
+        </Sec>
+      )}
+
+      {step === 3 && (
+        <Sec title="What does your trip involve?">
+          <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "0 0 12px" }}>Select any that apply to add relevant planning questions.</p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+            {TRAVEL_RISKS.map(([k, label]) => <TravelChip key={k} on={risks.includes(k)} onClick={() => toggle(setRisks, risks, k)} accent="#1F7A6D">{label}</TravelChip>)}
+          </div>
+        </Sec>
+      )}
+
+      {step === 4 && (<>
+        <Sec title="Caregiver & emergency information">
+          <div style={{ marginBottom: 14 }}><TravelChip on={caregiver} onClick={() => setCaregiver(!caregiver)}>A caregiver is involved in this trip</TravelChip></div>
+          <Field label="Emergency contact (name & phone)" value={emergency.contact} onChange={v => setEmergency(e => ({ ...e, contact: v }))} placeholder="Name — phone number" />
+          <Field label="Primary doctor / specialist" value={emergency.doctor} onChange={v => setEmergency(e => ({ ...e, doctor: v }))} />
+          <Field label="Pharmacy (name & phone)" value={emergency.pharmacy} onChange={v => setEmergency(e => ({ ...e, pharmacy: v }))} />
+          <Field label="Insurance / travel insurance" value={emergency.insurance} onChange={v => setEmergency(e => ({ ...e, insurance: v }))} />
+          <Field label="Allergies" value={emergency.allergies} onChange={v => setEmergency(e => ({ ...e, allergies: v }))} placeholder="e.g., penicillin; peanuts" />
+        </Sec>
+        <p style={{ fontSize: 11.5, color: C.inkFaint, lineHeight: 1.5 }}>This information stays in your browser for this session only and is used to build your printable plan. Only enter what you're comfortable with.</p>
+      </>)}
+
+      {step === 5 && (<>
+        {(plan.special.length > 0) && (
+          <div style={{ borderRadius: 14, border: "1px solid #E7B7B1", background: "#FCF6F4", padding: "16px 18px", marginBottom: 16 }}>
+            <p style={{ margin: "0 0 8px", fontSize: 13.5, fontWeight: 700, color: "#7A2A22" }}>Worth special attention</p>
+            <ul style={{ margin: 0, paddingLeft: 18 }}>{plan.special.map((s, i) => <li key={i} style={{ fontSize: 13, color: "#5A1410", lineHeight: 1.55, marginBottom: 5 }}>{s}</li>)}</ul>
+          </div>
+        )}
+
+        <TravelList title="Questions for your doctor or specialist" icon={Stethoscope} items={plan.docQ} accent="#5B5BD6" />
+        <TravelList title="Questions for your pharmacist" icon={Pill} items={plan.pharmQ} accent="#B5560A" />
+        {plan.tmQ.length > 0 && <TravelList title="Questions for a travel-medicine clinician" icon={Globe} items={plan.tmQ} accent="#1F7A6D" />}
+        <TravelList title="Before you travel" icon={CalendarCheck} items={plan.pre} accent="#94401F" />
+        <TravelList title="During travel" icon={Navigation} items={plan.during} accent="#1F5B54" />
+        <TravelList title="After travel" icon={CalendarClock} items={plan.post} accent="#6B4E8E" />
+
+        <div style={{ borderRadius: 14, border: "1px solid #EFC6C1", background: "#FCF3F1", padding: "16px 18px", marginBottom: 16 }}>
+          <p style={{ margin: "0 0 8px", fontSize: 13.5, fontWeight: 700, color: "#7A2A22" }}>Seek urgent care if you have</p>
+          <ul style={{ margin: 0, paddingLeft: 18 }}>{plan.warnings.map((w, i) => <li key={i} style={{ fontSize: 13, color: "#5A1410", lineHeight: 1.5, marginBottom: 4 }}>{w}</li>)}</ul>
+          <p style={{ margin: "10px 0 0", fontSize: 12, color: "#7A2A22", fontWeight: 600 }}>If symptoms feel severe, sudden, or life-threatening, seek emergency care immediately.</p>
+        </div>
+
+        <div style={{ ...card, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+          <span style={{ fontSize: 13.5, color: C.inkSoft, flex: 1, minWidth: 200 }}>Print or save your full travel plan and emergency card to bring to your healthcare team.</span>
+          <button onClick={printTravelPlan} style={{ ...primaryBtn, padding: "9px 15px", fontSize: 13 }}><Printer size={15} /> Print / Download plan</button>
+        </div>
+
+        <p style={{ marginTop: 16, fontSize: 11.5, color: C.inkFaint, lineHeight: 1.55 }}>Travel safety is not about fear \u2014 it's about preparation. RxSafeTravel\u2122 helps prepare the conversation; your healthcare team helps guide the care. Educational only; not medical advice. Verify medication rules with official destination sources. For emergencies, seek care immediately.</p>
+      </>)}
+
+      {/* step nav */}
+      {step < 5 && (
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
+          <button onClick={() => setStep(s => Math.max(0, s - 1))} disabled={step === 0} style={{ ...ghostBtn, padding: "9px 16px", fontSize: 13, opacity: step === 0 ? 0.4 : 1 }}>← Back</button>
+          <button onClick={() => setStep(s => Math.min(5, s + 1))} style={{ ...primaryBtn, padding: "9px 16px", fontSize: 13 }}>{step === 4 ? "See my travel plan" : "Next"} <ArrowRight size={15} /></button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TravelList({ title, icon: Icon, items, accent }) {
+  if (!items || !items.length) return null;
+  return (
+    <div style={{ ...card, marginBottom: 14 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 10 }}>
+        <span style={{ display: "flex", height: 30, width: 30, borderRadius: 8, background: accent + "1A", alignItems: "center", justifyContent: "center" }}><Icon size={16} color={accent} /></span>
+        <h3 style={{ fontFamily: serifH, fontSize: 16, margin: 0, color: C.ink }}>{title}</h3>
+      </div>
+      <ul style={{ margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6 }}>
+        {items.map((it, i) => <li key={i} style={{ fontSize: 13.5, color: "#4F4233", lineHeight: 1.55 }}>{it}</li>)}
+      </ul>
+    </div>
+  );
+}
+
+
+// ---- Condition Body Map (how conditions affect organ systems) ---------------
+const COND_IMPACT = {"diabetes": [["heart", "moderate", "Raises risk of heart attack and artery disease over time"], ["kidneys", "high", "A leading cause of kidney damage; needs regular checks"], ["eyes", "high", "Can damage the retina and threaten vision (retinopathy)"], ["brain", "moderate", "Nerve damage causes numbness/tingling; raises stroke risk"], ["endocrine", "high", "The core problem — the body can't use insulin well"], ["skin", "low", "Slow-healing sores and infections, especially on feet"]], "hypertension": [["heart", "high", "Strains the heart and arteries; raises heart-attack risk"], ["kidneys", "high", "A top cause of kidney damage over time"], ["brain", "high", "Major risk factor for stroke"], ["eyes", "moderate", "Can damage the small vessels in the eyes"]], "heart": [["heart", "high", "The heart pumps less effectively; fluid can back up"], ["lungs", "moderate", "Fluid can back up into the lungs (breathlessness)"], ["kidneys", "moderate", "Reduced blood flow can stress the kidneys"], ["liver", "low", "Fluid congestion can affect the liver in advanced cases"]], "copd": [["lungs", "high", "Airflow is limited; breathing is harder"], ["heart", "moderate", "Strain on the heart over time (especially the right side)"]], "asthma": [["lungs", "high", "Airways tighten and swell during flares"]], "cholesterol": [["heart", "high", "Builds up in arteries, raising heart-attack and stroke risk"], ["blood", "moderate", "Circulating blood fats contribute to artery plaque"], ["brain", "moderate", "Artery narrowing raises stroke risk"]], "afib": [["heart", "high", "Irregular rhythm from the upper heart chambers"], ["brain", "high", "Clots can form and travel, raising stroke risk"]], "ckd": [["kidneys", "high", "The kidneys filter less well over time"], ["heart", "high", "Closely linked — raises cardiovascular risk"], ["blood", "moderate", "Can cause anemia as kidney function drops"], ["bones", "moderate", "Affects mineral and bone balance"]], "hypothyroid": [["endocrine", "high", "The thyroid makes too little hormone, slowing the body"], ["heart", "low", "Can affect heart rate and cholesterol"], ["brain", "low", "Low mood, fog, and fatigue"]], "gout": [["bones", "high", "Uric-acid crystals inflame joints (often the big toe)"], ["kidneys", "moderate", "Linked to kidney stones and reduced function"]], "osteoporosis": [["bones", "high", "Bones thin and become fracture-prone"]], "arthritis": [["bones", "high", "Joint pain, stiffness, and inflammation"], ["muscles", "low", "Surrounding muscles and soft tissue can ache"]], "backpain": [["bones", "moderate", "Spine and joints involved"], ["muscles", "high", "Muscle tension and strain in the lower back"], ["brain", "low", "Chronic pain involves nervous-system pain processing"]], "migraine": [["brain", "high", "A neurological condition with disabling head pain"], ["eyes", "low", "Light sensitivity and visual aura in some attacks"]], "fibromyalgia": [["brain", "high", "The nervous system processes pain differently"], ["muscles", "moderate", "Widespread muscle aching and tenderness"]], "chronicpain": [["brain", "moderate", "Chronic pain involves nervous-system changes"], ["muscles", "moderate", "Ongoing muscle pain and tension"]], "mental": [["brain", "high", "Affects mood, thinking, and daily functioning"]], "anxiety": [["brain", "high", "Excessive worry and fear responses"], ["heart", "low", "Can cause racing heart and physical symptoms"]], "dementia": [["brain", "high", "Progressive decline in memory and thinking"]], "parkinsons": [["brain", "high", "Affects the brain cells controlling movement"], ["muscles", "moderate", "Stiffness, tremor, and slowed movement"], ["digestive", "low", "Constipation and swallowing changes are common"]], "gerd": [["digestive", "high", "Stomach acid irritates the food pipe"]], "ibs": [["digestive", "high", "Gut pain with changes in bowel habits"]], "crohns": [["digestive", "high", "Inflammation anywhere in the digestive tract"], ["blood", "moderate", "Bleeding and inflammation can cause anemia"], ["skin", "low", "Skin, mouth, and joint symptoms can occur"], ["bones", "low", "Inflammation and steroids can affect bones"]], "uc": [["digestive", "high", "Inflammation and ulcers in the colon and rectum"], ["blood", "moderate", "Bloody stools can lead to anemia"]], "anemia": [["blood", "high", "Too few healthy red blood cells to carry oxygen"], ["heart", "low", "The heart works harder to move oxygen"]], "sleepapnea": [["lungs", "moderate", "Breathing pauses lower oxygen during sleep"], ["heart", "high", "Raises blood pressure and heart risks over time"], ["brain", "moderate", "Poor sleep affects focus, mood, and alertness"]], "prediabetes": [["endocrine", "moderate", "Blood sugar is higher than normal — a warning stage"], ["heart", "low", "Raises future heart risk if it progresses"]], "obesity": [["heart", "high", "Raises blood pressure, cholesterol, and heart risk"], ["endocrine", "high", "Drives insulin resistance and diabetes risk"], ["bones", "moderate", "Extra load stresses joints"], ["liver", "moderate", "Linked to fatty liver disease"]], "menopause": [["endocrine", "high", "Shifting hormones as periods end"], ["bones", "moderate", "Bone loss speeds up after menopause"], ["heart", "moderate", "Heart risk rises after menopause"], ["repro", "moderate", "Reproductive changes and vaginal dryness"]], "bph": [["kidneys", "moderate", "Urinary flow problems from the enlarged prostate"], ["repro", "high", "The prostate enlarges and squeezes the urinary tube"]], "eczema": [["skin", "high", "Dry, itchy, inflamed skin in flares"]], "psoriasis": [["skin", "high", "Thick, scaly skin patches"], ["bones", "moderate", "Can involve the joints (psoriatic arthritis)"]]};
+const CBM_SEV = { high: { label: "Strong effect", dot: "#B4332B", rank: 3 }, moderate: { label: "Moderate effect", dot: "#B45309", rank: 2 }, low: { label: "Mild / possible", dot: "#1F7A6D", rank: 1 } };
+
+function ConditionBodyMap({ go }) {
+  const [sel, setSel] = useState([]);
+  const [expanded, setExpanded] = useState(null);
+
+  const toggle = k => setSel(p => p.includes(k) ? p.filter(x => x !== k) : [...p, k]);
+
+  // aggregate: system -> [{cond, sev, effect}]
+  const bySystem = useMemo(() => {
+    const m = {};
+    sel.forEach(ck => (COND_IMPACT[ck] || []).forEach(([sys, sev, effect]) => {
+      (m[sys] ||= []).push({ cond: ck, sev, effect });
+    }));
+    // sort each system's list by severity desc
+    Object.values(m).forEach(list => list.sort((a, b) => CBM_SEV[b.sev].rank - CBM_SEV[a.sev].rank));
+    return m;
+  }, [sel]);
+
+  // systems ordered head-to-toe by SYS.pos.y
+  const orderedSystems = useMemo(() => Object.keys(bySystem).sort((a, b) => (SYS[a]?.pos.y || 0) - (SYS[b]?.pos.y || 0)), [bySystem]);
+
+  // overlaps: systems hit by 2+ selected conditions (the signature insight)
+  const overlaps = useMemo(() => orderedSystems.filter(sys => new Set(bySystem[sys].map(x => x.cond)).size >= 2), [orderedSystems, bySystem]);
+
+  return (
+    <div style={{ maxWidth: 940 }}>
+      <PageHead title="Condition Body Map" italic={"\u201cSee how your conditions touch the whole body \u2014 together.\u201d"} sub="Pick one or more conditions to see which organ systems each one affects, and where they overlap. Educational only; it doesn't diagnose or replace your healthcare team." />
+
+      <div style={{ ...card, marginBottom: 16, background: "#F4EFF8", border: "1px solid #C9B7D6" }}>
+        <p style={{ fontSize: 13, color: "#3E2C55", margin: 0, lineHeight: 1.6 }}>Just like medicines, <strong>conditions interact with the body together</strong>. Selecting, say, <strong>diabetes</strong> and <strong>high blood pressure</strong> shows how both strain the <strong>kidneys, heart, eyes, and brain</strong> at once \u2014 which is exactly what makes managing them together so important.</p>
+      </div>
+
+      {/* condition picker */}
+      <p style={{ ...eyebrow, marginBottom: 10 }}>Choose your conditions</p>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 18 }}>
+        {Object.keys(CONDITIONS).map(k => {
+          const on = sel.includes(k); const cc = CONDITIONS[k];
+          return (
+            <button key={k} onClick={() => toggle(k)} style={{ display: "inline-flex", alignItems: "center", gap: 7, cursor: "pointer", borderRadius: 999, padding: "7px 13px", fontSize: 13, fontWeight: on ? 600 : 400, border: `1px solid ${on ? cc.accent : C.line}`, background: on ? cc.accent : "#fff", color: on ? "#fff" : C.inkSoft }}>
+              {on && <Check size={13} />}{cc.name}
+            </button>
+          );
+        })}
+      </div>
+
+      {sel.length === 0 && (
+        <div style={{ ...card, textAlign: "center", padding: "42px 20px" }}>
+          <PersonStanding size={30} style={{ color: C.inkFaint }} />
+          <p style={{ marginTop: 8, fontSize: 14.5, color: C.inkSoft }}>Pick one or more conditions above to see how they affect the body.</p>
+          <p style={{ marginTop: 4, fontSize: 12.5, color: C.inkFaint }}>Try: Type 2 Diabetes + High Blood Pressure</p>
+        </div>
+      )}
+
+      {sel.length > 0 && (
+        <>
+          {/* selected chips summary */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14, alignItems: "center" }}>
+            <span style={{ fontSize: 12.5, color: C.inkSoft }}>Showing:</span>
+            {sel.map(k => <span key={k} style={{ fontSize: 12.5, fontWeight: 600, color: CONDITIONS[k].accent }}>{CONDITIONS[k].name}</span>).reduce((a, b) => [a, <span key={Math.random()} style={{ color: C.inkFaint }}>·</span>, b])}
+            <button onClick={() => setSel([])} style={{ fontSize: 12, color: C.inkFaint, background: "none", border: "none", textDecoration: "underline", cursor: "pointer", marginLeft: 4 }}>clear</button>
+          </div>
+
+          {/* overlap callout — the signature multi-condition insight */}
+          {overlaps.length > 0 && (
+            <div style={{ borderRadius: 14, border: "1px solid #EFC6C1", background: "#FCF3F1", padding: "15px 17px", marginBottom: 18 }}>
+              <p style={{ margin: "0 0 6px", fontSize: 13.5, fontWeight: 700, color: "#7A2A22" }}>Where your conditions stack up</p>
+              <p style={{ margin: 0, fontSize: 13, color: "#5A1410", lineHeight: 1.55 }}>
+                {overlaps.map(sys => SYS[sys].name).join(", ")} {overlaps.length === 1 ? "is" : "are"} affected by more than one of your conditions. Systems under combined strain often deserve the closest monitoring \u2014 good things to ask your care team about.
+              </p>
+            </div>
+          )}
+
+          {/* systems list, head to toe */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {orderedSystems.map(sys => {
+              const S = SYS[sys]; const list = bySystem[sys];
+              const isOverlap = overlaps.includes(sys);
+              const topSev = list[0].sev;
+              return (
+                <div key={sys} style={{ borderRadius: 14, border: `1px solid ${isOverlap ? "#E7B7B1" : C.line}`, background: "#fff", overflow: "hidden" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "13px 16px", background: isOverlap ? "#FCF6F4" : C.surface, borderBottom: `1px solid ${C.line}` }}>
+                    <span style={{ display: "flex", height: 34, width: 34, borderRadius: 9, background: CBM_SEV[topSev].dot + "1A", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><S.Icon size={18} color={CBM_SEV[topSev].dot} /></span>
+                    <span style={{ fontFamily: serifH, fontSize: 16, color: C.ink }}>{S.name}</span>
+                    {isOverlap && <span style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 700, color: "#7A2A22", background: "#FBE4E0", borderRadius: 999, padding: "3px 9px" }}>MULTIPLE CONDITIONS</span>}
+                  </div>
+                  <div style={{ padding: "6px 16px 12px" }}>
+                    {list.map((it, i) => (
+                      <div key={i} style={{ display: "flex", gap: 10, padding: "9px 0", borderBottom: i < list.length - 1 ? `1px solid ${C.line}` : "none" }}>
+                        <span style={{ height: 8, width: 8, borderRadius: 999, background: CBM_SEV[it.sev].dot, marginTop: 6, flexShrink: 0 }} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ margin: 0, fontSize: 13.5, color: C.ink }}><span style={{ fontWeight: 600, color: CONDITIONS[it.cond].accent }}>{CONDITIONS[it.cond].name}</span> <span style={{ fontSize: 11.5, color: CBM_SEV[it.sev].dot }}>· {CBM_SEV[it.sev].label}</span></p>
+                          <p style={{ margin: "2px 0 0", fontSize: 13, color: C.inkSoft, lineHeight: 1.5 }}>{it.effect}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* legend + actions */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 14, alignItems: "center", marginTop: 16, fontSize: 12, color: C.inkSoft }}>
+            {Object.entries(CBM_SEV).sort((a, b) => b[1].rank - a[1].rank).map(([k, v]) => (
+              <span key={k} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><span style={{ height: 9, width: 9, borderRadius: 999, background: v.dot }} />{v.label}</span>
+            ))}
+          </div>
+          <div style={{ ...card, marginTop: 16, display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+            <span style={{ fontSize: 13, color: C.inkSoft, flex: 1, minWidth: 200 }}>Want plain-language plans, trackers, and questions for these conditions?</span>
+            <button onClick={() => go("guide")} style={{ ...primaryBtn, padding: "9px 15px", fontSize: 13 }}><HeartPulse size={15} /> Open the Self-Management Guide</button>
+          </div>
+        </>
+      )}
+
+      <p style={{ marginTop: 16, fontSize: 11.5, color: C.inkFaint, lineHeight: 1.55 }}>Educational only. This shows general ways conditions can affect body systems \u2014 it does not diagnose, predict your personal outcome, or replace medical advice. Everyone is different; discuss your health with your care team.</p>
     </div>
   );
 }
@@ -4229,13 +4744,30 @@ function Stub({ id, go }) {
 }
 
 // ---- Navigation ------------------------------------------------------------
-const NAV = [
-  ["dashboard", "Dashboard", LayoutDashboard], ["meds", "My Medications", Pill], ["pillid", "Pill Identifier", ScanLine], ["findmed", "Find My Medication", MapPin], ["interactions", "Interaction Checker", Activity], ["painsafe", "Pain-Reliever Safety", ShieldCheck],
-  ["bodymap", "Body Impact Map", PersonStanding], ["treatment", "Treatment Options", ListChecks], ["trials", "Clinical Trials", FlaskConical], ["food", "Food Interactions", Apple], ["schedule", "Schedule Builder", CalendarClock],
-  ["symptom", "Symptom Checker", Stethoscope], ["summary", "Health Summary", Gauge], ["notifications", "Notifications", Bell],
-  ["emergency", "Emergency", Siren], ["plan", "Plan ahead", CalendarCheck], ["pharmacist", "AI Pharmacist", MessageCircle],
-  ["news", "Drug Safety News", Newspaper], ["newshub", "News Hub (live)", Globe], ["learn", "Learn & FAQ", BookOpen], ["guide", "Self-Management Guide", HeartPulse], ["parkinson", "Parkinson's Guide", BookOpen], ["policies", "Policies & Terms", FileText],
+const NAV_GROUPS = [
+  ["My Medicines", [
+    ["dashboard", "Dashboard", LayoutDashboard], ["meds", "My Medications", Pill], ["pillid", "Pill Identifier", ScanLine], ["findmed", "Find My Medication", MapPin],
+  ]],
+  ["Check Safety", [
+    ["interactions", "Interaction Checker", Activity], ["painsafe", "Pain-Reliever Safety", ShieldCheck], ["bodymap", "Body Impact Map", PersonStanding], ["food", "Food Interactions", Apple],
+  ]],
+  ["My Health", [
+    ["condmap", "Condition Body Map", HeartPulse], ["guide", "Self-Management Guide", HeartPulse], ["symptom", "Symptom Checker", Stethoscope], ["summary", "Health Summary", Gauge],
+  ]],
+  ["Plan & Travel", [
+    ["travel", "RxSafeTravel", Navigation], ["schedule", "Schedule Builder", CalendarClock], ["notifications", "Notifications", Bell], ["plan", "Plan ahead", CalendarCheck], ["treatment", "Treatment Options", ListChecks], ["trials", "Clinical Trials", FlaskConical],
+  ]],
+  ["Learn", [
+    ["learn", "Learn & FAQ", BookOpen], ["news", "Drug Safety News", Newspaper], ["newshub", "News Hub (live)", Globe], ["pharmacist", "AI Pharmacist", MessageCircle],
+  ]],
+  ["Urgent", [
+    ["emergency", "Emergency", Siren],
+  ]],
+  ["About", [
+    ["mission", "Mission & Vision", Star], ["policies", "Policies & Terms", FileText],
+  ]],
 ];
+const NAV = NAV_GROUPS.flatMap(([, items]) => items);
 
 // ---- App shell -------------------------------------------------------------
 function App() {
@@ -4294,10 +4826,15 @@ function App() {
             </div>
           </div>
           <nav style={{ display: "flex", flexDirection: "column", gap: 3 }}>
-            {NAV.map(([id, label, Icon]) => (
-              <button key={id} className={"nav-btn" + (page === id ? " active" : "")} onClick={() => go(id)}>
-                <Icon size={17} />{label}
-              </button>
+            {NAV_GROUPS.map(([groupLabel, items], gi) => (
+              <div key={groupLabel} style={{ marginTop: gi === 0 ? 0 : 12 }}>
+                <p style={{ margin: "0 0 4px", padding: "0 13px", fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkFaint }}>{groupLabel}</p>
+                {items.map(([id, label, Icon]) => (
+                  <button key={id} className={"nav-btn" + (page === id ? " active" : "")} onClick={() => go(id)}>
+                    <Icon size={17} />{label}
+                  </button>
+                ))}
+              </div>
             ))}
           </nav>
           <div style={{ marginTop: 20, padding: "13px", borderRadius: 12, background: "#E3D8C4", border: `1px solid ${C.line}` }}>
@@ -4335,6 +4872,9 @@ function App() {
             {page === "notifications" && <Notifications notify={notify} setNotify={setNotify} account={account} setAccount={setAccount} />}
             {page === "news" && <DrugSafetyNews meds={meds} keys={keys} findings={findings} score={score} go={go} />}
             {page === "guide" && <SelfCareGuide go={go} />}
+            {page === "travel" && <RxSafeTravel go={go} meds={meds} />}
+            {page === "condmap" && <ConditionBodyMap go={go} />}
+            {page === "mission" && <MissionPage go={go} />}
             {page === "newshub" && <NewsHub />}
             {page === "parkinson" && <ParkinsonGuide go={go} />}
             {page === "policies" && <PoliciesPage />}

@@ -1,10 +1,15 @@
-import React, { useState, useMemo, useRef, useEffect, useLayoutEffect, useCallback } from "react";
+import React, { useState, useMemo, useRef, useEffect, useLayoutEffect, useCallback, useContext } from "react";
 import {
   Heart, Brain, Droplets, Activity, FlaskConical, Pill, Search, X, ChevronDown,
   AlertTriangle, ShieldAlert, Plus, LayoutDashboard, Apple, CalendarClock,
   Stethoscope, Siren, CalendarCheck, MessageCircle, Newspaper, BookOpen, Menu,
   ArrowRight, PersonStanding,
   Eye, Wind, Bone, Dna, Hexagon, Dumbbell, Hand, ShieldCheck, Info,
+  Bell, Clock, Sun, Sunrise, Sunset, Moon, Coffee, Wine, Milk, Leaf, Citrus,
+  Utensils, GlassWater, Calendar, Download, Printer, Check, CheckCircle2, TrendingUp,
+  ClipboardList, FileText, Phone, Mail, Trash2, Pencil, ScanLine, Upload, ListChecks,
+  Gauge, HeartPulse, Sparkles, ChevronRight, Star, Droplet,
+  RefreshCw, Bookmark, Share2, Globe, MapPin, ChevronUp, Navigation, Flame,
 } from "lucide-react";
 
 /* ============================================================================
@@ -28,7 +33,7 @@ const C = {
   sidebar:  "#ECE2D0",
   ink:      "#2B231C",
   inkSoft:  "#6E6253",
-  inkFaint: "#998C79",
+  inkFaint: "#726753",
   line:     "#E1D6C2",
   terra:    "#B5532E",
   terraDeep:"#94401F",
@@ -80,7 +85,7 @@ const DRUGS = {
   furosemide:    { name: "Furosemide", cls: "Loop diuretic", tags: "electrolyte", aliases:["lasix"] },
   spironolactone:{ name: "Spironolactone", cls: "Potassium-sparing diuretic", tags: "hyperkalemia", aliases:["aldactone"] },
   digoxin:       { name: "Digoxin", cls: "Antiarrhythmic", tags: "pgp_sub narrow_ti", aliases:["lanoxin"] },
-  amiodarone:    { name: "Amiodarone", cls: "Antiarrhythmic", tags: "qt cyp3a4_inh_mod cyp2c9_inh pgp_inh raises_digoxin", aliases:["cordarone","pacerone"] },
+  amiodarone:    { name: "Amiodarone", cls: "Antiarrhythmic", tags: "qt cyp3a4_inh_mod cyp2c9_inh pgp_inh raises_digoxin raises_warfarin", aliases:["cordarone","pacerone"] },
   sotalol:       { name: "Sotalol", cls: "Antiarrhythmic", tags: "qt", aliases:["betapace"] },
   dofetilide:    { name: "Dofetilide", cls: "Antiarrhythmic", tags: "qt narrow_ti", aliases:["tikosyn"] },
   flecainide:    { name: "Flecainide", cls: "Antiarrhythmic", tags: "qt cyp2d6_sub", aliases:["tambocor"] },
@@ -104,6 +109,75 @@ const DRUGS = {
   ketoconazole:  { name: "Ketoconazole", cls: "Antifungal", tags: "cyp3a4_inh_strong", aliases:[] },
   voriconazole:  { name: "Voriconazole", cls: "Antifungal", tags: "cyp3a4_inh_strong cyp2c19_sub qt", aliases:["vfend"] },
   rifampin:      { name: "Rifampin", cls: "Antibiotic", tags: "cyp3a4_ind cyp2c9_ind cyp2c19_ind pgp_ind", aliases:["rifampicin","rifadin"] },
+  // --- penicillins ---
+  ampicillin:    { name: "Ampicillin", cls: "Antibiotic (penicillin)", tags: "", aliases:["principen"] },
+  penicillinvk:  { name: "Penicillin V", cls: "Antibiotic (penicillin)", tags: "", aliases:["penicillin","pen vk","veetids"] },
+  dicloxacillin: { name: "Dicloxacillin", cls: "Antibiotic (penicillin)", tags: "", aliases:["dynapen"] },
+  amoxclav:      { name: "Amoxicillin-clavulanate", cls: "Antibiotic (penicillin)", tags: "hepatotoxic", aliases:["augmentin"] },
+  piptazo:       { name: "Piperacillin-tazobactam", cls: "Antibiotic (penicillin)", tags: "", aliases:["zosyn"] },
+  nafcillin:     { name: "Nafcillin", cls: "Antibiotic (penicillin)", tags: "cyp3a4_ind", aliases:["nallpen","unipen"] },
+  // --- cephalosporins ---
+  cephalexin:    { name: "Cephalexin", cls: "Antibiotic (cephalosporin)", tags: "", aliases:["keflex"] },
+  cefadroxil:    { name: "Cefadroxil", cls: "Antibiotic (cephalosporin)", tags: "", aliases:["duricef"] },
+  cefuroxime:    { name: "Cefuroxime", cls: "Antibiotic (cephalosporin)", tags: "", aliases:["ceftin","zinacef"] },
+  cefdinir:      { name: "Cefdinir", cls: "Antibiotic (cephalosporin)", tags: "cation_binds", aliases:["omnicef"] },
+  cefpodoxime:   { name: "Cefpodoxime", cls: "Antibiotic (cephalosporin)", tags: "", aliases:["vantin"] },
+  cefixime:      { name: "Cefixime", cls: "Antibiotic (cephalosporin)", tags: "", aliases:["suprax"] },
+  ceftriaxone:   { name: "Ceftriaxone", cls: "Antibiotic (cephalosporin)", tags: "", aliases:["rocephin"] },
+  cefepime:      { name: "Cefepime", cls: "Antibiotic (cephalosporin)", tags: "", aliases:["maxipime"] },
+  cefazolin:     { name: "Cefazolin", cls: "Antibiotic (cephalosporin)", tags: "", aliases:["ancef","kefzol"] },
+  cefotetan:     { name: "Cefotetan", cls: "Antibiotic (cephalosporin)", tags: "alcohol_reaction raises_warfarin", aliases:["cefotan"] },
+  ceftazidime:   { name: "Ceftazidime", cls: "Antibiotic (cephalosporin)", tags: "", aliases:["fortaz","tazicef"] },
+  // --- macrolides / ketolide ---
+  fidaxomicin:   { name: "Fidaxomicin", cls: "Antibiotic (macrolide)", tags: "", aliases:["dificid"] },
+  // --- fluoroquinolones ---
+  moxifloxacin:  { name: "Moxifloxacin", cls: "Antibiotic (fluoroquinolone)", tags: "qt cation_binds seizure_threshold", aliases:["avelox"] },
+  ofloxacin:     { name: "Ofloxacin", cls: "Antibiotic (fluoroquinolone)", tags: "qt cation_binds seizure_threshold", aliases:["floxin"] },
+  gemifloxacin:  { name: "Gemifloxacin", cls: "Antibiotic (fluoroquinolone)", tags: "qt cation_binds seizure_threshold", aliases:["factive"] },
+  delafloxacin:  { name: "Delafloxacin", cls: "Antibiotic (fluoroquinolone)", tags: "cation_binds seizure_threshold", aliases:["baxdela"] },
+  // --- tetracyclines ---
+  tetracycline:  { name: "Tetracycline", cls: "Antibiotic (tetracycline)", tags: "cation_binds", aliases:["sumycin"] },
+  minocycline:   { name: "Minocycline", cls: "Antibiotic (tetracycline)", tags: "cation_binds", aliases:["minocin","solodyn"] },
+  tigecycline:   { name: "Tigecycline", cls: "Antibiotic (tetracycline)", tags: "raises_warfarin", aliases:["tygacil"] },
+  // --- sulfonamides / trimethoprim ---
+  trimethoprim:  { name: "Trimethoprim", cls: "Antibiotic", tags: "hyperkalemia raises_mtx", aliases:["proloprim","primsol"] },
+  sulfadiazine:  { name: "Sulfadiazine", cls: "Antibiotic (sulfonamide)", tags: "cyp2c9_inh raises_warfarin", aliases:[] },
+  // --- nitroimidazole ---
+  tinidazole:    { name: "Tinidazole", cls: "Antibiotic", tags: "alcohol_reaction raises_warfarin cyp3a4_sub", aliases:["tindamax"] },
+  // --- lincosamide ---
+  clindamycin:   { name: "Clindamycin", cls: "Antibiotic (lincosamide)", tags: "", aliases:["cleocin"] },
+  // --- glycopeptides / lipoglycopeptides ---
+  vancomycin:    { name: "Vancomycin", cls: "Antibiotic (glycopeptide)", tags: "nephrotoxic", aliases:["vancocin","firvanq"] },
+  telavancin:    { name: "Telavancin", cls: "Antibiotic (glycopeptide)", tags: "qt nephrotoxic", aliases:["vibativ"] },
+  dalbavancin:   { name: "Dalbavancin", cls: "Antibiotic (glycopeptide)", tags: "", aliases:["dalvance"] },
+  oritavancin:   { name: "Oritavancin", cls: "Antibiotic (glycopeptide)", tags: "raises_warfarin", aliases:["orbactiv"] },
+  daptomycin:    { name: "Daptomycin", cls: "Antibiotic (lipopeptide)", tags: "myopathy", aliases:["cubicin"] },
+  // --- oxazolidinones ---
+  tedizolid:     { name: "Tedizolid", cls: "Antibiotic (oxazolidinone)", tags: "serotonergic", aliases:["sivextro"] },
+  // --- aminoglycosides ---
+  gentamicin:    { name: "Gentamicin", cls: "Antibiotic (aminoglycoside)", tags: "nephrotoxic", aliases:["garamycin"] },
+  tobramycin:    { name: "Tobramycin", cls: "Antibiotic (aminoglycoside)", tags: "nephrotoxic", aliases:["tobrex","nebcin"] },
+  amikacin:      { name: "Amikacin", cls: "Antibiotic (aminoglycoside)", tags: "nephrotoxic", aliases:["amikin"] },
+  streptomycin:  { name: "Streptomycin", cls: "Antibiotic (aminoglycoside)", tags: "nephrotoxic", aliases:[] },
+  neomycin:      { name: "Neomycin (oral)", cls: "Antibiotic (aminoglycoside)", tags: "nephrotoxic raises_warfarin", aliases:["neo-fradin"] },
+  // --- carbapenems / monobactam ---
+  meropenem:     { name: "Meropenem", cls: "Antibiotic (carbapenem)", tags: "reduces_valproate seizure_threshold", aliases:["merrem"] },
+  imipenem:      { name: "Imipenem-cilastatin", cls: "Antibiotic (carbapenem)", tags: "reduces_valproate seizure_threshold", aliases:["primaxin"] },
+  ertapenem:     { name: "Ertapenem", cls: "Antibiotic (carbapenem)", tags: "reduces_valproate seizure_threshold", aliases:["invanz"] },
+  aztreonam:     { name: "Aztreonam", cls: "Antibiotic (monobactam)", tags: "", aliases:["azactam","cayston"] },
+  // --- anti-tuberculous / miscellaneous ---
+  rifabutin:     { name: "Rifabutin", cls: "Antibiotic", tags: "cyp3a4_ind cyp3a4_sub", aliases:["mycobutin"] },
+  rifapentine:   { name: "Rifapentine", cls: "Antibiotic", tags: "cyp3a4_ind cyp2c9_ind", aliases:["priftin"] },
+  rifaximin:     { name: "Rifaximin", cls: "Antibiotic", tags: "", aliases:["xifaxan"] },
+  isoniazid:     { name: "Isoniazid", cls: "Antibiotic (anti-TB)", tags: "cyp2c19_inh cyp3a4_inh_mod hepatotoxic maoi", aliases:["inh","laniazid","nydrazid"] },
+  ethambutol:    { name: "Ethambutol", cls: "Antibiotic (anti-TB)", tags: "", aliases:["myambutol"] },
+  pyrazinamide:  { name: "Pyrazinamide", cls: "Antibiotic (anti-TB)", tags: "hepatotoxic", aliases:["pza"] },
+  dapsone:       { name: "Dapsone", cls: "Antibiotic", tags: "hepatotoxic", aliases:[] },
+  chloramphenicol:{ name: "Chloramphenicol", cls: "Antibiotic", tags: "cyp2c19_inh cyp3a4_inh_mod raises_warfarin", aliases:[] },
+  fosfomycin:    { name: "Fosfomycin", cls: "Antibiotic", tags: "", aliases:["monurol"] },
+  colistin:      { name: "Colistin", cls: "Antibiotic (polymyxin)", tags: "nephrotoxic", aliases:["colistimethate","coly-mycin"] },
+  polymyxinb:    { name: "Polymyxin B", cls: "Antibiotic (polymyxin)", tags: "nephrotoxic", aliases:[] },
+  methenamine:   { name: "Methenamine", cls: "Antibiotic (urinary)", tags: "", aliases:["hiprex","urex"] },
   sertraline:    { name: "Sertraline", cls: "SSRI", tags: "serotonergic", aliases:["zoloft"] },
   fluoxetine:    { name: "Fluoxetine", cls: "SSRI", tags: "serotonergic cyp2d6_inh_strong cyp2c19_inh long_half_life", aliases:["prozac"] },
   paroxetine:    { name: "Paroxetine", cls: "SSRI", tags: "serotonergic cyp2d6_inh_strong anticholinergic", aliases:["paxil"] },
@@ -120,6 +194,35 @@ const DRUGS = {
   phenelzine:    { name: "Phenelzine (MAOI)", cls: "MAO inhibitor", tags: "maoi serotonergic", aliases:["nardil"] },
   tranylcypromine:{ name: "Tranylcypromine (MAOI)", cls: "MAO inhibitor", tags: "maoi serotonergic", aliases:["parnate"] },
   selegiline:    { name: "Selegiline", cls: "MAO inhibitor", tags: "maoi", aliases:["eldepryl","emsam"] },
+  // ===== Parkinson's disease drugs =====
+  levodopa:      { name: "Levodopa / carbidopa", cls: "Parkinson's (dopamine precursor)", tags: "parkinson levodopa serotonergic protein_absorb iron_absorb b6_sensitive orthostatic", aliases:["sinemet","rytary","duopa","carbidopa-levodopa"] },
+  levodopa_er:   { name: "Levodopa/carbidopa/entacapone", cls: "Parkinson's (combination)", tags: "parkinson levodopa serotonergic protein_absorb iron_absorb comt orthostatic", aliases:["stalevo"] },
+  pramipexole:   { name: "Pramipexole", cls: "Parkinson's (dopamine agonist)", tags: "parkinson dopamine_agonist cns_depress orthostatic impulse_control", aliases:["mirapex"] },
+  ropinirole:    { name: "Ropinirole", cls: "Parkinson's (dopamine agonist)", tags: "parkinson dopamine_agonist cns_depress orthostatic impulse_control cyp1a2_sub", aliases:["requip"] },
+  rotigotine:    { name: "Rotigotine (patch)", cls: "Parkinson's (dopamine agonist)", tags: "parkinson dopamine_agonist cns_depress orthostatic impulse_control", aliases:["neupro"] },
+  apomorphine:   { name: "Apomorphine", cls: "Parkinson's (dopamine agonist)", tags: "parkinson dopamine_agonist qt orthostatic severe_nausea", aliases:["apokyn","kynmobi"] },
+  rasagiline:    { name: "Rasagiline", cls: "Parkinson's (MAO-B inhibitor)", tags: "parkinson maob serotonergic tyramine", aliases:["azilect"] },
+  safinamide:    { name: "Safinamide", cls: "Parkinson's (MAO-B inhibitor)", tags: "parkinson maob serotonergic tyramine", aliases:["xadago"] },
+  entacapone:    { name: "Entacapone", cls: "Parkinson's (COMT inhibitor)", tags: "parkinson comt iron_absorb orthostatic", aliases:["comtan"] },
+  tolcapone:     { name: "Tolcapone", cls: "Parkinson's (COMT inhibitor)", tags: "parkinson comt hepatotoxic orthostatic", aliases:["tasmar"] },
+  opicapone:     { name: "Opicapone", cls: "Parkinson's (COMT inhibitor)", tags: "parkinson comt orthostatic", aliases:["ongentys"] },
+  amantadine:    { name: "Amantadine", cls: "Parkinson's (glutamate/other)", tags: "parkinson anticholinergic cns_depress", aliases:["symmetrel","gocovri","osmolex"] },
+  benztropine:   { name: "Benztropine", cls: "Parkinson's (anticholinergic)", tags: "parkinson anticholinergic cns_depress", aliases:["cogentin"] },
+  trihexyphen:   { name: "Trihexyphenidyl", cls: "Parkinson's (anticholinergic)", tags: "parkinson anticholinergic cns_depress", aliases:["artane"] },
+  pimavanserin:  { name: "Pimavanserin", cls: "Parkinson's psychosis", tags: "parkinson qt cyp3a4_sub", aliases:["nuplazid"] },
+  istradefylline:{ name: "Istradefylline", cls: "Parkinson's (adenosine A2A)", tags: "parkinson cyp3a4_sub impulse_control", aliases:["nourianz"] },
+  // ===== Macro/micronutrients that affect drug absorption & performance =====
+  dietary_protein:{ name: "Dietary protein (high-protein meal)", cls: "Macronutrient", tags: "nutrient protein_meal", aliases:["protein","high protein meal","amino acids (dietary)"] },
+  dietary_fat:   { name: "Dietary fat (fatty meal)", cls: "Macronutrient", tags: "nutrient fatty_meal", aliases:["fat","fatty meal","high fat meal"] },
+  dietary_fiber: { name: "Dietary fiber", cls: "Macronutrient", tags: "nutrient fiber_bulk", aliases:["fiber","psyllium (dietary)","bran"] },
+  vitamin_b6:    { name: "Vitamin B6 (pyridoxine)", cls: "Micronutrient (vitamin)", tags: "nutrient b6_high", aliases:["pyridoxine","b6"] },
+  vitamin_k:     { name: "Vitamin K", cls: "Micronutrient (vitamin)", tags: "nutrient vitamin_k reduces_warfarin", aliases:["phylloquinone","vitamin k1","vitamin k2","leafy greens"] },
+  calcium_nutr:  { name: "Calcium (supplement/dairy)", cls: "Micronutrient (mineral)", tags: "nutrient cation_binder", aliases:["calcium","dairy","milk"] },
+  iron_nutr:     { name: "Iron (supplement)", cls: "Micronutrient (mineral)", tags: "nutrient cation_binder iron_mineral", aliases:["ferrous sulfate (nutrient)","iron supplement"] },
+  magnesium_nutr:{ name: "Magnesium / antacid", cls: "Micronutrient (mineral)", tags: "nutrient cation_binder", aliases:["magnesium","antacid"] },
+  zinc_nutr:     { name: "Zinc (supplement)", cls: "Micronutrient (mineral)", tags: "nutrient cation_binder", aliases:["zinc"] },
+  potassium_nutr:{ name: "Potassium (supplement/salt substitute)", cls: "Micronutrient (mineral)", tags: "nutrient hyperkalemia", aliases:["potassium","salt substitute","potassium chloride (nutrient)"] },
+  grapefruit_nutr:{ name: "Grapefruit (juice/fruit)", cls: "Food factor", tags: "nutrient grapefruit_gut", aliases:["grapefruit juice","pomelo","seville orange"] },
   lithium:       { name: "Lithium", cls: "Mood stabilizer", tags: "narrow_ti lithium_level serotonergic", aliases:["lithobid"] },
   valproate:     { name: "Valproate / Divalproex", cls: "Anticonvulsant", tags: "raises_lamotrigine hepatotoxic", aliases:["depakote","depakene","valproic acid"] },
   lamotrigine:   { name: "Lamotrigine", cls: "Anticonvulsant", tags: "ugt_sub", aliases:["lamictal"] },
@@ -179,6 +282,70 @@ const DRUGS = {
   colchicine:    { name: "Colchicine", cls: "Gout / anti-inflammatory", tags: "cyp3a4_sub pgp_sub narrow_ti", aliases:["colcrys"] },
   hydroxychloroquine:{ name: "Hydroxychloroquine", cls: "Antimalarial / rheum", tags: "qt", aliases:["plaquenil"] },
   tamoxifen:     { name: "Tamoxifen", cls: "Hormonal therapy", tags: "cyp2d6_activated", aliases:["nolvadex"] },
+
+  // ---- Oncology (analyzed) -------------------------------------------------
+  // Hormonal / endocrine therapy
+  anastrozole:   { name: "Anastrozole", cls: "Aromatase inhibitor", tags: "", aliases:["arimidex"] },
+  letrozole:     { name: "Letrozole", cls: "Aromatase inhibitor", tags: "", aliases:["femara"] },
+  exemestane:    { name: "Exemestane", cls: "Aromatase inhibitor", tags: "", aliases:["aromasin"] },
+  fulvestrant:   { name: "Fulvestrant", cls: "Hormonal therapy (oncology)", tags: "", aliases:["faslodex"] },
+  leuprolide:    { name: "Leuprolide", cls: "GnRH agonist", tags: "", aliases:["lupron","eligard"] },
+  goserelin:     { name: "Goserelin", cls: "GnRH agonist", tags: "", aliases:["zoladex"] },
+  bicalutamide:  { name: "Bicalutamide", cls: "Anti-androgen", tags: "hepatotoxic", aliases:["casodex"] },
+  enzalutamide:  { name: "Enzalutamide", cls: "Anti-androgen", tags: "qt seizure_threshold cyp3a4_ind", aliases:["xtandi"] },
+  abiraterone:   { name: "Abiraterone", cls: "Anti-androgen (CYP17)", tags: "hepatotoxic", aliases:["zytiga"] },
+  // Chemotherapy
+  cyclophosphamide:{ name: "Cyclophosphamide", cls: "Chemotherapy (alkylating)", tags: "myelosuppression emetogenic", aliases:["cytoxan"] },
+  doxorubicin:   { name: "Doxorubicin", cls: "Chemotherapy (anthracycline)", tags: "myelosuppression cardiotoxic emetogenic", aliases:["adriamycin"] },
+  epirubicin:    { name: "Epirubicin", cls: "Chemotherapy (anthracycline)", tags: "myelosuppression cardiotoxic", aliases:["ellence"] },
+  cisplatin:     { name: "Cisplatin", cls: "Chemotherapy (platinum)", tags: "myelosuppression nephrotoxic neurotoxic emetogenic", aliases:[] },
+  carboplatin:   { name: "Carboplatin", cls: "Chemotherapy (platinum)", tags: "myelosuppression emetogenic", aliases:["paraplatin"] },
+  oxaliplatin:   { name: "Oxaliplatin", cls: "Chemotherapy (platinum)", tags: "myelosuppression neurotoxic emetogenic", aliases:["eloxatin"] },
+  paclitaxel:    { name: "Paclitaxel", cls: "Chemotherapy (taxane)", tags: "myelosuppression neurotoxic", aliases:["taxol"] },
+  docetaxel:     { name: "Docetaxel", cls: "Chemotherapy (taxane)", tags: "myelosuppression neurotoxic", aliases:["taxotere"] },
+  vincristine:   { name: "Vincristine", cls: "Chemotherapy (vinca alkaloid)", tags: "neurotoxic myelosuppression", aliases:["oncovin"] },
+  vinblastine:   { name: "Vinblastine", cls: "Chemotherapy (vinca alkaloid)", tags: "myelosuppression neurotoxic", aliases:[] },
+  etoposide:     { name: "Etoposide", cls: "Chemotherapy (topoisomerase)", tags: "myelosuppression", aliases:["vp-16"] },
+  irinotecan:    { name: "Irinotecan", cls: "Chemotherapy (topoisomerase)", tags: "myelosuppression gi_tox emetogenic", aliases:["camptosar"] },
+  fluorouracil:  { name: "Fluorouracil (5-FU)", cls: "Chemotherapy (antimetabolite)", tags: "myelosuppression cardiotoxic gi_tox", aliases:["5-fu","adrucil"] },
+  capecitabine:  { name: "Capecitabine", cls: "Chemotherapy (antimetabolite)", tags: "myelosuppression cardiotoxic gi_tox", aliases:["xeloda"] },
+  gemcitabine:   { name: "Gemcitabine", cls: "Chemotherapy (antimetabolite)", tags: "myelosuppression", aliases:["gemzar"] },
+  pemetrexed:    { name: "Pemetrexed", cls: "Chemotherapy (antimetabolite)", tags: "myelosuppression", aliases:["alimta"] },
+  hydroxyurea:   { name: "Hydroxyurea", cls: "Chemotherapy (antimetabolite)", tags: "myelosuppression", aliases:["hydrea"] },
+  bleomycin:     { name: "Bleomycin", cls: "Chemotherapy", tags: "pulmonary_tox", aliases:[] },
+  // Targeted therapy (oral kinase inhibitors etc.)
+  imatinib:      { name: "Imatinib", cls: "Targeted therapy (TKI)", tags: "cyp3a4_sub hepatotoxic", aliases:["gleevec"] },
+  dasatinib:     { name: "Dasatinib", cls: "Targeted therapy (TKI)", tags: "cyp3a4_sub qt bleeding", aliases:["sprycel"] },
+  nilotinib:     { name: "Nilotinib", cls: "Targeted therapy (TKI)", tags: "cyp3a4_sub qt hepatotoxic", aliases:["tasigna"] },
+  erlotinib:     { name: "Erlotinib", cls: "Targeted therapy (TKI)", tags: "cyp3a4_sub egfr_skin", aliases:["tarceva"] },
+  gefitinib:     { name: "Gefitinib", cls: "Targeted therapy (TKI)", tags: "cyp3a4_sub hepatotoxic egfr_skin", aliases:["iressa"] },
+  osimertinib:   { name: "Osimertinib", cls: "Targeted therapy (TKI)", tags: "qt cardiotoxic", aliases:["tagrisso"] },
+  sunitinib:     { name: "Sunitinib", cls: "Targeted therapy (TKI)", tags: "cyp3a4_sub qt cardiotoxic hepatotoxic", aliases:["sutent"] },
+  sorafenib:     { name: "Sorafenib", cls: "Targeted therapy (TKI)", tags: "qt bleeding hepatotoxic", aliases:["nexavar"] },
+  pazopanib:     { name: "Pazopanib", cls: "Targeted therapy (TKI)", tags: "cyp3a4_sub qt hepatotoxic", aliases:["votrient"] },
+  lapatinib:     { name: "Lapatinib", cls: "Targeted therapy (TKI)", tags: "cyp3a4_sub qt cardiotoxic hepatotoxic", aliases:["tykerb"] },
+  ibrutinib:     { name: "Ibrutinib", cls: "Targeted therapy (BTK inhibitor)", tags: "cyp3a4_sub bleeding", aliases:["imbruvica"] },
+  palbociclib:   { name: "Palbociclib", cls: "Targeted therapy (CDK4/6)", tags: "cyp3a4_sub myelosuppression", aliases:["ibrance"] },
+  ribociclib:    { name: "Ribociclib", cls: "Targeted therapy (CDK4/6)", tags: "cyp3a4_sub qt myelosuppression hepatotoxic", aliases:["kisqali"] },
+  abemaciclib:   { name: "Abemaciclib", cls: "Targeted therapy (CDK4/6)", tags: "cyp3a4_sub myelosuppression gi_tox", aliases:["verzenio"] },
+  venetoclax:    { name: "Venetoclax", cls: "Targeted therapy (BCL-2)", tags: "cyp3a4_sub myelosuppression", aliases:["venclexta"] },
+  bortezomib:    { name: "Bortezomib", cls: "Targeted therapy (proteasome)", tags: "neurotoxic myelosuppression", aliases:["velcade"] },
+  // Monoclonal antibodies
+  trastuzumab:   { name: "Trastuzumab", cls: "Monoclonal antibody (HER2)", tags: "cardiotoxic", aliases:["herceptin"] },
+  pertuzumab:    { name: "Pertuzumab", cls: "Monoclonal antibody (HER2)", tags: "cardiotoxic", aliases:["perjeta"] },
+  bevacizumab:   { name: "Bevacizumab", cls: "Monoclonal antibody (VEGF)", tags: "bleeding", aliases:["avastin"] },
+  rituximab:     { name: "Rituximab", cls: "Monoclonal antibody (CD20)", tags: "infection_risk", aliases:["rituxan"] },
+  cetuximab:     { name: "Cetuximab", cls: "Monoclonal antibody (EGFR)", tags: "egfr_skin", aliases:["erbitux"] },
+  // Immunotherapy (checkpoint inhibitors)
+  pembrolizumab: { name: "Pembrolizumab", cls: "Immunotherapy (checkpoint)", tags: "immunotherapy", aliases:["keytruda"] },
+  nivolumab:     { name: "Nivolumab", cls: "Immunotherapy (checkpoint)", tags: "immunotherapy", aliases:["opdivo"] },
+  ipilimumab:    { name: "Ipilimumab", cls: "Immunotherapy (checkpoint)", tags: "immunotherapy", aliases:["yervoy"] },
+  atezolizumab:  { name: "Atezolizumab", cls: "Immunotherapy (checkpoint)", tags: "immunotherapy", aliases:["tecentriq"] },
+  durvalumab:    { name: "Durvalumab", cls: "Immunotherapy (checkpoint)", tags: "immunotherapy", aliases:["imfinzi"] },
+  // Immunomodulators
+  lenalidomide:  { name: "Lenalidomide", cls: "Immunomodulator", tags: "clot_risk myelosuppression teratogen", aliases:["revlimid"] },
+  pomalidomide:  { name: "Pomalidomide", cls: "Immunomodulator", tags: "clot_risk myelosuppression teratogen", aliases:["pomalyst"] },
+  thalidomide:   { name: "Thalidomide", cls: "Immunomodulator", tags: "clot_risk cns_depress teratogen", aliases:["thalomid"] },
   sumatriptan:   { name: "Sumatriptan", cls: "Triptan (migraine)", tags: "serotonergic", aliases:["imitrex"] },
   dextromethorphan:{ name: "Dextromethorphan", cls: "Cough suppressant", tags: "serotonergic cyp2d6_sub", aliases:["delsym","robitussin dm"] },
   diphenhydramine:{ name: "Diphenhydramine", cls: "Antihistamine", tags: "anticholinergic cns_depress", aliases:["benadryl"] },
@@ -190,9 +357,56 @@ const DRUGS = {
   stjohnswort:   { name: "St. John's Wort", cls: "Herbal supplement", tags: "serotonergic cyp3a4_ind pgp_ind", aliases:["hypericum"] },
   calcium:       { name: "Calcium / antacid", cls: "Supplement", tags: "cation_binder", aliases:["tums","calcium carbonate"] },
   iron:          { name: "Iron (ferrous sulfate)", cls: "Supplement", tags: "cation_binder", aliases:["ferrous sulfate"] },
+  // ===== Household & garage chemicals (curated hazards) =====
+  bleach:        { name: "Bleach (sodium hypochlorite)", cls: "Household chemical (bleach)", tags: "chem bleach corrosive oxidizer", aliases:["clorox","sodium hypochlorite","chlorine bleach"] },
+  ammonia_clean: { name: "Ammonia (household)", cls: "Household chemical (alkaline)", tags: "chem ammonia corrosive", aliases:["household ammonia","ammonia cleaner"] },
+  ammonia_glass: { name: "Glass cleaner (ammonia-based)", cls: "Household chemical (cleaner)", tags: "chem ammonia", aliases:["windex","glass cleaner"] },
+  muriatic_acid: { name: "Muriatic / hydrochloric acid", cls: "Household chemical (acid)", tags: "chem acid_strong corrosive", aliases:["muriatic acid","hydrochloric acid","pool acid"] },
+  toilet_acid:   { name: "Toilet bowl cleaner (acid)", cls: "Household chemical (acid)", tags: "chem acid_strong corrosive", aliases:["the works","lime-a-way","toilet bowl cleaner"] },
+  vinegar_chem:  { name: "Vinegar (acetic acid)", cls: "Household chemical (mild acid)", tags: "chem acid_weak", aliases:["acetic acid","white vinegar"] },
+  rust_remover:  { name: "Rust remover (oxalic acid)", cls: "Household chemical (acid)", tags: "chem acid_strong corrosive", aliases:["naval jelly","oxalic acid"] },
+  drain_cleaner: { name: "Drain cleaner (lye)", cls: "Household chemical (alkaline)", tags: "chem alkali_strong corrosive", aliases:["drano","liquid plumber","lye","sodium hydroxide","caustic soda"] },
+  oven_cleaner:  { name: "Oven cleaner (lye)", cls: "Household chemical (alkaline)", tags: "chem alkali_strong corrosive", aliases:["easy-off"] },
+  dish_detergent:{ name: "Dishwasher detergent", cls: "Household chemical (alkaline)", tags: "chem alkali_strong corrosive detergent", aliases:["cascade","dishwasher pod"] },
+  laundry_pod:   { name: "Laundry detergent / pod", cls: "Household chemical (detergent)", tags: "chem detergent corrosive", aliases:["tide pod","laundry detergent"] },
+  rubbing_alc:   { name: "Rubbing (isopropyl) alcohol", cls: "Household chemical (solvent)", tags: "chem toxic_alcohol hydrocarbon", aliases:["isopropyl alcohol","isopropanol"] },
+  acetone_chem:  { name: "Acetone / nail polish remover", cls: "Household chemical (solvent)", tags: "chem hydrocarbon", aliases:["nail polish remover"] },
+  paint_thinner: { name: "Paint thinner / mineral spirits", cls: "Household chemical (solvent)", tags: "chem hydrocarbon aspiration", aliases:["mineral spirits","white spirit"] },
+  turpentine:    { name: "Turpentine", cls: "Household chemical (solvent)", tags: "chem hydrocarbon aspiration", aliases:[] },
+  gasoline:      { name: "Gasoline", cls: "Household chemical (fuel)", tags: "chem hydrocarbon aspiration flammable", aliases:["petrol","gas"] },
+  kerosene:      { name: "Kerosene", cls: "Household chemical (fuel)", tags: "chem hydrocarbon aspiration", aliases:["paraffin oil"] },
+  lighter_fluid: { name: "Lighter fluid / naphtha", cls: "Household chemical (fuel)", tags: "chem hydrocarbon aspiration flammable", aliases:["naphtha","zippo fluid"] },
+  lamp_oil:      { name: "Lamp oil", cls: "Household chemical (fuel)", tags: "chem hydrocarbon aspiration", aliases:[] },
+  brake_cleaner: { name: "Brake / carburetor cleaner", cls: "Household chemical (solvent)", tags: "chem hydrocarbon", aliases:[] },
+  antifreeze:    { name: "Antifreeze (ethylene glycol)", cls: "Household chemical (automotive)", tags: "chem glycol toxic_alcohol", aliases:["ethylene glycol","engine coolant","coolant"] },
+  brake_fluid:   { name: "Brake fluid", cls: "Household chemical (automotive)", tags: "chem glycol", aliases:[] },
+  washer_fluid:  { name: "Windshield washer fluid (methanol)", cls: "Household chemical (automotive)", tags: "chem methanol toxic_alcohol", aliases:["windshield washer fluid"] },
+  methanol:      { name: "Methanol / wood alcohol", cls: "Household chemical (solvent)", tags: "chem methanol toxic_alcohol", aliases:["wood alcohol","methyl alcohol"] },
+  op_pesticide:  { name: "Organophosphate insecticide", cls: "Household chemical (pesticide)", tags: "chem organophosphate cholinergic", aliases:["malathion","diazinon","chlorpyrifos"] },
+  carb_pesticide:{ name: "Carbamate insecticide", cls: "Household chemical (pesticide)", tags: "chem carbamate cholinergic", aliases:["carbaryl","sevin"] },
+  pyrethroid:    { name: "Pyrethroid insecticide", cls: "Household chemical (pesticide)", tags: "chem pyrethroid", aliases:["permethrin","raid","bug spray"] },
+  rat_poison:    { name: "Rat poison (anticoagulant)", cls: "Household chemical (rodenticide)", tags: "chem rodenticide_anticoag bleeding", aliases:["d-con","brodifacoum","rodenticide"] },
+  glyphosate:    { name: "Glyphosate weed killer", cls: "Household chemical (herbicide)", tags: "chem herbicide corrosive", aliases:["roundup","weed killer"] },
+  paraquat:      { name: "Paraquat herbicide", cls: "Household chemical (herbicide)", tags: "chem herbicide pulmonary_tox", aliases:["gramoxone"] },
+  snail_bait:    { name: "Slug / snail bait (metaldehyde)", cls: "Household chemical (pesticide)", tags: "chem metaldehyde seizure_threshold", aliases:["metaldehyde","slug bait"] },
+  mothballs:     { name: "Mothballs (naphthalene)", cls: "Household chemical (pest)", tags: "chem naphthalene hemolysis", aliases:["naphthalene","paradichlorobenzene"] },
+  boric_acid:    { name: "Boric acid / roach powder", cls: "Household chemical (pesticide)", tags: "chem boric", aliases:["boric acid","roach powder"] },
+  borax:         { name: "Borax", cls: "Household chemical (cleaner)", tags: "chem boric", aliases:["sodium borate","20 mule team"] },
+  carbon_mono:   { name: "Carbon monoxide", cls: "Household chemical (gas)", tags: "chem co_gas", aliases:["CO","exhaust fumes","generator fumes"] },
+  natural_gas:   { name: "Natural gas / propane", cls: "Household chemical (gas)", tags: "chem asphyxiant flammable", aliases:["methane","propane","gas leak"] },
+  hydrogen_perox:{ name: "Hydrogen peroxide (concentrated)", cls: "Household chemical (oxidizer)", tags: "chem oxidizer corrosive", aliases:["peroxide"] },
+  pool_chlorine: { name: "Pool chlorine / shock", cls: "Household chemical (oxidizer)", tags: "chem bleach oxidizer corrosive", aliases:["calcium hypochlorite","chlorine tablets","pool shock","trichlor"] },
+  formaldehyde:  { name: "Formaldehyde / formalin", cls: "Household chemical (preservative)", tags: "chem formaldehyde corrosive", aliases:["formalin"] },
+  phenol_disinf: { name: "Phenolic disinfectant", cls: "Household chemical (disinfectant)", tags: "chem phenol corrosive", aliases:["lysol","cresol","pine oil"] },
+  battery_acid:  { name: "Battery acid (sulfuric)", cls: "Household chemical (acid)", tags: "chem acid_strong corrosive", aliases:["sulfuric acid"] },
+  wheel_cleaner: { name: "Wheel cleaner (bifluoride)", cls: "Household chemical (acid)", tags: "chem acid_strong corrosive", aliases:["ammonium bifluoride"] },
 };
 
 const has = (k, tag) => DRUGS[k] && DRUGS[k].tags.split(" ").includes(tag);
+
+// ---- Bundled drug index (curated 135 + 339 common U.S. drugs) + live RxNorm --
+const SEED_DRUGS = [{"name":"Enalapril","cls":"ACE inhibitor","brands":["Vasotec"]},{"name":"Benazepril","cls":"ACE inhibitor","brands":["Lotensin"]},{"name":"Quinapril","cls":"ACE inhibitor","brands":["Accupril"]},{"name":"Fosinopril","cls":"ACE inhibitor","brands":["Monopril"]},{"name":"Perindopril","cls":"ACE inhibitor","brands":["Aceon"]},{"name":"Trandolapril","cls":"ACE inhibitor","brands":["Mavik"]},{"name":"Moexipril","cls":"ACE inhibitor","brands":[]},{"name":"Captopril","cls":"ACE inhibitor","brands":["Capoten"]},{"name":"Irbesartan","cls":"ARB","brands":["Avapro"]},{"name":"Olmesartan","cls":"ARB","brands":["Benicar"]},{"name":"Telmisartan","cls":"ARB","brands":["Micardis"]},{"name":"Candesartan","cls":"ARB","brands":["Atacand"]},{"name":"Eprosartan","cls":"ARB","brands":["Teveten"]},{"name":"Azilsartan","cls":"ARB","brands":["Edarbi"]},{"name":"Atenolol","cls":"Beta blocker","brands":["Tenormin"]},{"name":"Propranolol","cls":"Beta blocker","brands":["Inderal"]},{"name":"Bisoprolol","cls":"Beta blocker","brands":["Zebeta"]},{"name":"Nebivolol","cls":"Beta blocker","brands":["Bystolic"]},{"name":"Nadolol","cls":"Beta blocker","brands":["Corgard"]},{"name":"Labetalol","cls":"Beta blocker","brands":["Trandate"]},{"name":"Acebutolol","cls":"Beta blocker","brands":["Sectral"]},{"name":"Betaxolol","cls":"Beta blocker","brands":[]},{"name":"Pindolol","cls":"Beta blocker","brands":[]},{"name":"Timolol","cls":"Beta blocker","brands":[]},{"name":"Nifedipine","cls":"Calcium channel blocker","brands":["Procardia","Adalat"]},{"name":"Felodipine","cls":"Calcium channel blocker","brands":["Plendil"]},{"name":"Isradipine","cls":"Calcium channel blocker","brands":[]},{"name":"Nicardipine","cls":"Calcium channel blocker","brands":["Cardene"]},{"name":"Nisoldipine","cls":"Calcium channel blocker","brands":["Sular"]},{"name":"Chlorthalidone","cls":"Diuretic","brands":["Thalitone"]},{"name":"Indapamide","cls":"Diuretic","brands":["Lozol"]},{"name":"Metolazone","cls":"Diuretic","brands":["Zaroxolyn"]},{"name":"Torsemide","cls":"Diuretic","brands":["Demadex"]},{"name":"Bumetanide","cls":"Diuretic","brands":["Bumex"]},{"name":"Triamterene","cls":"Diuretic","brands":["Dyrenium"]},{"name":"Amiloride","cls":"Diuretic","brands":["Midamor"]},{"name":"Eplerenone","cls":"Diuretic","brands":["Inspra"]},{"name":"Acetazolamide","cls":"Diuretic","brands":["Diamox"]},{"name":"Hydralazine","cls":"Antihypertensive","brands":["Apresoline"]},{"name":"Clonidine","cls":"Antihypertensive","brands":["Catapres"]},{"name":"Methyldopa","cls":"Antihypertensive","brands":["Aldomet"]},{"name":"Minoxidil","cls":"Antihypertensive","brands":["Loniten"]},{"name":"Doxazosin","cls":"Antihypertensive","brands":["Cardura"]},{"name":"Prazosin","cls":"Antihypertensive","brands":["Minipress"]},{"name":"Terazosin","cls":"Antihypertensive","brands":["Hytrin"]},{"name":"Guanfacine","cls":"Antihypertensive","brands":["Intuniv","Tenex"]},{"name":"Sacubitril/valsartan","cls":"Heart failure","brands":["Entresto"]},{"name":"Ivabradine","cls":"Heart failure","brands":["Corlanor"]},{"name":"Ranolazine","cls":"Heart failure","brands":["Ranexa"]},{"name":"Enoxaparin","cls":"Anticoagulant","brands":["Lovenox"]},{"name":"Heparin","cls":"Anticoagulant","brands":[]},{"name":"Fondaparinux","cls":"Anticoagulant","brands":["Arixtra"]},{"name":"Edoxaban","cls":"Anticoagulant","brands":["Savaysa"]},{"name":"Prasugrel","cls":"Antiplatelet","brands":["Effient"]},{"name":"Dipyridamole","cls":"Antiplatelet","brands":["Persantine"]},{"name":"Cilostazol","cls":"Antiplatelet","brands":["Pletal"]},{"name":"Pitavastatin","cls":"Statin","brands":["Livalo"]},{"name":"Fluvastatin","cls":"Statin","brands":["Lescol"]},{"name":"Ezetimibe","cls":"Lipid-lowering","brands":["Zetia"]},{"name":"Fenofibrate","cls":"Lipid-lowering","brands":["Tricor"]},{"name":"Gemfibrozil","cls":"Lipid-lowering","brands":["Lopid"]},{"name":"Niacin","cls":"Lipid-lowering","brands":["Niaspan"]},{"name":"Cholestyramine","cls":"Lipid-lowering","brands":["Questran"]},{"name":"Colesevelam","cls":"Lipid-lowering","brands":["Welchol"]},{"name":"Evolocumab","cls":"Lipid-lowering","brands":["Repatha"]},{"name":"Alirocumab","cls":"Lipid-lowering","brands":["Praluent"]},{"name":"Icosapent ethyl","cls":"Lipid-lowering","brands":["Vascepa"]},{"name":"Bempedoic acid","cls":"Lipid-lowering","brands":["Nexletol"]},{"name":"Pioglitazone","cls":"Antidiabetic","brands":["Actos"]},{"name":"Rosiglitazone","cls":"Antidiabetic","brands":["Avandia"]},{"name":"Repaglinide","cls":"Antidiabetic","brands":["Prandin"]},{"name":"Nateglinide","cls":"Antidiabetic","brands":["Starlix"]},{"name":"Acarbose","cls":"Antidiabetic","brands":["Precose"]},{"name":"Miglitol","cls":"Antidiabetic","brands":["Glyset"]},{"name":"Glyburide","cls":"Sulfonylurea","brands":["DiaBeta","Glynase"]},{"name":"Chlorpropamide","cls":"Sulfonylurea","brands":[]},{"name":"Tolbutamide","cls":"Sulfonylurea","brands":[]},{"name":"Sitagliptin","cls":"DPP-4 inhibitor","brands":["Januvia"]},{"name":"Linagliptin","cls":"DPP-4 inhibitor","brands":["Tradjenta"]},{"name":"Saxagliptin","cls":"DPP-4 inhibitor","brands":["Onglyza"]},{"name":"Alogliptin","cls":"DPP-4 inhibitor","brands":["Nesina"]},{"name":"Dapagliflozin","cls":"SGLT2 inhibitor","brands":["Farxiga"]},{"name":"Canagliflozin","cls":"SGLT2 inhibitor","brands":["Invokana"]},{"name":"Ertugliflozin","cls":"SGLT2 inhibitor","brands":["Steglatro"]},{"name":"Dulaglutide","cls":"GLP-1 agonist","brands":["Trulicity"]},{"name":"Liraglutide","cls":"GLP-1 agonist","brands":["Victoza","Saxenda"]},{"name":"Tirzepatide","cls":"GLP-1 agonist","brands":["Mounjaro","Zepbound"]},{"name":"Exenatide","cls":"GLP-1 agonist","brands":["Byetta","Bydureon"]},{"name":"Insulin glargine","cls":"Insulin","brands":["Lantus","Basaglar","Toujeo"]},{"name":"Insulin lispro","cls":"Insulin","brands":["Humalog"]},{"name":"Insulin aspart","cls":"Insulin","brands":["NovoLog"]},{"name":"Insulin detemir","cls":"Insulin","brands":["Levemir"]},{"name":"Insulin degludec","cls":"Insulin","brands":["Tresiba"]},{"name":"Insulin NPH","cls":"Insulin","brands":["Humulin N","Novolin N"]},{"name":"Albuterol","cls":"Bronchodilator","brands":["ProAir","Ventolin","Proventil"]},{"name":"Levalbuterol","cls":"Bronchodilator","brands":["Xopenex"]},{"name":"Ipratropium","cls":"Bronchodilator","brands":["Atrovent"]},{"name":"Tiotropium","cls":"Bronchodilator","brands":["Spiriva"]},{"name":"Umeclidinium","cls":"Bronchodilator","brands":["Incruse"]},{"name":"Salmeterol","cls":"Bronchodilator","brands":["Serevent"]},{"name":"Formoterol","cls":"Bronchodilator","brands":["Foradil"]},{"name":"Aclidinium","cls":"Bronchodilator","brands":["Tudorza"]},{"name":"Fluticasone","cls":"Inhaled steroid","brands":["Flovent","Arnuity"]},{"name":"Budesonide","cls":"Inhaled steroid","brands":["Pulmicort"]},{"name":"Mometasone","cls":"Inhaled steroid","brands":["Asmanex"]},{"name":"Beclomethasone","cls":"Inhaled steroid","brands":["Qvar"]},{"name":"Ciclesonide","cls":"Inhaled steroid","brands":["Alvesco"]},{"name":"Fluticasone/salmeterol","cls":"Respiratory combo","brands":["Advair"]},{"name":"Budesonide/formoterol","cls":"Respiratory combo","brands":["Symbicort"]},{"name":"Fluticasone/vilanterol","cls":"Respiratory combo","brands":["Breo"]},{"name":"Umeclidinium/vilanterol","cls":"Respiratory combo","brands":["Anoro"]},{"name":"Montelukast","cls":"Respiratory","brands":["Singulair"]},{"name":"Zafirlukast","cls":"Respiratory","brands":["Accolate"]},{"name":"Roflumilast","cls":"Respiratory","brands":["Daliresp"]},{"name":"Cromolyn","cls":"Respiratory","brands":["Intal"]},{"name":"Theophylline","cls":"Respiratory","brands":["Theo-24"]},{"name":"Lansoprazole","cls":"Proton pump inhibitor","brands":["Prevacid"]},{"name":"Rabeprazole","cls":"Proton pump inhibitor","brands":["Aciphex"]},{"name":"Dexlansoprazole","cls":"Proton pump inhibitor","brands":["Dexilant"]},{"name":"Cimetidine","cls":"H2 blocker","brands":["Tagamet"]},{"name":"Nizatidine","cls":"H2 blocker","brands":["Axid"]},{"name":"Sucralfate","cls":"GI","brands":["Carafate"]},{"name":"Dicyclomine","cls":"GI","brands":["Bentyl"]},{"name":"Hyoscyamine","cls":"GI","brands":["Levsin"]},{"name":"Loperamide","cls":"GI","brands":["Imodium"]},{"name":"Polyethylene glycol","cls":"GI","brands":["MiraLAX"]},{"name":"Docusate","cls":"GI","brands":["Colace"]},{"name":"Senna","cls":"GI","brands":["Senokot"]},{"name":"Bisacodyl","cls":"GI","brands":["Dulcolax"]},{"name":"Lubiprostone","cls":"GI","brands":["Amitiza"]},{"name":"Linaclotide","cls":"GI","brands":["Linzess"]},{"name":"Prochlorperazine","cls":"GI","brands":["Compazine"]},{"name":"Promethazine","cls":"GI","brands":["Phenergan"]},{"name":"Mesalamine","cls":"GI","brands":["Asacol","Lialda"]},{"name":"Sulfasalazine","cls":"GI","brands":["Azulfidine"]},{"name":"Famotidine","cls":"GI","brands":["Pepcid"]},{"name":"Penicillin VK","cls":"Antibiotic","brands":[]},{"name":"Ampicillin","cls":"Antibiotic","brands":[]},{"name":"Amoxicillin/clavulanate","cls":"Antibiotic","brands":["Augmentin"]},{"name":"Cephalexin","cls":"Antibiotic","brands":["Keflex"]},{"name":"Cefdinir","cls":"Antibiotic","brands":["Omnicef"]},{"name":"Cefuroxime","cls":"Antibiotic","brands":["Ceftin"]},{"name":"Cefpodoxime","cls":"Antibiotic","brands":["Vantin"]},{"name":"Ceftriaxone","cls":"Antibiotic","brands":["Rocephin"]},{"name":"Clindamycin","cls":"Antibiotic","brands":["Cleocin"]},{"name":"Vancomycin","cls":"Antibiotic","brands":["Vancocin"]},{"name":"Minocycline","cls":"Antibiotic","brands":["Minocin"]},{"name":"Tetracycline","cls":"Antibiotic","brands":[]},{"name":"Moxifloxacin","cls":"Antibiotic","brands":["Avelox"]},{"name":"Ofloxacin","cls":"Antibiotic","brands":[]},{"name":"Dapsone","cls":"Antibiotic","brands":[]},{"name":"Isoniazid","cls":"Antibiotic","brands":[]},{"name":"Tinidazole","cls":"Antibiotic","brands":["Tindamax"]},{"name":"Fosfomycin","cls":"Antibiotic","brands":["Monurol"]},{"name":"Daptomycin","cls":"Antibiotic","brands":["Cubicin"]},{"name":"Clavulanate","cls":"Antibiotic","brands":[]},{"name":"Terbinafine","cls":"Antifungal","brands":["Lamisil"]},{"name":"Nystatin","cls":"Antifungal","brands":["Mycostatin"]},{"name":"Griseofulvin","cls":"Antifungal","brands":["Grifulvin"]},{"name":"Clotrimazole","cls":"Antifungal","brands":["Lotrimin"]},{"name":"Miconazole","cls":"Antifungal","brands":["Monistat"]},{"name":"Posaconazole","cls":"Antifungal","brands":["Noxafil"]},{"name":"Acyclovir","cls":"Antiviral","brands":["Zovirax"]},{"name":"Valacyclovir","cls":"Antiviral","brands":["Valtrex"]},{"name":"Famciclovir","cls":"Antiviral","brands":["Famvir"]},{"name":"Oseltamivir","cls":"Antiviral","brands":["Tamiflu"]},{"name":"Nirmatrelvir/ritonavir","cls":"Antiviral","brands":["Paxlovid"]},{"name":"Tenofovir","cls":"Antiviral","brands":["Viread"]},{"name":"Emtricitabine","cls":"Antiviral","brands":["Emtriva"]},{"name":"Dolutegravir","cls":"Antiviral","brands":["Tivicay"]},{"name":"Bictegravir","cls":"Antiviral","brands":[]},{"name":"Vilazodone","cls":"SSRI","brands":["Viibryd"]},{"name":"Vortioxetine","cls":"SSRI","brands":["Trintellix"]},{"name":"Desvenlafaxine","cls":"SNRI","brands":["Pristiq"]},{"name":"Levomilnacipran","cls":"SNRI","brands":["Fetzima"]},{"name":"Milnacipran","cls":"SNRI","brands":["Savella"]},{"name":"Clomipramine","cls":"Tricyclic antidepressant","brands":["Anafranil"]},{"name":"Imipramine","cls":"Tricyclic antidepressant","brands":["Tofranil"]},{"name":"Desipramine","cls":"Tricyclic antidepressant","brands":["Norpramin"]},{"name":"Doxepin","cls":"Tricyclic antidepressant","brands":["Silenor"]},{"name":"Lurasidone","cls":"Antipsychotic","brands":["Latuda"]},{"name":"Paliperidone","cls":"Antipsychotic","brands":["Invega"]},{"name":"Asenapine","cls":"Antipsychotic","brands":["Saphris"]},{"name":"Brexpiprazole","cls":"Antipsychotic","brands":["Rexulti"]},{"name":"Cariprazine","cls":"Antipsychotic","brands":["Vraylar"]},{"name":"Lumateperone","cls":"Antipsychotic","brands":["Caplyta"]},{"name":"Chlorpromazine","cls":"Antipsychotic","brands":["Thorazine"]},{"name":"Fluphenazine","cls":"Antipsychotic","brands":["Prolixin"]},{"name":"Perphenazine","cls":"Antipsychotic","brands":[]},{"name":"Pimozide","cls":"Antipsychotic","brands":["Orap"]},{"name":"Buspirone","cls":"Anxiolytic","brands":["Buspar"]},{"name":"Hydroxyzine","cls":"Anxiolytic","brands":["Vistaril","Atarax"]},{"name":"Eszopiclone","cls":"Sedative","brands":["Lunesta"]},{"name":"Zaleplon","cls":"Sedative","brands":["Sonata"]},{"name":"Ramelteon","cls":"Sedative","brands":["Rozerem"]},{"name":"Suvorexant","cls":"Sedative","brands":["Belsomra"]},{"name":"Temazepam","cls":"Sedative","brands":["Restoril"]},{"name":"Triazolam","cls":"Sedative","brands":["Halcion"]},{"name":"Oxazepam","cls":"Benzodiazepine","brands":["Serax"]},{"name":"Chlordiazepoxide","cls":"Benzodiazepine","brands":["Librium"]},{"name":"Midazolam","cls":"Benzodiazepine","brands":["Versed"]},{"name":"Methylphenidate","cls":"Stimulant / ADHD","brands":["Ritalin","Concerta"]},{"name":"Dexmethylphenidate","cls":"Stimulant / ADHD","brands":["Focalin"]},{"name":"Amphetamine/dextroamphetamine","cls":"Stimulant / ADHD","brands":["Adderall"]},{"name":"Lisdexamfetamine","cls":"Stimulant / ADHD","brands":["Vyvanse"]},{"name":"Atomoxetine","cls":"Stimulant / ADHD","brands":["Strattera"]},{"name":"Modafinil","cls":"Stimulant / ADHD","brands":["Provigil"]},{"name":"Armodafinil","cls":"Stimulant / ADHD","brands":["Nuvigil"]},{"name":"Topiramate","cls":"Anticonvulsant","brands":["Topamax"]},{"name":"Oxcarbazepine","cls":"Anticonvulsant","brands":["Trileptal"]},{"name":"Lacosamide","cls":"Anticonvulsant","brands":["Vimpat"]},{"name":"Zonisamide","cls":"Anticonvulsant","brands":["Zonegran"]},{"name":"Ethosuximide","cls":"Anticonvulsant","brands":["Zarontin"]},{"name":"Primidone","cls":"Anticonvulsant","brands":["Mysoline"]},{"name":"Brivaracetam","cls":"Anticonvulsant","brands":["Briviact"]},{"name":"Phenobarbital","cls":"Anticonvulsant","brands":[]},{"name":"Clobazam","cls":"Anticonvulsant","brands":["Onfi"]},{"name":"Perampanel","cls":"Anticonvulsant","brands":["Fycompa"]},{"name":"Levodopa/carbidopa","cls":"Parkinson's","brands":["Sinemet"]},{"name":"Pramipexole","cls":"Parkinson's","brands":["Mirapex"]},{"name":"Ropinirole","cls":"Parkinson's","brands":["Requip"]},{"name":"Rotigotine","cls":"Parkinson's","brands":["Neupro"]},{"name":"Rasagiline","cls":"Parkinson's","brands":["Azilect"]},{"name":"Entacapone","cls":"Parkinson's","brands":["Comtan"]},{"name":"Amantadine","cls":"Parkinson's","brands":["Symmetrel"]},{"name":"Benztropine","cls":"Parkinson's","brands":["Cogentin"]},{"name":"Trihexyphenidyl","cls":"Parkinson's","brands":[]},{"name":"Rizatriptan","cls":"Triptan (migraine)","brands":["Maxalt"]},{"name":"Zolmitriptan","cls":"Triptan (migraine)","brands":["Zomig"]},{"name":"Eletriptan","cls":"Triptan (migraine)","brands":["Relpax"]},{"name":"Naratriptan","cls":"Triptan (migraine)","brands":["Amerge"]},{"name":"Frovatriptan","cls":"Triptan (migraine)","brands":["Frova"]},{"name":"Almotriptan","cls":"Triptan (migraine)","brands":["Axert"]},{"name":"Erenumab","cls":"Migraine","brands":["Aimovig"]},{"name":"Galcanezumab","cls":"Migraine","brands":["Emgality"]},{"name":"Fremanezumab","cls":"Migraine","brands":["Ajovy"]},{"name":"Ubrogepant","cls":"Migraine","brands":["Ubrelvy"]},{"name":"Rimegepant","cls":"Migraine","brands":["Nurtec"]},{"name":"Liothyronine","cls":"Thyroid","brands":["Cytomel"]},{"name":"Methimazole","cls":"Thyroid","brands":["Tapazole"]},{"name":"Propylthiouracil","cls":"Thyroid","brands":[]},{"name":"Hydrocortisone","cls":"Corticosteroid","brands":["Cortef"]},{"name":"Methylprednisolone","cls":"Corticosteroid","brands":["Medrol"]},{"name":"Prednisolone","cls":"Corticosteroid","brands":["Orapred"]},{"name":"Triamcinolone","cls":"Corticosteroid","brands":["Kenalog"]},{"name":"Fludrocortisone","cls":"Corticosteroid","brands":["Florinef"]},{"name":"Betamethasone","cls":"Corticosteroid","brands":[]},{"name":"Testosterone","cls":"Hormone / urology","brands":["AndroGel"]},{"name":"Estradiol","cls":"Hormone / urology","brands":["Estrace"]},{"name":"Conjugated estrogens","cls":"Hormone / urology","brands":["Premarin"]},{"name":"Medroxyprogesterone","cls":"Hormone / urology","brands":["Provera"]},{"name":"Progesterone","cls":"Hormone / urology","brands":["Prometrium"]},{"name":"Finasteride","cls":"Hormone / urology","brands":["Propecia","Proscar"]},{"name":"Dutasteride","cls":"Hormone / urology","brands":["Avodart"]},{"name":"Tamsulosin","cls":"Hormone / urology","brands":["Flomax"]},{"name":"Alfuzosin","cls":"Hormone / urology","brands":["Uroxatral"]},{"name":"Silodosin","cls":"Hormone / urology","brands":["Rapaflo"]},{"name":"Oxybutynin","cls":"Hormone / urology","brands":["Ditropan"]},{"name":"Tolterodine","cls":"Hormone / urology","brands":["Detrol"]},{"name":"Solifenacin","cls":"Hormone / urology","brands":["Vesicare"]},{"name":"Mirabegron","cls":"Hormone / urology","brands":["Myrbetriq"]},{"name":"Vardenafil","cls":"PDE5 inhibitor","brands":["Levitra"]},{"name":"Avanafil","cls":"PDE5 inhibitor","brands":["Stendra"]},{"name":"Alendronate","cls":"Bone","brands":["Fosamax"]},{"name":"Risedronate","cls":"Bone","brands":["Actonel"]},{"name":"Ibandronate","cls":"Bone","brands":["Boniva"]},{"name":"Zoledronic acid","cls":"Bone","brands":["Reclast"]},{"name":"Denosumab","cls":"Bone","brands":["Prolia"]},{"name":"Raloxifene","cls":"Bone","brands":["Evista"]},{"name":"Teriparatide","cls":"Bone","brands":["Forteo"]},{"name":"Indomethacin","cls":"NSAID","brands":["Indocin"]},{"name":"Sulindac","cls":"NSAID","brands":["Clinoril"]},{"name":"Piroxicam","cls":"NSAID","brands":["Feldene"]},{"name":"Nabumetone","cls":"NSAID","brands":[]},{"name":"Etodolac","cls":"NSAID","brands":[]},{"name":"Oxaprozin","cls":"NSAID","brands":["Daypro"]},{"name":"Flurbiprofen","cls":"NSAID","brands":[]},{"name":"Baclofen","cls":"Muscle relaxant","brands":["Lioresal"]},{"name":"Cyclobenzaprine","cls":"Muscle relaxant","brands":["Flexeril"]},{"name":"Methocarbamol","cls":"Muscle relaxant","brands":["Robaxin"]},{"name":"Carisoprodol","cls":"Muscle relaxant","brands":["Soma"]},{"name":"Metaxalone","cls":"Muscle relaxant","brands":["Skelaxin"]},{"name":"Orphenadrine","cls":"Muscle relaxant","brands":["Norflex"]},{"name":"Dantrolene","cls":"Muscle relaxant","brands":["Dantrium"]},{"name":"Tapentadol","cls":"Opioid","brands":["Nucynta"]},{"name":"Hydromorphone","cls":"Opioid","brands":["Dilaudid"]},{"name":"Oxymorphone","cls":"Opioid","brands":["Opana"]},{"name":"Tramadol/acetaminophen","cls":"Opioid","brands":["Ultracet"]},{"name":"Leflunomide","cls":"Rheumatology","brands":["Arava"]},{"name":"Adalimumab","cls":"Rheumatology","brands":["Humira"]},{"name":"Etanercept","cls":"Rheumatology","brands":["Enbrel"]},{"name":"Infliximab","cls":"Rheumatology","brands":["Remicade"]},{"name":"Probenecid","cls":"Rheumatology","brands":[]},{"name":"Anakinra","cls":"Rheumatology","brands":["Kineret"]},{"name":"Loratadine","cls":"Antihistamine","brands":["Claritin"]},{"name":"Cetirizine","cls":"Antihistamine","brands":["Zyrtec"]},{"name":"Fexofenadine","cls":"Antihistamine","brands":["Allegra"]},{"name":"Levocetirizine","cls":"Antihistamine","brands":["Xyzal"]},{"name":"Desloratadine","cls":"Antihistamine","brands":["Clarinex"]},{"name":"Chlorpheniramine","cls":"Antihistamine","brands":["Chlor-Trimeton"]},{"name":"Meclizine","cls":"Antihistamine","brands":["Antivert"]},{"name":"Fluticasone nasal","cls":"Nasal / allergy","brands":["Flonase"]},{"name":"Azelastine","cls":"Nasal / allergy","brands":["Astelin"]},{"name":"Triamcinolone nasal","cls":"Nasal / allergy","brands":["Nasacort"]},{"name":"Ipratropium nasal","cls":"Nasal / allergy","brands":[]},{"name":"Anastrozole","cls":"Hormonal therapy (oncology)","brands":["Arimidex"]},{"name":"Letrozole","cls":"Hormonal therapy (oncology)","brands":["Femara"]},{"name":"Exemestane","cls":"Hormonal therapy (oncology)","brands":["Aromasin"]},{"name":"Leuprolide","cls":"Hormonal therapy (oncology)","brands":["Lupron"]},{"name":"Bicalutamide","cls":"Hormonal therapy (oncology)","brands":["Casodex"]},{"name":"Enzalutamide","cls":"Hormonal therapy (oncology)","brands":["Xtandi"]},{"name":"Abiraterone","cls":"Hormonal therapy (oncology)","brands":["Zytiga"]},{"name":"Latanoprost","cls":"Ophthalmic","brands":["Xalatan"]},{"name":"Brimonidine","cls":"Ophthalmic","brands":["Alphagan"]},{"name":"Dorzolamide","cls":"Ophthalmic","brands":["Trusopt"]},{"name":"Travoprost","cls":"Ophthalmic","brands":["Travatan"]},{"name":"Bimatoprost","cls":"Ophthalmic","brands":["Lumigan"]},{"name":"Granisetron","cls":"Antiemetic","brands":["Sancuso"]},{"name":"Dolasetron","cls":"Antiemetic","brands":["Anzemet"]},{"name":"Aprepitant","cls":"Antiemetic","brands":["Emend"]},{"name":"Nefazodone","cls":"Antidepressant","brands":[]},{"name":"Melatonin","cls":"Supplement / OTC","brands":[]},{"name":"Vitamin D","cls":"Supplement / OTC","brands":["cholecalciferol"]},{"name":"Vitamin B12","cls":"Supplement / OTC","brands":["cyanocobalamin"]},{"name":"Folic acid","cls":"Supplement / OTC","brands":[]},{"name":"Magnesium","cls":"Supplement / OTC","brands":[]},{"name":"Potassium chloride","cls":"Supplement / OTC","brands":["Klor-Con"]},{"name":"Fish oil","cls":"Supplement / OTC","brands":["omega-3"]},{"name":"Coenzyme Q10","cls":"Supplement / OTC","brands":["CoQ10"]},{"name":"Probiotics","cls":"Supplement / OTC","brands":[]},{"name":"Biotin","cls":"Supplement / OTC","brands":[]},{"name":"Zinc","cls":"Supplement / OTC","brands":[]},{"name":"Vitamin C","cls":"Supplement / OTC","brands":["ascorbic acid"]},{"name":"Nicotine","cls":"Other","brands":["Nicoderm","tobacco"]},{"name":"Cannabis","cls":"Other","brands":["marijuana","THC","CBD"]},{"name":"Naltrexone","cls":"Other","brands":["Vivitrol"]},{"name":"Varenicline","cls":"Other","brands":["Chantix"]},{"name":"Disulfiram","cls":"Other","brands":["Antabuse"]},{"name":"Ondansetron ODT","cls":"Other","brands":["Zofran ODT"]},{"name":"Vitamin A (retinol)","cls":"Vitamin","brands":[]},{"name":"Beta-carotene","cls":"Vitamin","brands":[]},{"name":"Vitamin B1 (thiamine)","cls":"Vitamin","brands":[]},{"name":"Vitamin B2 (riboflavin)","cls":"Vitamin","brands":[]},{"name":"Vitamin B3 (niacin)","cls":"Vitamin","brands":[]},{"name":"Niacinamide","cls":"Vitamin","brands":[]},{"name":"Vitamin B5 (pantothenic acid)","cls":"Vitamin","brands":[]},{"name":"Vitamin B6 (pyridoxine)","cls":"Vitamin","brands":[]},{"name":"Pyridoxal-5-phosphate (P5P)","cls":"Vitamin","brands":[]},{"name":"Vitamin B7 (biotin)","cls":"Vitamin","brands":[]},{"name":"Vitamin B9 (folic acid)","cls":"Vitamin","brands":[]},{"name":"Folate (methylfolate)","cls":"Vitamin","brands":[]},{"name":"Vitamin B12 (cyanocobalamin)","cls":"Vitamin","brands":[]},{"name":"Methylcobalamin","cls":"Vitamin","brands":[]},{"name":"Vitamin C (ascorbic acid)","cls":"Vitamin","brands":[]},{"name":"Liposomal vitamin C","cls":"Vitamin","brands":[]},{"name":"Vitamin D2 (ergocalciferol)","cls":"Vitamin","brands":[]},{"name":"Vitamin D3 (cholecalciferol)","cls":"Vitamin","brands":[]},{"name":"Vitamin E (tocopherol)","cls":"Vitamin","brands":[]},{"name":"Mixed tocopherols","cls":"Vitamin","brands":[]},{"name":"Vitamin K1 (phylloquinone)","cls":"Vitamin","brands":[]},{"name":"Vitamin K2 (menaquinone / MK-7)","cls":"Vitamin","brands":[]},{"name":"Choline","cls":"Vitamin","brands":[]},{"name":"Inositol","cls":"Vitamin","brands":[]},{"name":"Folinic acid","cls":"Vitamin","brands":[]},{"name":"B-complex","cls":"Vitamin","brands":[]},{"name":"Calcium carbonate","cls":"Mineral","brands":[]},{"name":"Calcium citrate","cls":"Mineral","brands":[]},{"name":"Magnesium oxide","cls":"Mineral","brands":[]},{"name":"Magnesium citrate","cls":"Mineral","brands":[]},{"name":"Magnesium glycinate","cls":"Mineral","brands":[]},{"name":"Magnesium threonate","cls":"Mineral","brands":[]},{"name":"Magnesium malate","cls":"Mineral","brands":[]},{"name":"Zinc picolinate","cls":"Mineral","brands":[]},{"name":"Iron (ferrous sulfate)","cls":"Mineral","brands":[]},{"name":"Iron bisglycinate","cls":"Mineral","brands":[]},{"name":"Selenium","cls":"Mineral","brands":[]},{"name":"Copper","cls":"Mineral","brands":[]},{"name":"Manganese","cls":"Mineral","brands":[]},{"name":"Chromium picolinate","cls":"Mineral","brands":[]},{"name":"Molybdenum","cls":"Mineral","brands":[]},{"name":"Iodine","cls":"Mineral","brands":[]},{"name":"Kelp (iodine)","cls":"Mineral","brands":[]},{"name":"Potassium citrate","cls":"Mineral","brands":[]},{"name":"Boron","cls":"Mineral","brands":[]},{"name":"Vanadium","cls":"Mineral","brands":[]},{"name":"Silica","cls":"Mineral","brands":[]},{"name":"Phosphorus","cls":"Mineral","brands":[]},{"name":"Lithium orotate","cls":"Mineral","brands":[]},{"name":"Trace mineral complex","cls":"Mineral","brands":[]},{"name":"Electrolyte blend","cls":"Mineral","brands":[]},{"name":"Omega-3","cls":"Omega / fatty acid","brands":[]},{"name":"EPA","cls":"Omega / fatty acid","brands":[]},{"name":"DHA","cls":"Omega / fatty acid","brands":[]},{"name":"Krill oil","cls":"Omega / fatty acid","brands":[]},{"name":"Cod liver oil","cls":"Omega / fatty acid","brands":[]},{"name":"Algae oil (vegan omega-3)","cls":"Omega / fatty acid","brands":[]},{"name":"Flaxseed oil","cls":"Omega / fatty acid","brands":[]},{"name":"Evening primrose oil","cls":"Omega / fatty acid","brands":[]},{"name":"Borage oil","cls":"Omega / fatty acid","brands":[]},{"name":"Black currant seed oil","cls":"Omega / fatty acid","brands":[]},{"name":"CLA (conjugated linoleic acid)","cls":"Omega / fatty acid","brands":[]},{"name":"MCT oil","cls":"Omega / fatty acid","brands":[]},{"name":"Omega-7 (sea buckthorn)","cls":"Omega / fatty acid","brands":[]},{"name":"Hemp seed oil","cls":"Omega / fatty acid","brands":[]},{"name":"L-arginine","cls":"Amino acid","brands":[]},{"name":"L-citrulline","cls":"Amino acid","brands":[]},{"name":"Citrulline malate","cls":"Amino acid","brands":[]},{"name":"L-carnitine","cls":"Amino acid","brands":[]},{"name":"Acetyl-L-carnitine","cls":"Amino acid","brands":[]},{"name":"L-glutamine","cls":"Amino acid","brands":[]},{"name":"L-lysine","cls":"Amino acid","brands":[]},{"name":"L-theanine","cls":"Amino acid","brands":[]},{"name":"L-tyrosine","cls":"Amino acid","brands":[]},{"name":"Taurine","cls":"Amino acid","brands":[]},{"name":"Creatine monohydrate","cls":"Amino acid","brands":[]},{"name":"Beta-alanine","cls":"Amino acid","brands":[]},{"name":"Glycine","cls":"Amino acid","brands":[]},{"name":"GABA","cls":"Amino acid","brands":[]},{"name":"5-HTP","cls":"Amino acid","brands":[]},{"name":"L-tryptophan","cls":"Amino acid","brands":[]},{"name":"N-acetylcysteine (NAC)","cls":"Amino acid","brands":[]},{"name":"Glutathione","cls":"Amino acid","brands":[]},{"name":"BCAAs","cls":"Amino acid","brands":[]},{"name":"L-leucine","cls":"Amino acid","brands":[]},{"name":"L-methionine","cls":"Amino acid","brands":[]},{"name":"L-ornithine","cls":"Amino acid","brands":[]},{"name":"Carnosine","cls":"Amino acid","brands":[]},{"name":"D-aspartic acid","cls":"Amino acid","brands":[]},{"name":"Betaine (TMG)","cls":"Amino acid","brands":[]},{"name":"SAMe (S-adenosylmethionine)","cls":"Amino acid","brands":[]},{"name":"L-cysteine","cls":"Amino acid","brands":[]},{"name":"Beta-hydroxy beta-methylbutyrate (HMB)","cls":"Amino acid","brands":[]},{"name":"Turmeric / curcumin","cls":"Herbal supplement","brands":[]},{"name":"Ashwagandha","cls":"Herbal supplement","brands":[]},{"name":"Rhodiola rosea","cls":"Herbal supplement","brands":[]},{"name":"Panax ginseng","cls":"Herbal supplement","brands":[]},{"name":"American ginseng","cls":"Herbal supplement","brands":[]},{"name":"Ginkgo biloba","cls":"Herbal supplement","brands":[]},{"name":"Milk thistle (silymarin)","cls":"Herbal supplement","brands":[]},{"name":"Echinacea","cls":"Herbal supplement","brands":[]},{"name":"Garlic extract (allicin)","cls":"Herbal supplement","brands":[]},{"name":"Ginger","cls":"Herbal supplement","brands":[]},{"name":"Valerian root","cls":"Herbal supplement","brands":[]},{"name":"Chamomile","cls":"Herbal supplement","brands":[]},{"name":"St. John's wort","cls":"Herbal supplement","brands":[]},{"name":"Saw palmetto","cls":"Herbal supplement","brands":[]},{"name":"Black cohosh","cls":"Herbal supplement","brands":[]},{"name":"Red yeast rice","cls":"Herbal supplement","brands":[]},{"name":"Hawthorn","cls":"Herbal supplement","brands":[]},{"name":"Bilberry","cls":"Herbal supplement","brands":[]},{"name":"Elderberry","cls":"Herbal supplement","brands":[]},{"name":"Cranberry extract","cls":"Herbal supplement","brands":[]},{"name":"Green tea extract (EGCG)","cls":"Herbal supplement","brands":[]},{"name":"Grape seed extract","cls":"Herbal supplement","brands":[]},{"name":"Resveratrol","cls":"Herbal supplement","brands":[]},{"name":"Quercetin","cls":"Herbal supplement","brands":[]},{"name":"Bromelain","cls":"Herbal supplement","brands":[]},{"name":"Boswellia","cls":"Herbal supplement","brands":[]},{"name":"Cat's claw","cls":"Herbal supplement","brands":[]},{"name":"Devil's claw","cls":"Herbal supplement","brands":[]},{"name":"Feverfew","cls":"Herbal supplement","brands":[]},{"name":"Kava kava","cls":"Herbal supplement","brands":[]},{"name":"Passionflower","cls":"Herbal supplement","brands":[]},{"name":"Lemon balm","cls":"Herbal supplement","brands":[]},{"name":"Holy basil (tulsi)","cls":"Herbal supplement","brands":[]},{"name":"Maca root","cls":"Herbal supplement","brands":[]},{"name":"Tribulus terrestris","cls":"Herbal supplement","brands":[]},{"name":"Fenugreek","cls":"Herbal supplement","brands":[]},{"name":"Cinnamon extract","cls":"Herbal supplement","brands":[]},{"name":"Berberine","cls":"Herbal supplement","brands":[]},{"name":"Dandelion root","cls":"Herbal supplement","brands":[]},{"name":"Stinging nettle","cls":"Herbal supplement","brands":[]},{"name":"Horny goat weed (epimedium)","cls":"Herbal supplement","brands":[]},{"name":"Yohimbe","cls":"Herbal supplement","brands":[]},{"name":"Fo-ti (he shou wu)","cls":"Herbal supplement","brands":[]},{"name":"Schisandra","cls":"Herbal supplement","brands":[]},{"name":"Astragalus","cls":"Herbal supplement","brands":[]},{"name":"Reishi mushroom","cls":"Herbal supplement","brands":[]},{"name":"Cordyceps","cls":"Herbal supplement","brands":[]},{"name":"Lion's mane","cls":"Herbal supplement","brands":[]},{"name":"Chaga","cls":"Herbal supplement","brands":[]},{"name":"Turkey tail","cls":"Herbal supplement","brands":[]},{"name":"Spirulina","cls":"Herbal supplement","brands":[]},{"name":"Chlorella","cls":"Herbal supplement","brands":[]},{"name":"Wheatgrass","cls":"Herbal supplement","brands":[]},{"name":"Aloe vera","cls":"Herbal supplement","brands":[]},{"name":"Gotu kola","cls":"Herbal supplement","brands":[]},{"name":"Butcher's broom","cls":"Herbal supplement","brands":[]},{"name":"Horse chestnut","cls":"Herbal supplement","brands":[]},{"name":"Gymnema sylvestre","cls":"Herbal supplement","brands":[]},{"name":"Bitter melon","cls":"Herbal supplement","brands":[]},{"name":"Guggul","cls":"Herbal supplement","brands":[]},{"name":"Andrographis","cls":"Herbal supplement","brands":[]},{"name":"Oregano oil","cls":"Herbal supplement","brands":[]},{"name":"Olive leaf extract","cls":"Herbal supplement","brands":[]},{"name":"Pau d'arco","cls":"Herbal supplement","brands":[]},{"name":"Sea moss (Irish moss)","cls":"Herbal supplement","brands":[]},{"name":"Moringa","cls":"Herbal supplement","brands":[]},{"name":"Mucuna pruriens","cls":"Herbal supplement","brands":[]},{"name":"Bacopa monnieri","cls":"Herbal supplement","brands":[]},{"name":"Phosphatidylserine","cls":"Herbal supplement","brands":[]},{"name":"Huperzine A","cls":"Herbal supplement","brands":[]},{"name":"Vinpocetine","cls":"Herbal supplement","brands":[]},{"name":"Valerian","cls":"Herbal supplement","brands":[]},{"name":"Hops","cls":"Herbal supplement","brands":[]},{"name":"Skullcap","cls":"Herbal supplement","brands":[]},{"name":"Ginseng (Siberian / eleuthero)","cls":"Herbal supplement","brands":[]},{"name":"Licorice root (DGL)","cls":"Herbal supplement","brands":[]},{"name":"Slippery elm","cls":"Herbal supplement","brands":[]},{"name":"Marshmallow root","cls":"Herbal supplement","brands":[]},{"name":"Turkesterone","cls":"Herbal supplement","brands":[]},{"name":"Tongkat ali","cls":"Herbal supplement","brands":[]},{"name":"Shatavari","cls":"Herbal supplement","brands":[]},{"name":"Triphala","cls":"Herbal supplement","brands":[]},{"name":"Neem","cls":"Herbal supplement","brands":[]},{"name":"Burdock root","cls":"Herbal supplement","brands":[]},{"name":"Goldenseal","cls":"Herbal supplement","brands":[]},{"name":"Milk thistle seed","cls":"Herbal supplement","brands":[]},{"name":"Artichoke extract","cls":"Herbal supplement","brands":[]},{"name":"Ginger root","cls":"Herbal supplement","brands":[]},{"name":"Peppermint oil","cls":"Herbal supplement","brands":[]},{"name":"Chasteberry (vitex)","cls":"Herbal supplement","brands":[]},{"name":"Dong quai","cls":"Herbal supplement","brands":[]},{"name":"Wild yam","cls":"Herbal supplement","brands":[]},{"name":"Rhodiola","cls":"Herbal supplement","brands":[]},{"name":"Lavender oil","cls":"Herbal supplement","brands":[]},{"name":"Ashwagandha (KSM-66)","cls":"Herbal supplement","brands":[]},{"name":"Cordyceps militaris","cls":"Herbal supplement","brands":[]},{"name":"Maitake mushroom","cls":"Herbal supplement","brands":[]},{"name":"Beetroot extract","cls":"Herbal supplement","brands":[]},{"name":"Lactobacillus acidophilus","cls":"Probiotic / gut","brands":[]},{"name":"Bifidobacterium","cls":"Probiotic / gut","brands":[]},{"name":"Saccharomyces boulardii","cls":"Probiotic / gut","brands":[]},{"name":"Lactobacillus rhamnosus","cls":"Probiotic / gut","brands":[]},{"name":"Inulin (prebiotic)","cls":"Probiotic / gut","brands":[]},{"name":"FOS (fructooligosaccharides)","cls":"Probiotic / gut","brands":[]},{"name":"Digestive enzymes","cls":"Probiotic / gut","brands":[]},{"name":"Betaine HCl","cls":"Probiotic / gut","brands":[]},{"name":"Psyllium husk","cls":"Probiotic / gut","brands":[]},{"name":"Glucomannan","cls":"Probiotic / gut","brands":[]},{"name":"Apple cider vinegar","cls":"Probiotic / gut","brands":[]},{"name":"L-glutamine (gut)","cls":"Probiotic / gut","brands":[]},{"name":"Collagen (gut)","cls":"Probiotic / gut","brands":[]},{"name":"Bone broth","cls":"Probiotic / gut","brands":[]},{"name":"Activated charcoal","cls":"Probiotic / gut","brands":[]},{"name":"Bentonite clay","cls":"Probiotic / gut","brands":[]},{"name":"Slippery elm bark","cls":"Probiotic / gut","brands":[]},{"name":"Aloe (gut)","cls":"Probiotic / gut","brands":[]},{"name":"Ox bile","cls":"Probiotic / gut","brands":[]},{"name":"Pancreatin","cls":"Probiotic / gut","brands":[]},{"name":"Bromelain (enzyme)","cls":"Probiotic / gut","brands":[]},{"name":"Papain","cls":"Probiotic / gut","brands":[]},{"name":"Coenzyme Q10 (ubiquinone)","cls":"Other supplement","brands":[]},{"name":"Ubiquinol","cls":"Other supplement","brands":[]},{"name":"Alpha-lipoic acid","cls":"Other supplement","brands":[]},{"name":"PQQ","cls":"Other supplement","brands":[]},{"name":"Glucosamine","cls":"Other supplement","brands":[]},{"name":"Chondroitin","cls":"Other supplement","brands":[]},{"name":"MSM (methylsulfonylmethane)","cls":"Other supplement","brands":[]},{"name":"Hyaluronic acid","cls":"Other supplement","brands":[]},{"name":"Collagen peptides","cls":"Other supplement","brands":[]},{"name":"Type II collagen","cls":"Other supplement","brands":[]},{"name":"Gelatin","cls":"Other supplement","brands":[]},{"name":"DHEA","cls":"Other supplement","brands":[]},{"name":"Pregnenolone","cls":"Other supplement","brands":[]},{"name":"7-keto-DHEA","cls":"Other supplement","brands":[]},{"name":"Beta-glucan","cls":"Other supplement","brands":[]},{"name":"Lutein","cls":"Other supplement","brands":[]},{"name":"Zeaxanthin","cls":"Other supplement","brands":[]},{"name":"Lycopene","cls":"Other supplement","brands":[]},{"name":"Astaxanthin","cls":"Other supplement","brands":[]},{"name":"Nattokinase","cls":"Other supplement","brands":[]},{"name":"Serrapeptase","cls":"Other supplement","brands":[]},{"name":"Policosanol","cls":"Other supplement","brands":[]},{"name":"Phytosterols","cls":"Other supplement","brands":[]},{"name":"Beta-sitosterol","cls":"Other supplement","brands":[]},{"name":"Colostrum","cls":"Other supplement","brands":[]},{"name":"Royal jelly","cls":"Other supplement","brands":[]},{"name":"Propolis","cls":"Other supplement","brands":[]},{"name":"Bee pollen","cls":"Other supplement","brands":[]},{"name":"Shilajit","cls":"Other supplement","brands":[]},{"name":"Fulvic / humic acid","cls":"Other supplement","brands":[]},{"name":"Diatomaceous earth","cls":"Other supplement","brands":[]},{"name":"CoQ10 (ubiquinol)","cls":"Other supplement","brands":[]},{"name":"Pyrroloquinoline quinone","cls":"Other supplement","brands":[]},{"name":"Calcium D-glucarate","cls":"Other supplement","brands":[]},{"name":"Indole-3-carbinol (I3C)","cls":"Other supplement","brands":[]},{"name":"DIM (diindolylmethane)","cls":"Other supplement","brands":[]},{"name":"Sulforaphane","cls":"Other supplement","brands":[]},{"name":"Trimethylglycine","cls":"Other supplement","brands":[]},{"name":"Choline bitartrate","cls":"Other supplement","brands":[]},{"name":"Alpha-GPC","cls":"Other supplement","brands":[]},{"name":"CDP-choline (citicoline)","cls":"Other supplement","brands":[]},{"name":"Lecithin","cls":"Other supplement","brands":[]},{"name":"Krill oil (phospholipid)","cls":"Other supplement","brands":[]},{"name":"Whey protein","cls":"Sports / performance supplement","brands":[]},{"name":"Casein protein","cls":"Sports / performance supplement","brands":[]},{"name":"Pea protein","cls":"Sports / performance supplement","brands":[]},{"name":"Soy protein","cls":"Sports / performance supplement","brands":[]},{"name":"Collagen protein","cls":"Sports / performance supplement","brands":[]},{"name":"Creatine HCl","cls":"Sports / performance supplement","brands":[]},{"name":"Caffeine (anhydrous)","cls":"Sports / performance supplement","brands":[]},{"name":"Guarana","cls":"Sports / performance supplement","brands":[]},{"name":"Green coffee bean extract","cls":"Sports / performance supplement","brands":[]},{"name":"Garcinia cambogia","cls":"Sports / performance supplement","brands":[]},{"name":"Raspberry ketones","cls":"Sports / performance supplement","brands":[]},{"name":"Forskolin (coleus)","cls":"Sports / performance supplement","brands":[]},{"name":"Glucomannan (weight)","cls":"Sports / performance supplement","brands":[]},{"name":"Chitosan","cls":"Sports / performance supplement","brands":[]},{"name":"White kidney bean extract","cls":"Sports / performance supplement","brands":[]},{"name":"Capsaicin (thermogenic)","cls":"Sports / performance supplement","brands":[]},{"name":"Yerba mate","cls":"Sports / performance supplement","brands":[]},{"name":"Beetroot / nitrate","cls":"Sports / performance supplement","brands":[]},{"name":"Beta-alanine (sport)","cls":"Sports / performance supplement","brands":[]},{"name":"Citrulline (sport)","cls":"Sports / performance supplement","brands":[]},{"name":"Electrolytes (sport)","cls":"Sports / performance supplement","brands":[]},{"name":"BCAA (sport)","cls":"Sports / performance supplement","brands":[]},{"name":"EAA (essential amino acids)","cls":"Sports / performance supplement","brands":[]},{"name":"Pre-workout blend","cls":"Sports / performance supplement","brands":[]},{"name":"L-carnitine (sport)","cls":"Sports / performance supplement","brands":[]},{"name":"Ecdysterone","cls":"Sports / performance supplement","brands":[]},{"name":"Betaine (performance)","cls":"Sports / performance supplement","brands":[]},{"name":"Sodium bicarbonate (sport)","cls":"Sports / performance supplement","brands":[]},{"name":"Cocaine","cls":"Recreational stimulant","brands":["coke","blow","crack","snow"]},{"name":"Methamphetamine","cls":"Recreational stimulant","brands":["crystal meth","meth","ice"]},{"name":"Amphetamine (illicit)","cls":"Recreational stimulant","brands":["speed"]},{"name":"MDMA","cls":"Recreational stimulant","brands":["ecstasy","molly","E","X"]},{"name":"MDA","cls":"Recreational stimulant","brands":["sally"]},{"name":"Mephedrone","cls":"Recreational stimulant","brands":["meow meow","4-mmc"]},{"name":"Methylone","cls":"Recreational stimulant","brands":["bk-mdma"]},{"name":"Cathinone (khat)","cls":"Recreational stimulant","brands":["khat","qat"]},{"name":"Synthetic cathinones","cls":"Recreational stimulant","brands":["bath salts"]},{"name":"Alpha-PVP","cls":"Recreational stimulant","brands":["flakka"]},{"name":"2C-B","cls":"Recreational stimulant","brands":["nexus"]},{"name":"2C-I","cls":"Recreational stimulant","brands":[]},{"name":"PMA / PMMA","cls":"Recreational stimulant","brands":["death"]},{"name":"Ephedra (ma huang)","cls":"Recreational stimulant","brands":["ephedra"]},{"name":"Pseudoephedrine (misuse)","cls":"Recreational stimulant","brands":[]},{"name":"Caffeine (high-dose)","cls":"Recreational stimulant","brands":[]},{"name":"Betel nut (areca)","cls":"Recreational stimulant","brands":["areca"]},{"name":"Modafinil (off-label)","cls":"Recreational stimulant","brands":[]},{"name":"Heroin","cls":"Recreational opioid","brands":["smack","H","dope","brown"]},{"name":"Fentanyl (illicit)","cls":"Recreational opioid","brands":["fent"]},{"name":"Carfentanil","cls":"Recreational opioid","brands":[]},{"name":"Oxycodone (misuse)","cls":"Recreational opioid","brands":["oxy","percs"]},{"name":"Hydrocodone (misuse)","cls":"Recreational opioid","brands":["vics"]},{"name":"Oxymorphone (misuse)","cls":"Recreational opioid","brands":[]},{"name":"Hydromorphone (misuse)","cls":"Recreational opioid","brands":[]},{"name":"Codeine (lean)","cls":"Recreational opioid","brands":["lean","purple drank","sizzurp"]},{"name":"Morphine (misuse)","cls":"Recreational opioid","brands":[]},{"name":"Methadone (diversion)","cls":"Recreational opioid","brands":[]},{"name":"Buprenorphine (misuse)","cls":"Recreational opioid","brands":["bupe","subs"]},{"name":"Tramadol (misuse)","cls":"Recreational opioid","brands":[]},{"name":"Kratom (mitragynine)","cls":"Recreational opioid","brands":["kratom"]},{"name":"Opium","cls":"Recreational opioid","brands":[]},{"name":"U-47700","cls":"Recreational opioid","brands":["pink"]},{"name":"Nitazenes (isotonitazene)","cls":"Recreational opioid","brands":["iso"]},{"name":"Tianeptine","cls":"Recreational opioid","brands":["gas station heroin","zaza"]},{"name":"Loperamide (high-dose misuse)","cls":"Recreational opioid","brands":[]},{"name":"Tapentadol (misuse)","cls":"Recreational opioid","brands":[]},{"name":"GHB","cls":"Recreational depressant / sedative","brands":["G","liquid ecstasy"]},{"name":"GBL","cls":"Recreational depressant / sedative","brands":[]},{"name":"1,4-butanediol","cls":"Recreational depressant / sedative","brands":[]},{"name":"Phenibut","cls":"Recreational depressant / sedative","brands":[]},{"name":"Etizolam","cls":"Recreational depressant / sedative","brands":["etiz"]},{"name":"Flualprazolam","cls":"Recreational depressant / sedative","brands":[]},{"name":"Alprazolam (misuse)","cls":"Recreational depressant / sedative","brands":["xans","bars"]},{"name":"Diazepam (misuse)","cls":"Recreational depressant / sedative","brands":[]},{"name":"Clonazepam (misuse)","cls":"Recreational depressant / sedative","brands":["pins","klons"]},{"name":"Flunitrazepam (Rohypnol)","cls":"Recreational depressant / sedative","brands":["roofies"]},{"name":"Barbiturates","cls":"Recreational depressant / sedative","brands":["barbs"]},{"name":"Methaqualone (Quaalude)","cls":"Recreational depressant / sedative","brands":["ludes"]},{"name":"Carisoprodol (misuse)","cls":"Recreational depressant / sedative","brands":["soma"]},{"name":"Zolpidem (misuse)","cls":"Recreational depressant / sedative","brands":["ambien"]},{"name":"Zopiclone (misuse)","cls":"Recreational depressant / sedative","brands":[]},{"name":"Chloral hydrate","cls":"Recreational depressant / sedative","brands":[]},{"name":"Cannabis (marijuana)","cls":"Cannabinoid","brands":["weed","pot","ganja","herb","bud"]},{"name":"Hashish","cls":"Cannabinoid","brands":["hash"]},{"name":"Hash oil / dabs","cls":"Cannabinoid","brands":["wax","shatter","BHO","dabs"]},{"name":"THC","cls":"Cannabinoid","brands":["delta-9"]},{"name":"Delta-8 THC","cls":"Cannabinoid","brands":["d8"]},{"name":"HHC","cls":"Cannabinoid","brands":[]},{"name":"THC-O acetate","cls":"Cannabinoid","brands":[]},{"name":"Synthetic cannabinoids (K2/Spice)","cls":"Cannabinoid","brands":["k2","spice"]},{"name":"JWH-018","cls":"Cannabinoid","brands":[]},{"name":"AB-FUBINACA","cls":"Cannabinoid","brands":[]},{"name":"THCP","cls":"Cannabinoid","brands":[]},{"name":"Edibles (THC)","cls":"Cannabinoid","brands":["edibles"]},{"name":"LSD","cls":"Psychedelic","brands":["acid","tabs","blotter"]},{"name":"Psilocybin mushrooms","cls":"Psychedelic","brands":["shrooms","magic mushrooms"]},{"name":"Psilocin","cls":"Psychedelic","brands":[]},{"name":"Mescaline (peyote)","cls":"Psychedelic","brands":["peyote","san pedro"]},{"name":"DMT","cls":"Psychedelic","brands":["dimitri"]},{"name":"5-MeO-DMT","cls":"Psychedelic","brands":["toad"]},{"name":"Ayahuasca","cls":"Psychedelic","brands":["aya"]},{"name":"2C-E","cls":"Psychedelic","brands":[]},{"name":"2C-P","cls":"Psychedelic","brands":[]},{"name":"DOM","cls":"Psychedelic","brands":["STP"]},{"name":"DOB","cls":"Psychedelic","brands":[]},{"name":"25I-NBOMe","cls":"Psychedelic","brands":["n-bomb"]},{"name":"25C-NBOMe","cls":"Psychedelic","brands":[]},{"name":"Ibogaine","cls":"Psychedelic","brands":["iboga"]},{"name":"LSA (morning glory)","cls":"Psychedelic","brands":[]},{"name":"Salvia divinorum","cls":"Psychedelic","brands":["salvia"]},{"name":"DOI","cls":"Psychedelic","brands":[]},{"name":"AL-LAD","cls":"Psychedelic","brands":[]},{"name":"1P-LSD","cls":"Psychedelic","brands":[]},{"name":"Ketamine","cls":"Dissociative","brands":["K","special K","ket"]},{"name":"PCP","cls":"Dissociative","brands":["angel dust","phencyclidine"]},{"name":"Dextromethorphan (high-dose)","cls":"Dissociative","brands":["DXM","robotripping"]},{"name":"Nitrous oxide","cls":"Dissociative","brands":["whippets","laughing gas","nangs"]},{"name":"Methoxetamine (MXE)","cls":"Dissociative","brands":[]},{"name":"3-MeO-PCP","cls":"Dissociative","brands":[]},{"name":"Deschloroketamine","cls":"Dissociative","brands":["DCK"]},{"name":"Tiletamine","cls":"Dissociative","brands":[]},{"name":"Amyl nitrite (poppers)","cls":"Inhalant","brands":["poppers"]},{"name":"Butyl nitrite","cls":"Inhalant","brands":[]},{"name":"Isopropyl nitrite","cls":"Inhalant","brands":[]},{"name":"Toluene","cls":"Inhalant","brands":[]},{"name":"Glue / solvents","cls":"Inhalant","brands":["huffing"]},{"name":"Gasoline (inhaled)","cls":"Inhalant","brands":[]},{"name":"Butane","cls":"Inhalant","brands":[]},{"name":"Propane","cls":"Inhalant","brands":[]},{"name":"Aerosol propellants","cls":"Inhalant","brands":[]},{"name":"Ether","cls":"Inhalant","brands":[]},{"name":"Chloroform","cls":"Inhalant","brands":[]},{"name":"Paint thinner","cls":"Inhalant","brands":[]},{"name":"Nitrous oxide (recreational)","cls":"Inhalant","brands":[]},{"name":"Datura / jimson weed","cls":"Plant / other recreational","brands":["datura"]},{"name":"Scopolamine (devil's breath)","cls":"Plant / other recreational","brands":[]},{"name":"Nutmeg (high-dose)","cls":"Plant / other recreational","brands":[]},{"name":"Morning glory seeds","cls":"Plant / other recreational","brands":[]},{"name":"Hawaiian baby woodrose","cls":"Plant / other recreational","brands":[]},{"name":"Wormwood (thujone)","cls":"Plant / other recreational","brands":[]},{"name":"Wild lettuce","cls":"Plant / other recreational","brands":[]},{"name":"Blue lotus","cls":"Plant / other recreational","brands":[]},{"name":"Kanna (sceletium)","cls":"Plant / other recreational","brands":[]},{"name":"Areca / betel quid","cls":"Plant / other recreational","brands":[]},{"name":"Testosterone (anabolic misuse)","cls":"Performance / image-enhancing (misuse)","brands":["test","gear"]},{"name":"Nandrolone","cls":"Performance / image-enhancing (misuse)","brands":["deca"]},{"name":"Trenbolone","cls":"Performance / image-enhancing (misuse)","brands":["tren"]},{"name":"Stanozolol","cls":"Performance / image-enhancing (misuse)","brands":["winstrol"]},{"name":"Oxandrolone","cls":"Performance / image-enhancing (misuse)","brands":["anavar"]},{"name":"Methandrostenolone","cls":"Performance / image-enhancing (misuse)","brands":["dianabol","dbol"]},{"name":"Boldenone","cls":"Performance / image-enhancing (misuse)","brands":["equipoise"]},{"name":"Clenbuterol","cls":"Performance / image-enhancing (misuse)","brands":["clen"]},{"name":"DNP (dinitrophenol)","cls":"Performance / image-enhancing (misuse)","brands":["dnp"]},{"name":"Erythropoietin (doping)","cls":"Performance / image-enhancing (misuse)","brands":["EPO"]},{"name":"Human growth hormone (misuse)","cls":"Performance / image-enhancing (misuse)","brands":["HGH"]},{"name":"SARMs (ostarine)","cls":"Performance / image-enhancing (misuse)","brands":["sarms","ostarine"]},{"name":"Ligandrol (LGD-4033)","cls":"Performance / image-enhancing (misuse)","brands":[]},{"name":"Insulin (misuse)","cls":"Performance / image-enhancing (misuse)","brands":[]},{"name":"Ephedrine (ECA stack)","cls":"Performance / image-enhancing (misuse)","brands":[]},{"name":"Synthetic insulin-like growth factor","cls":"Performance / image-enhancing (misuse)","brands":["IGF-1"]},{"name": "All-purpose cleaner", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Multi-surface spray", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Disinfecting wipes", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Disinfecting spray", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Degreaser", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Kitchen cleaner", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Bathroom cleaner", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Tile cleaner", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Grout cleaner", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Soft scrub cleanser", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Abrasive cleanser (Comet)", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Abrasive cleanser (Ajax)", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Bar Keepers Friend", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Stainless steel cleaner", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Granite cleaner", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Marble cleaner", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Wood cleaner (Murphy Oil Soap)", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Furniture polish", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Pledge polish", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Dusting spray", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Carpet cleaner", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Carpet spot remover", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Upholstery cleaner", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Fabric refresher (Febreze)", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Air freshener spray", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Plug-in air freshener", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Gel air freshener", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Odor eliminator", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Enzyme cleaner", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Pet stain & odor remover", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Mold & mildew remover", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Mildew stain remover", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Concrete cleaner", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Driveway degreaser", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Grill cleaner", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Stovetop cleaner", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Cooktop cleaner", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Descaler", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Lime & scale remover (CLR)", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Kettle descaler", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Coffee maker descaler", "cls": "Household chemical (cleaner)", "brands": []},{"name": "Toilet bowl cleaner", "cls": "Household chemical (bathroom)", "brands": []},{"name": "Toilet bowl gel", "cls": "Household chemical (bathroom)", "brands": []},{"name": "In-tank toilet cleaner", "cls": "Household chemical (bathroom)", "brands": []},{"name": "Automatic toilet cleaner tablet", "cls": "Household chemical (bathroom)", "brands": []},{"name": "Tub & tile cleaner", "cls": "Household chemical (bathroom)", "brands": []},{"name": "Shower cleaner", "cls": "Household chemical (bathroom)", "brands": []},{"name": "Daily shower spray", "cls": "Household chemical (bathroom)", "brands": []},{"name": "Soap scum remover", "cls": "Household chemical (bathroom)", "brands": []},{"name": "Drain opener gel", "cls": "Household chemical (bathroom)", "brands": []},{"name": "Drain opener crystals", "cls": "Household chemical (bathroom)", "brands": []},{"name": "Hair clog remover", "cls": "Household chemical (bathroom)", "brands": []},{"name": "Enzyme drain maintainer", "cls": "Household chemical (bathroom)", "brands": []},{"name": "Grout whitener", "cls": "Household chemical (bathroom)", "brands": []},{"name": "Caulk cleaner", "cls": "Household chemical (bathroom)", "brands": []},{"name": "Liquid laundry detergent", "cls": "Household chemical (laundry)", "brands": []},{"name": "Powder laundry detergent", "cls": "Household chemical (laundry)", "brands": []},{"name": "Laundry pods", "cls": "Household chemical (laundry)", "brands": []},{"name": "HE detergent", "cls": "Household chemical (laundry)", "brands": []},{"name": "Fabric softener liquid", "cls": "Household chemical (laundry)", "brands": []},{"name": "Dryer sheets", "cls": "Household chemical (laundry)", "brands": []},{"name": "Wool dryer balls", "cls": "Household chemical (laundry)", "brands": []},{"name": "Oxygen bleach (OxiClean)", "cls": "Household chemical (laundry)", "brands": []},{"name": "Color-safe bleach", "cls": "Household chemical (laundry)", "brands": []},{"name": "Chlorine bleach", "cls": "Household chemical (laundry)", "brands": []},{"name": "Stain remover spray", "cls": "Household chemical (laundry)", "brands": []},{"name": "Stain remover stick", "cls": "Household chemical (laundry)", "brands": []},{"name": "Pre-wash spray (Shout)", "cls": "Household chemical (laundry)", "brands": []},{"name": "Bluing agent", "cls": "Household chemical (laundry)", "brands": []},{"name": "Starch spray", "cls": "Household chemical (laundry)", "brands": []},{"name": "Wrinkle release spray", "cls": "Household chemical (laundry)", "brands": []},{"name": "Delicates wash (Woolite)", "cls": "Household chemical (laundry)", "brands": []},{"name": "Sanitizing laundry additive", "cls": "Household chemical (laundry)", "brands": []},{"name": "Scent booster beads", "cls": "Household chemical (laundry)", "brands": []},{"name": "Borax laundry booster", "cls": "Household chemical (laundry)", "brands": []},{"name": "Washing soda", "cls": "Household chemical (laundry)", "brands": []},{"name": "Dish soap", "cls": "Household chemical (dish)", "brands": []},{"name": "Dishwasher detergent pods", "cls": "Household chemical (dish)", "brands": []},{"name": "Dishwasher gel", "cls": "Household chemical (dish)", "brands": []},{"name": "Dishwasher powder", "cls": "Household chemical (dish)", "brands": []},{"name": "Rinse aid (Jet-Dry)", "cls": "Household chemical (dish)", "brands": []},{"name": "Dishwasher cleaner", "cls": "Household chemical (dish)", "brands": []},{"name": "Dishwasher deodorizer", "cls": "Household chemical (dish)", "brands": []},{"name": "Pot & pan degreaser", "cls": "Household chemical (dish)", "brands": []},{"name": "Floor cleaner", "cls": "Household chemical (floor)", "brands": []},{"name": "Hardwood floor cleaner", "cls": "Household chemical (floor)", "brands": []},{"name": "Laminate floor cleaner", "cls": "Household chemical (floor)", "brands": []},{"name": "Tile & vinyl floor cleaner", "cls": "Household chemical (floor)", "brands": []},{"name": "Floor wax", "cls": "Household chemical (floor)", "brands": []},{"name": "Floor stripper", "cls": "Household chemical (floor)", "brands": []},{"name": "Floor finish", "cls": "Household chemical (floor)", "brands": []},{"name": "Mop & shine", "cls": "Household chemical (floor)", "brands": []},{"name": "Steam mop solution", "cls": "Household chemical (floor)", "brands": []},{"name": "Glass cleaner", "cls": "Household chemical (glass)", "brands": []},{"name": "Window cleaner", "cls": "Household chemical (glass)", "brands": []},{"name": "Ammonia-free glass cleaner", "cls": "Household chemical (glass)", "brands": []},{"name": "Mirror cleaner", "cls": "Household chemical (glass)", "brands": []},{"name": "Streak-free spray", "cls": "Household chemical (glass)", "brands": []},{"name": "Windshield glass cleaner", "cls": "Household chemical (glass)", "brands": []},{"name": "Household disinfectant", "cls": "Household chemical (disinfectant)", "brands": []},{"name": "Disinfecting concentrate", "cls": "Household chemical (disinfectant)", "brands": []},{"name": "Pine-oil cleaner (Pine-Sol)", "cls": "Household chemical (disinfectant)", "brands": []},{"name": "Phenolic disinfectant (Lysol)", "cls": "Household chemical (disinfectant)", "brands": []},{"name": "Quaternary disinfectant", "cls": "Household chemical (disinfectant)", "brands": []},{"name": "Isopropyl alcohol 70%", "cls": "Household chemical (disinfectant)", "brands": []},{"name": "Isopropyl alcohol 91%", "cls": "Household chemical (disinfectant)", "brands": []},{"name": "Hydrogen peroxide 3%", "cls": "Household chemical (disinfectant)", "brands": []},{"name": "Rubbing alcohol", "cls": "Household chemical (disinfectant)", "brands": []},{"name": "Hand sanitizer", "cls": "Household chemical (disinfectant)", "brands": []},{"name": "Benzalkonium wipes", "cls": "Household chemical (disinfectant)", "brands": []},{"name": "Iodophor (Betadine)", "cls": "Household chemical (disinfectant)", "brands": []},{"name": "Chlorhexidine solution", "cls": "Household chemical (disinfectant)", "brands": []},{"name": "Bleach tablets", "cls": "Household chemical (disinfectant)", "brands": []},{"name": "Sodium dichloroisocyanurate tablets", "cls": "Household chemical (disinfectant)", "brands": []},{"name": "Oven cleaner", "cls": "Household chemical (kitchen)", "brands": []},{"name": "Oven cleaner fume-free", "cls": "Household chemical (kitchen)", "brands": []},{"name": "Range hood degreaser", "cls": "Household chemical (kitchen)", "brands": []},{"name": "Microwave cleaner", "cls": "Household chemical (kitchen)", "brands": []},{"name": "Cutting board sanitizer", "cls": "Household chemical (kitchen)", "brands": []},{"name": "Fruit & veggie wash", "cls": "Household chemical (kitchen)", "brands": []},{"name": "Cast iron seasoning oil", "cls": "Household chemical (kitchen)", "brands": []},{"name": "Silver polish", "cls": "Household chemical (kitchen)", "brands": []},{"name": "Brass polish", "cls": "Household chemical (kitchen)", "brands": []},{"name": "Copper cleaner", "cls": "Household chemical (kitchen)", "brands": []},{"name": "Chrome polish", "cls": "Household chemical (kitchen)", "brands": []},{"name": "Motor oil", "cls": "Household chemical (automotive)", "brands": []},{"name": "Synthetic motor oil", "cls": "Household chemical (automotive)", "brands": []},{"name": "Engine coolant / antifreeze", "cls": "Household chemical (automotive)", "brands": []},{"name": "Windshield washer fluid", "cls": "Household chemical (automotive)", "brands": []},{"name": "Brake fluid (DOT 3)", "cls": "Household chemical (automotive)", "brands": []},{"name": "Brake fluid (DOT 4)", "cls": "Household chemical (automotive)", "brands": []},{"name": "Power steering fluid", "cls": "Household chemical (automotive)", "brands": []},{"name": "Transmission fluid", "cls": "Household chemical (automotive)", "brands": []},{"name": "Gear oil", "cls": "Household chemical (automotive)", "brands": []},{"name": "Diesel exhaust fluid (DEF)", "cls": "Household chemical (automotive)", "brands": []},{"name": "Fuel injector cleaner", "cls": "Household chemical (automotive)", "brands": []},{"name": "Octane booster", "cls": "Household chemical (automotive)", "brands": []},{"name": "Starting fluid (ether)", "cls": "Household chemical (automotive)", "brands": []},{"name": "Carburetor cleaner", "cls": "Household chemical (automotive)", "brands": []},{"name": "Brake cleaner", "cls": "Household chemical (automotive)", "brands": []},{"name": "Engine degreaser", "cls": "Household chemical (automotive)", "brands": []},{"name": "Tire shine", "cls": "Household chemical (automotive)", "brands": []},{"name": "Car wash soap", "cls": "Household chemical (automotive)", "brands": []},{"name": "Wheel & tire cleaner", "cls": "Household chemical (automotive)", "brands": []},{"name": "Bug & tar remover", "cls": "Household chemical (automotive)", "brands": []},{"name": "Windshield de-icer", "cls": "Household chemical (automotive)", "brands": []},{"name": "Radiator flush", "cls": "Household chemical (automotive)", "brands": []},{"name": "Battery terminal cleaner", "cls": "Household chemical (automotive)", "brands": []},{"name": "Penetrating oil (PB Blaster)", "cls": "Household chemical (automotive)", "brands": []},{"name": "White lithium grease", "cls": "Household chemical (automotive)", "brands": []},{"name": "Silicone spray", "cls": "Household chemical (automotive)", "brands": []},{"name": "WD-40", "cls": "Household chemical (automotive)", "brands": []},{"name": "Chain lube", "cls": "Household chemical (automotive)", "brands": []},{"name": "Undercoating spray", "cls": "Household chemical (automotive)", "brands": []},{"name": "Rust converter", "cls": "Household chemical (automotive)", "brands": []},{"name": "Diesel fuel", "cls": "Household chemical (automotive)", "brands": []},{"name": "Two-stroke oil", "cls": "Household chemical (automotive)", "brands": []},{"name": "Chainsaw bar oil", "cls": "Household chemical (automotive)", "brands": []},{"name": "Paint thinner", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Mineral spirits", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Lacquer thinner", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Acetone", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Denatured alcohol", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Naphtha", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Xylene", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Toluene", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "MEK (methyl ethyl ketone)", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Contact cement", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Rubber cement", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Epoxy resin", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Epoxy hardener", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Super glue (cyanoacrylate)", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Wood glue", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Construction adhesive", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Spray adhesive", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Gorilla Glue", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "PVC primer", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "PVC cement", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Plumber's solvent cement", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Solder flux", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Muriatic acid", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Concrete etch", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Concrete sealer", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Wood stain", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Polyurethane finish", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Varnish", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Shellac", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Spray paint", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Oil-based paint", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Latex paint", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Primer paint", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Paint stripper", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Paint remover (methylene chloride)", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Graffiti remover", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Caulk", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Silicone sealant", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Expanding foam sealant", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Sandblasting media", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Cutting oil", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Anti-seize compound", "cls": "Household chemical (garage/workshop)", "brands": []},{"name": "Weed killer (glyphosate)", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Weed & grass killer", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Broadleaf weed killer (2,4-D)", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Crabgrass preventer", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Insecticide spray", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Insecticide concentrate", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Ant killer bait", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Ant & roach spray (Raid)", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Roach gel bait", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Wasp & hornet spray", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Flea & tick spray", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Flea bomb / fogger", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Mosquito repellent (DEET)", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Mosquito yard spray", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Rodent bait (anticoagulant)", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Mouse bait blocks", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Gopher bait", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Mole bait", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Snail & slug bait (metaldehyde)", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Fungicide", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Neem oil", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Copper fungicide", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Sulfur dust", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Diatomaceous earth", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Lawn fertilizer", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Weed & feed", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Fertilizer (10-10-10)", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Ammonium nitrate fertilizer", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Bone meal", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Blood meal", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Fish emulsion fertilizer", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Systemic insecticide (imidacloprid)", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Bt (Bacillus thuringiensis)", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Spinosad", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Pyrethrin spray", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Permethrin concentrate", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Malathion", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Sevin (carbaryl) dust", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Rose & flower insect spray", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Tree & shrub systemic", "cls": "Household chemical (garden/pesticide)", "brands": []},{"name": "Pool chlorine tablets", "cls": "Household chemical (pool/spa)", "brands": []},{"name": "Pool shock (cal-hypo)", "cls": "Household chemical (pool/spa)", "brands": []},{"name": "Liquid pool chlorine", "cls": "Household chemical (pool/spa)", "brands": []},{"name": "Muriatic acid (pool)", "cls": "Household chemical (pool/spa)", "brands": []},{"name": "pH increaser (soda ash)", "cls": "Household chemical (pool/spa)", "brands": []},{"name": "pH decreaser", "cls": "Household chemical (pool/spa)", "brands": []},{"name": "Pool algaecide", "cls": "Household chemical (pool/spa)", "brands": []},{"name": "Pool clarifier", "cls": "Household chemical (pool/spa)", "brands": []},{"name": "Chlorine stabilizer (cyanuric acid)", "cls": "Household chemical (pool/spa)", "brands": []},{"name": "Pool bromine tablets", "cls": "Household chemical (pool/spa)", "brands": []},{"name": "Spa shock", "cls": "Household chemical (pool/spa)", "brands": []},{"name": "Spa defoamer", "cls": "Household chemical (pool/spa)", "brands": []},{"name": "Calcium hardness increaser", "cls": "Household chemical (pool/spa)", "brands": []},{"name": "Pool test reagents", "cls": "Household chemical (pool/spa)", "brands": []},{"name": "Mothballs (naphthalene)", "cls": "Household chemical (pest)", "brands": []},{"name": "Mothballs (paradichlorobenzene)", "cls": "Household chemical (pest)", "brands": []},{"name": "Boric acid roach powder", "cls": "Household chemical (pest)", "brands": []},{"name": "Bed bug spray", "cls": "Household chemical (pest)", "brands": []},{"name": "Bed bug powder", "cls": "Household chemical (pest)", "brands": []},{"name": "Bird repellent", "cls": "Household chemical (pest)", "brands": []},{"name": "Rat glue trap adhesive", "cls": "Household chemical (pest)", "brands": []},{"name": "Termite treatment", "cls": "Household chemical (pest)", "brands": []},{"name": "Fumigation tablet (aluminum phosphide)", "cls": "Household chemical (pest)", "brands": []},{"name": "Gopher smoke bomb", "cls": "Household chemical (pest)", "brands": []},{"name": "Gasoline", "cls": "Household chemical (fuel/gas)", "brands": []},{"name": "Diesel", "cls": "Household chemical (fuel/gas)", "brands": []},{"name": "Kerosene", "cls": "Household chemical (fuel/gas)", "brands": []},{"name": "Charcoal lighter fluid", "cls": "Household chemical (fuel/gas)", "brands": []},{"name": "Lighter fluid (butane)", "cls": "Household chemical (fuel/gas)", "brands": []},{"name": "Butane canister", "cls": "Household chemical (fuel/gas)", "brands": []},{"name": "Propane cylinder", "cls": "Household chemical (fuel/gas)", "brands": []},{"name": "Camp stove fuel (white gas)", "cls": "Household chemical (fuel/gas)", "brands": []},{"name": "Lamp oil", "cls": "Household chemical (fuel/gas)", "brands": []},{"name": "Fire starter gel", "cls": "Household chemical (fuel/gas)", "brands": []},{"name": "Sterno / cooking fuel", "cls": "Household chemical (fuel/gas)", "brands": []},{"name": "Fuel stabilizer", "cls": "Household chemical (fuel/gas)", "brands": []},{"name": "Nail polish remover", "cls": "Household chemical (personal/other)", "brands": []},{"name": "Acetone-free polish remover", "cls": "Household chemical (personal/other)", "brands": []},{"name": "Hair dye developer (peroxide)", "cls": "Household chemical (personal/other)", "brands": []},{"name": "Hair bleach powder", "cls": "Household chemical (personal/other)", "brands": []},{"name": "Hair relaxer (lye)", "cls": "Household chemical (personal/other)", "brands": []},{"name": "Perm solution", "cls": "Household chemical (personal/other)", "brands": []},{"name": "Depilatory cream", "cls": "Household chemical (personal/other)", "brands": []},{"name": "Self-tanner", "cls": "Household chemical (personal/other)", "brands": []},{"name": "Pool & tile sealant", "cls": "Household chemical (personal/other)", "brands": []},{"name": "Shoe polish", "cls": "Household chemical (personal/other)", "brands": []},{"name": "Leather cleaner", "cls": "Household chemical (personal/other)", "brands": []},{"name": "Suede cleaner", "cls": "Household chemical (personal/other)", "brands": []},{"name": "Adhesive remover (Goo Gone)", "cls": "Household chemical (personal/other)", "brands": []},{"name": "Sticker remover", "cls": "Household chemical (personal/other)", "brands": []},{"name": "Rust stain remover", "cls": "Household chemical (personal/other)", "brands": []},{"name": "Iron-out", "cls": "Household chemical (personal/other)", "brands": []},{"name": "Septic tank treatment", "cls": "Household chemical (personal/other)", "brands": []},{"name": "RV holding tank chemical", "cls": "Household chemical (personal/other)", "brands": []},{"name": "Portable toilet chemical", "cls": "Household chemical (personal/other)", "brands": []},{"name": "Ice melt (calcium chloride)", "cls": "Household chemical (personal/other)", "brands": []},{"name": "Rock salt (sodium chloride)", "cls": "Household chemical (personal/other)", "brands": []},{"name": "Radiator antifreeze RV", "cls": "Household chemical (personal/other)", "brands": []},{"name": "Dry gas (isopropanol)", "cls": "Household chemical (personal/other)", "brands": []},{"name": "Charcoal briquettes", "cls": "Household chemical (personal/other)", "brands": []},{"name": "Firewood accelerant", "cls": "Household chemical (personal/other)", "brands": []},{"name": "Chimney cleaning log", "cls": "Household chemical (personal/other)", "brands": []},{"name": "Silica gel desiccant", "cls": "Household chemical (personal/other)", "brands": []},{"name": "Ammonia inhalant", "cls": "Household chemical (personal/other)", "brands": []},{"name": "Smelling salts", "cls": "Household chemical (personal/other)", "brands": []}];
+
 
 // ---- Interaction engine (unchanged) ----------------------------------------
 function getFindings(sel) {
@@ -237,6 +451,24 @@ function getFindings(sel) {
       discuss: "Ask your pharmacist whether the timing or doses can be arranged to reduce daytime drowsiness." });
   }
 
+  const seiz = pick("seizure_threshold");
+  if (seiz.length >= 2) add({
+    sys: "cnsresp", sev: "Moderate", drugs: seiz, key: "seizure",
+    title: "Several medicines can lower the seizure threshold",
+    body: "Each of these can make a seizure slightly more likely. Stacked together the effect adds up, which matters most if you have epilepsy or are cutting back on alcohol or sedatives.",
+    mech: "Additive lowering of the seizure threshold (e.g., bupropion, tramadol, fluoroquinolones, carbapenems, some antipsychotics).",
+    discuss: "Ask your prescriber or pharmacist whether this combination is right for you, especially with any seizure history.",
+  });
+
+  const carba = sel.filter(k => has(k, "reduces_valproate"));
+  if (carba.length && sel.includes("valproate")) add({
+    sys: "cnsresp", sev: "Major", drugs: ["valproate", ...carba], key: "carba_vpa",
+    title: "Carbapenem antibiotic with valproate — breakthrough seizures",
+    body: "Carbapenem antibiotics can sharply lower valproate levels within a day or two, which can let seizures break through.",
+    mech: "Carbapenems inhibit valproate's glucuronide recycling and reduce its absorption, dropping serum valproate rapidly and unpredictably.",
+    discuss: "This combination is generally avoided. Contact your prescriber — valproate levels can fall fast, and a different antibiotic or added seizure cover may be needed.",
+  });
+
   const bleed = pick("bleeding");
   if (bleed.length >= 2) add({ sys: "bleed", sev: "Major", drugs: bleed, key: "bleed",
     title: "Several medicines increase bleeding risk",
@@ -270,7 +502,7 @@ function getFindings(sel) {
   const anyOf = arr => arr.filter(k => sel.includes(k));
 
   if (sel.includes("warfarin")) {
-    const amp = anyOf(["amiodarone","metronidazole","tmpsmx","fluconazole"]);
+    const amp = sel.filter(k => k !== "warfarin" && has(k, "raises_warfarin"));
     if (amp.length) add({ sys: "bleed", sev: "Major", drugs: ["warfarin", ...amp], key: "warf_amp",
       title: "Warfarin combined with a medicine that raises its level",
       body: "These medicines slow the breakdown of warfarin, which can push your INR up and increase bleeding risk — sometimes days after starting.",
@@ -401,393 +633,147 @@ function getFindings(sel) {
     });
   }
 
+  // ---------- household chemical hazards ----------
+  const chemAll = sel.filter(k => has(k, "chem"));
+  if (chemAll.length) {
+    const bleachY = pick("bleach"), ammoniaY = pick("ammonia");
+    const acidY = pick("acid_strong", "acid_weak"), alkaliY = pick("alkali_strong");
+    const solventY = sel.filter(k => has(k, "hydrocarbon") || has(k, "toxic_alcohol"));
+    if (bleachY.length && ammoniaY.length) add({ sys: "cnsresp", sev: "Contraindicated", drugs: [...bleachY, ...ammoniaY], key: "mix_bleach_ammonia",
+      title: "Never mix bleach and ammonia — toxic gas",
+      body: "Mixing bleach with ammonia (or ammonia-based cleaners) releases chloramine gas, which can badly injure the lungs and can be deadly in a closed space.",
+      mech: "Sodium hypochlorite + ammonia \u2192 chloramine vapors causing airway injury and pulmonary edema.",
+      discuss: "Never combine these. If mixed by accident, get everyone to fresh air and call Poison Control at 1-800-222-1222; call your emergency number for any trouble breathing." });
+    if (bleachY.length && acidY.length) add({ sys: "cnsresp", sev: "Contraindicated", drugs: [...bleachY, ...acidY], key: "mix_bleach_acid",
+      title: "Never mix bleach with acids — chlorine gas",
+      body: "Bleach mixed with acids — vinegar, or toilet-bowl, rust, or pool acids — releases chlorine gas, which can cause severe breathing injury.",
+      mech: "Hypochlorite + acid \u2192 chlorine gas (Cl\u2082).",
+      discuss: "Never combine these. If exposed, get to fresh air and call Poison Control at 1-800-222-1222; call emergency services for breathing trouble." });
+    if (bleachY.length && solventY.length) add({ sys: "cnsresp", sev: "Major", drugs: [...bleachY, ...solventY], key: "mix_bleach_solvent",
+      title: "Don't mix bleach with alcohols or solvents",
+      body: "Bleach with rubbing alcohol, acetone, or other solvents can form chloroform and other harmful, irritating vapors.",
+      mech: "Hypochlorite + alcohols/hydrocarbons \u2192 chloroform and chlorinated byproducts.",
+      discuss: "Keep these apart. For exposure, get fresh air and call Poison Control at 1-800-222-1222." });
+    if (alkaliY.length && acidY.length) add({ sys: "other", sev: "Major", drugs: [...alkaliY, ...acidY], key: "mix_acid_alkali",
+      title: "Don't mix strong drain/oven cleaners with acids",
+      body: "Combining a strong lye-based cleaner with an acid product reacts violently — giving off heat and splattering caustic liquid that can burn skin and eyes.",
+      mech: "Strong base + strong acid \u2192 violent exothermic neutralization and splash burns.",
+      discuss: "Never combine drain, oven, or toilet cleaners. For a burn or splash, rinse with water and call Poison Control at 1-800-222-1222." });
+    add({ sys: "other", sev: "Minor", drugs: chemAll, key: "chem_safety",
+      title: "Chemical safety — store apart and keep Poison Control handy",
+      body: "Household chemicals can harm on their own and become dangerous if mixed. Store them separately, use with ventilation, keep them away from children and pets, and never combine cleaning products.",
+      mech: "General exposure guidance for cleaners, solvents, fuels, and pesticides.",
+      discuss: "Poison Control (U.S.): 1-800-222-1222 \u2014 free, confidential-line, 24/7. For collapse, seizures, or trouble breathing, call your local emergency number." });
+  }
+
+  // ---------- nutrients & food factors that affect drug absorption / performance ----------
+  {
+    const isSub = (...tags) => sel.filter(k => tags.some(t => has(k, t)));
+    // Levodopa vs dietary protein (amino-acid competition)
+    if (sel.includes("levodopa") || sel.includes("levodopa_er")) {
+      const ld = sel.filter(k => has(k, "levodopa"));
+      if (sel.includes("dietary_protein")) add({ sys: "metab", sev: "Moderate", drugs: [...ld, "dietary_protein"], key: "ld_protein",
+        title: "Protein-rich meals can blunt levodopa",
+        body: "Levodopa competes with amino acids from protein for absorption in the gut and entry into the brain, so a high-protein meal can weaken or delay a dose and bring on 'off' periods.",
+        mech: "Large neutral amino acids compete with levodopa at intestinal and blood-brain-barrier transporters.",
+        discuss: "Ask your neurologist or pharmacist about taking levodopa 30\u201360 minutes before meals, or redistributing protein to later in the day \u2014 don't change dosing on your own." });
+      if (sel.includes("vitamin_b6")) add({ sys: "metab", sev: "Moderate", drugs: [...ld, "vitamin_b6"], key: "ld_b6",
+        title: "High-dose vitamin B6 with levodopa",
+        body: "Large amounts of vitamin B6 can speed the breakdown of levodopa before it reaches the brain. With carbidopa (in Sinemet) this matters far less, but high-dose B6 supplements are still worth flagging.",
+        mech: "Pyridoxine is a cofactor for peripheral dopa-decarboxylase; carbidopa blocks this, mitigating the effect.",
+        discuss: "Ask your pharmacist before taking high-dose B6 supplements with levodopa." });
+      if (sel.includes("iron_nutr") || sel.includes("calcium_nutr")) add({ sys: "metab", sev: "Moderate", drugs: [...ld, ...isSub("iron_mineral","cation_binder").filter(k=>k!=="levodopa")], key: "ld_minerals",
+        title: "Iron or calcium can reduce levodopa absorption",
+        body: "Iron and calcium can bind levodopa/carbidopa in the gut and lower how much is absorbed, softening its effect.",
+        mech: "Chelation of levodopa/carbidopa by iron and calcium reduces bioavailability.",
+        discuss: "Separate iron/calcium from your levodopa dose by about 2 hours; your pharmacist can help you schedule it." });
+    }
+    // Cation binding (fluoroquinolones, tetracyclines, levothyroxine, bisphosphonates, etc.)
+    const cationNutr = isSub("cation_binder");
+    const cationDrug = sel.filter(k => has(k, "absorption_cation") || has(k, "cation_binds"));
+    if (cationNutr.length && cationDrug.length) add({ sys: "metab", sev: "Minor", drugs: [...cationDrug, ...cationNutr], key: "nutr_cation",
+      title: "Space calcium, iron, magnesium, or zinc from these medicines",
+      body: "Minerals in supplements, dairy, and antacids bind certain medicines in the gut and block their absorption \u2014 this is one you can usually fix with timing.",
+      mech: "Divalent/trivalent cations chelate drugs (e.g., levothyroxine, fluoroquinolones, tetracyclines, bisphosphonates), lowering absorption.",
+      discuss: "Take the medicine at least 2\u20134 hours apart from calcium, iron, magnesium, zinc, or antacids. Your pharmacist can build the schedule." });
+    // Vitamin K vs warfarin
+    if (sel.includes("warfarin") && sel.includes("vitamin_k")) add({ sys: "bleed", sev: "Moderate", drugs: ["warfarin", "vitamin_k"], key: "warf_vitk",
+      title: "Vitamin K (leafy greens) vs warfarin",
+      body: "Vitamin K is what warfarin works against, so big swings in vitamin-K intake \u2014 from supplements or lots of leafy greens \u2014 can move your INR up or down.",
+      mech: "Vitamin K restores clotting-factor synthesis that warfarin inhibits; the goal is consistency, not avoidance.",
+      discuss: "You don't have to avoid greens \u2014 keep your intake steady day to day, and tell your anticoagulation clinic before starting a vitamin-K supplement." });
+    // Fatty meal boosts absorption of fat-soluble / lipophilic drugs
+    const fatDrug = sel.filter(k => has(k, "cyp3a4_sub") && (has(k, "narrow_ti") || ["itraconazole","posaconazole"].includes(k)));
+    if (sel.includes("dietary_fat") && fatDrug.length) add({ sys: "metab", sev: "Minor", drugs: ["dietary_fat", ...fatDrug], key: "nutr_fat",
+      title: "A fatty meal can change how much of some medicines you absorb",
+      body: "Some fat-soluble medicines are absorbed much better (occasionally worse) when taken with a fatty meal, which can shift their levels.",
+      mech: "Dietary fat increases bile and solubilization, altering bioavailability of lipophilic drugs.",
+      discuss: "Follow the 'with food' or 'empty stomach' instruction on the label; ask your pharmacist if you're unsure for a specific medicine." });
+    // Fiber / bulking can reduce absorption
+    const fiberSens = sel.filter(k => k === "levothyroxine" || has(k, "narrow_ti"));
+    if (sel.includes("dietary_fiber") && fiberSens.length) add({ sys: "metab", sev: "Minor", drugs: ["dietary_fiber", ...fiberSens], key: "nutr_fiber",
+      title: "High fiber can slow or reduce absorption of some medicines",
+      body: "A lot of fiber (or fiber supplements) can bind certain medicines and move them through faster, lowering absorption.",
+      mech: "Fiber delays gastric emptying and can bind drugs such as levothyroxine and digoxin.",
+      discuss: "Keep fiber intake consistent and separate fiber supplements from these medicines; ask your pharmacist about timing." });
+    // Potassium (salt substitute) additive with K-raisers
+    if (sel.includes("potassium_nutr") && sel.some(k => has(k, "hyperkalemia") && k !== "potassium_nutr")) add({ sys: "renal", sev: "Moderate", drugs: ["potassium_nutr", ...sel.filter(k => has(k, "hyperkalemia") && k !== "potassium_nutr")], key: "nutr_k",
+      title: "Potassium supplements / salt substitutes with potassium-raising medicines",
+      body: "Adding a potassium supplement or a salt substitute (often potassium chloride) on top of medicines that raise potassium can push it too high.",
+      mech: "Additive potassium load with reduced excretion (ACEi/ARB, potassium-sparing diuretics, trimethoprim).",
+      discuss: "Ask your prescriber before using salt substitutes or potassium supplements; your potassium may need checking." });
+    // Grapefruit food factor (reuse gut CYP3A4)
+    if (sel.includes("grapefruit_nutr")) {
+      const subs = sel.filter(k => has(k, "cyp3a4_sub"));
+      if (subs.length) add({ sys: "metab", sev: "Moderate", drugs: ["grapefruit_nutr", ...subs], key: "nutr_grapefruit",
+        title: "Grapefruit can raise the level of some medicines",
+        body: "Grapefruit blocks a gut enzyme that normally breaks medicines down, so more of certain drugs get absorbed \u2014 raising levels and side effects.",
+        mech: "Irreversible inhibition of intestinal CYP3A4 increases bioavailability of sensitive substrates.",
+        discuss: "Ask your pharmacist whether to avoid grapefruit with your specific medicines." });
+    }
+    // General nutrient-timing note whenever any nutrient factor is present
+    if (sel.some(k => has(k, "nutrient"))) add({ sys: "metab", sev: "Minor", drugs: sel.filter(k => has(k, "nutrient")), key: "nutr_general",
+      title: "Food & nutrient timing can change how medicines work",
+      body: "What you eat and when \u2014 protein, fat, fiber, minerals, and certain vitamins \u2014 can speed up, slow down, or blunt medicines. Most of this is managed with simple timing, not avoidance.",
+      mech: "Nutrients affect gastric emptying, gut pH, transporter competition, chelation, and drug-metabolizing enzymes.",
+      discuss: "Ask your pharmacist to review the best food timing for your specific medicines; keep day-to-day intake consistent." });
+  }
+
+  // ---------- Parkinson's-specific ----------
+  const maob = sel.filter(k => has(k, "maob"));
+  if (maob.length) {
+    const otherSero = sel.filter(k => has(k, "serotonergic") && !has(k, "maob") && !has(k, "levodopa"));
+    if (otherSero.length) add({ sys: "cnsresp", sev: "Major", drugs: [...maob, ...otherSero], key: "maob_sero",
+      title: "MAO-B inhibitor with another serotonin medicine",
+      body: "Rasagiline, selegiline, and safinamide can combine with antidepressants and other serotonin medicines to risk serotonin syndrome, and with some (like certain opioids) the combination is specifically avoided.",
+      mech: "MAO-B inhibition plus serotonergic agents raises serotonin syndrome and hypertensive risk; some pairings (e.g., meperidine, tramadol) are contraindicated.",
+      discuss: "Tell your neurologist and pharmacist about every antidepressant, opioid, and cough medicine \u2014 some combinations need a washout or a different choice." });
+  }
+  const orthostatic = sel.filter(k => has(k, "orthostatic"));
+  const bpLower = sel.filter(k => has(k, "hyperkalemia") && (DRUGS[k].cls === "ACE inhibitor" || DRUGS[k].cls === "ARB") || DRUGS[k].cls === "Beta blocker" || DRUGS[k].cls === "Calcium channel blocker" || has(k, "nitrate"));
+  if (orthostatic.length >= 2 || (orthostatic.length && bpLower.length)) add({ sys: "rhythm", sev: "Moderate", drugs: [...new Set([...orthostatic, ...bpLower])], key: "orthostatic",
+    title: "Several medicines can drop your blood pressure on standing",
+    body: "Parkinson's medicines (levodopa, dopamine agonists, COMT inhibitors) plus blood-pressure medicines can add up to dizziness or fainting when you stand \u2014 a real fall risk.",
+    mech: "Additive orthostatic hypotension from dopaminergic and antihypertensive agents.",
+    discuss: "Ask about rising slowly, hydration, and reviewing doses; report any fainting or falls to your prescriber." });
+  const impulse = sel.filter(k => has(k, "impulse_control"));
+  if (impulse.length) add({ sys: "other", sev: "Minor", drugs: impulse, key: "impulse",
+    title: "Dopamine agonists can trigger impulse-control problems",
+    body: "Ropinirole, pramipexole, and rotigotine can, in some people, cause new compulsive behaviors \u2014 gambling, shopping, eating, or hypersexuality \u2014 often without the person noticing.",
+    mech: "Dopamine agonist stimulation of reward pathways can provoke impulse-control disorders.",
+    discuss: "It's worth asking a partner or family to watch for these, and telling your neurologist if any appear \u2014 they usually improve when the dose is adjusted." });
+
   const map = new Map();
   for (const f of out) {
     const ex = map.get(f.key);
     if (!ex || SEV[f.sev].rank > SEV[ex.sev].rank) map.set(f.key, f);
   }
-  return [...map.values()].map(f => ({ ...f, drugs: [...new Set(f.drugs)] }))
-    .sort((a, b) => SEV[b.sev].rank - SEV[a.sev].rank);
+  // High-alert: canonical mechanisms with well-established risk of death.
+  const FATAL_KEYS = new Set(["opioid_benzo", "maoi_sero", "nitrate_pde5", "qt", "bleed", "warf_amp", "aza_xo", "colch", "mtx_amp", "hyperk", "dig", "li", "tiz", "statin_3a4_simvastatin", "statin_3a4_lovastatin", "mix_bleach_ammonia", "mix_bleach_acid"]);
+  const isFatal = k => FATAL_KEYS.has(k);
+  return [...map.values()].map(f => ({ ...f, drugs: [...new Set(f.drugs)], fatal: isFatal(f.key) }))
+    .sort((a, b) => (b.fatal - a.fatal) || (SEV[b.sev].rank - SEV[a.sev].rank));
 }
-
-// ---- Navigation ------------------------------------------------------------
-const NAV = [
-  { id: "dashboard",   label: "Dashboard",           Icon: LayoutDashboard },
-  { id: "interactions",label: "Interaction Checker",  Icon: Activity },
-  { id: "bodymap",     label: "Body Impact Map",     Icon: PersonStanding },
-  { id: "meds",        label: "My Medications",       Icon: Pill },
-  { id: "food",        label: "Food Interactions",    Icon: Apple },
-  { id: "schedule",    label: "Schedule Builder",     Icon: CalendarClock },
-  { id: "symptom",     label: "Symptom Checker",      Icon: Stethoscope },
-  { id: "emergency",   label: "Emergency",            Icon: Siren },
-  { id: "plan",        label: "Plan ahead",           Icon: CalendarCheck },
-  { id: "pharmacist",  label: "AI Pharmacist",        Icon: MessageCircle },
-  { id: "news",        label: "Drug Safety News",     Icon: Newspaper },
-  { id: "learn",       label: "Learn & FAQ",          Icon: BookOpen },
-];
-
-// ---- Interaction Checker page ----------------------------------------------
-function InteractionChecker() {
-  const [sel, setSel] = useState([]);
-  const [q, setQ] = useState("");
-  const [open, setOpen] = useState(false);
-  const [active, setActive] = useState(0);
-  const [expanded, setExpanded] = useState({});
-  const boxRef = useRef(null);
-
-  useEffect(() => {
-    const onDoc = e => { if (boxRef.current && !boxRef.current.contains(e.target)) setOpen(false); };
-    document.addEventListener("mousedown", onDoc);
-    return () => document.removeEventListener("mousedown", onDoc);
-  }, []);
-
-  const matches = useMemo(() => {
-    const s = q.trim().toLowerCase();
-    if (!s) return [];
-    return Object.keys(DRUGS).filter(k => {
-      if (sel.includes(k)) return false;
-      const d = DRUGS[k];
-      return d.name.toLowerCase().includes(s) || k.includes(s) || (d.aliases || []).some(a => a.includes(s));
-    }).slice(0, 8);
-  }, [q, sel]);
-
-  const findings = useMemo(() => getFindings(sel), [sel]);
-  const counts = useMemo(() => {
-    const c = { Contraindicated: 0, Major: 0, Moderate: 0, Minor: 0 };
-    findings.forEach(f => c[f.sev]++); return c;
-  }, [findings]);
-  const grouped = useMemo(() => {
-    const g = {}; findings.forEach(f => { (g[f.sys] ||= []).push(f); }); return g;
-  }, [findings]);
-
-  const addDrug = k => { setSel(p => [...p, k]); setQ(""); setOpen(false); setActive(0); };
-  const removeDrug = k => setSel(p => p.filter(x => x !== k));
-  const onKey = e => {
-    if (!open || !matches.length) return;
-    if (e.key === "ArrowDown") { e.preventDefault(); setActive(a => Math.min(a + 1, matches.length - 1)); }
-    else if (e.key === "ArrowUp") { e.preventDefault(); setActive(a => Math.max(a - 1, 0)); }
-    else if (e.key === "Enter") { e.preventDefault(); addDrug(matches[active]); }
-    else if (e.key === "Escape") setOpen(false);
-  };
-
-  return (
-    <div style={{ maxWidth: 720 }}>
-      <PageHead
-        title="Interaction Checker"
-        italic="“Which of yours deserve a question — and who, exactly, should you be asking?”"
-        sub="Add what you take, and we'll read it back to you grouped by the part of the body each interaction touches."
-      />
-
-      {/* Safety note */}
-      <div style={{ marginTop: 6, display: "flex", gap: 12, alignItems: "flex-start",
-        background: "#F7ECDD", border: `1px solid ${C.line}`, borderLeft: `3px solid ${C.terra}`,
-        borderRadius: 10, padding: "13px 15px" }}>
-        <p style={{ fontSize: 13, lineHeight: 1.55, color: "#5C4A38", margin: 0 }}>
-          For learning and conversation, not medical advice. It can't see your full health picture or cover
-          every interaction. <strong style={{ color: C.terraDeep }}>Never start, stop, or change a medication based on this tool</strong> —
-          bring what you find to your pharmacist or prescriber.
-        </p>
-      </div>
-
-      {/* Search */}
-      <div style={{ marginTop: 24 }} ref={boxRef}>
-        <label style={{ display: "block", fontSize: 11, fontWeight: 600, letterSpacing: "0.16em", textTransform: "uppercase", color: C.inkSoft, marginBottom: 9 }}>Your medications</label>
-        <div style={{ position: "relative" }}>
-          <Search size={17} color={C.inkFaint} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)" }} />
-          <input className="mie-input" value={q}
-            onChange={e => { setQ(e.target.value); setOpen(true); setActive(0); }}
-            onFocus={() => setOpen(true)} onKeyDown={onKey}
-            placeholder="Type a medicine name (brand or generic)…" aria-label="Search medications"
-            style={{ width: "100%", boxSizing: "border-box", borderRadius: 11, border: `1px solid ${C.line}`,
-              background: C.surface, padding: "14px 14px 14px 42px", fontSize: 15, color: C.ink, outline: "none",
-              transition: "border-color .15s, box-shadow .15s" }} />
-          {open && matches.length > 0 && (
-            <ul style={{ listStyle: "none", margin: "8px 0 0", padding: 0, position: "absolute", zIndex: 20, width: "100%",
-              overflow: "hidden", borderRadius: 11, border: `1px solid ${C.line}`, background: C.surface,
-              boxShadow: "0 14px 34px -16px rgba(43,35,28,0.30)" }}>
-              {matches.map((k, i) => (
-                <li key={k}>
-                  <button className="mie-row" onMouseEnter={() => setActive(i)} onClick={() => addDrug(k)}
-                    style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between",
-                      padding: "11px 16px", textAlign: "left", border: "none", cursor: "pointer",
-                      background: i === active ? "#F4EAD8" : "transparent" }}>
-                    <span style={{ fontSize: 14.5, color: C.ink }}>{DRUGS[k].name}</span>
-                    <span style={{ fontSize: 12, color: C.inkFaint }}>{DRUGS[k].cls}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-          {open && q.trim() && matches.length === 0 && (
-            <div style={{ position: "absolute", zIndex: 20, width: "100%", boxSizing: "border-box", marginTop: 8,
-              borderRadius: 11, border: `1px solid ${C.line}`, background: C.surface, padding: "12px 16px",
-              fontSize: 13, color: C.inkSoft, boxShadow: "0 14px 34px -16px rgba(43,35,28,0.30)" }}>
-              Not in this tool's list. That doesn't mean it has no interactions — ask your pharmacist.
-            </div>
-          )}
-        </div>
-
-        {sel.length > 0 && (
-          <div style={{ marginTop: 14, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
-            {sel.map(k => (
-              <span key={k} style={{ display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 999,
-                border: `1px solid ${C.line}`, background: C.surface, padding: "5px 6px 5px 13px", fontSize: 13.5, color: C.ink }}>
-                {DRUGS[k].name}
-                <button onClick={() => removeDrug(k)} aria-label={"Remove " + DRUGS[k].name}
-                  style={{ display: "flex", height: 20, width: 20, alignItems: "center", justifyContent: "center",
-                    borderRadius: 999, border: "none", background: "transparent", cursor: "pointer" }}>
-                  <X size={13} color={C.inkSoft} />
-                </button>
-              </span>
-            ))}
-            <button onClick={() => setSel([])} style={{ fontSize: 12.5, color: C.inkFaint, background: "none", border: "none",
-              cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 2, marginLeft: 4 }}>clear all</button>
-          </div>
-        )}
-      </div>
-
-      {sel.length === 0 && (
-        <div style={{ marginTop: 30, borderRadius: 16, border: `1px dashed ${C.line}`, background: "rgba(251,246,236,0.55)",
-          padding: "44px 24px", textAlign: "center" }}>
-          <Plus size={26} color={C.inkFaint} style={{ display: "block", margin: "0 auto" }} />
-          <p style={{ marginTop: 10, fontSize: 14.5, color: C.inkSoft }}>Add two or more medicines to see how they interact.</p>
-          <p style={{ marginTop: 4, fontSize: 12.5, color: C.inkFaint }}>Try: warfarin, amiodarone, simvastatin, clarithromycin</p>
-        </div>
-      )}
-
-      {sel.length >= 1 && (
-        <div style={{ marginTop: 30 }}>
-          {findings.length > 0 ? (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 22 }}>
-              {Object.entries(counts).filter(([, n]) => n > 0).map(([s, n]) => {
-                const v = SEV[s];
-                return (
-                  <span key={s} style={{ display: "inline-flex", alignItems: "center", gap: 7, borderRadius: 999,
-                    border: `1px solid ${v.bd}`, background: v.bg, padding: "5px 13px", fontSize: 12.5, fontWeight: 600, color: v.text }}>
-                    <span style={{ height: 8, width: 8, borderRadius: 999, background: v.dot }} />{n} {s}
-                  </span>
-                );
-              })}
-            </div>
-          ) : (
-            <div style={{ borderRadius: 12, border: `1px solid ${C.line}`, background: C.surface, padding: "16px 18px",
-              fontSize: 13.5, color: C.inkSoft, lineHeight: 1.55 }}>
-              No interactions found among these medicines <em>in this tool's limited database</em>. This is not a guarantee
-              they're safe together — please confirm with your pharmacist.
-            </div>
-          )}
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
-            {Object.keys(SYSTEMS).filter(s => grouped[s]).map(sysKey => {
-              const S = SYSTEMS[sysKey];
-              return (
-                <section key={sysKey}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                    <span style={{ display: "flex", height: 28, width: 28, alignItems: "center", justifyContent: "center",
-                      borderRadius: 8, background: S.accent + "1A" }}>
-                      <S.Icon size={16} color={S.accent} />
-                    </span>
-                    <h2 style={{ fontFamily: serif, fontWeight: 600, fontSize: 19, color: S.accent, margin: 0 }}>{S.label}</h2>
-                    <span style={{ flex: 1, height: 1, background: C.line }} />
-                  </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                    {grouped[sysKey].map(f => {
-                      const v = SEV[f.sev];
-                      const isOpen = expanded[f.key];
-                      const major = f.sev === "Contraindicated" || f.sev === "Major";
-                      return (
-                        <div key={f.key} style={{ borderRadius: 13, border: `1px solid ${v.bd}`, background: v.bg, padding: 18 }}>
-                          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
-                            <h3 style={{ fontFamily: serif, fontWeight: 600, fontSize: 17.5, lineHeight: 1.25, color: C.ink, margin: 0 }}>{f.title}</h3>
-                            <span style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, borderRadius: 999,
-                              border: `1px solid ${v.bd}`, background: "rgba(255,255,255,0.6)", padding: "3px 9px", fontSize: 11, fontWeight: 700, color: v.text }}>
-                              {major ? <ShieldAlert size={12} /> : <AlertTriangle size={12} />}{f.sev}
-                            </span>
-                          </div>
-                          <div style={{ marginTop: 11, display: "flex", flexWrap: "wrap", gap: 6 }}>
-                            {f.drugs.map(d => (
-                              <span key={d} style={{ borderRadius: 6, background: "rgba(255,255,255,0.7)", border: `1px solid ${C.line}`,
-                                padding: "2px 7px", fontSize: 11.5, color: C.inkSoft }}>{DRUGS[d]?.name || d}</span>
-                            ))}
-                          </div>
-                          <p style={{ marginTop: 12, fontSize: 13.5, lineHeight: 1.6, color: "#4F4233" }}>{f.body}</p>
-                          <div style={{ marginTop: 13, borderRadius: 9, background: "rgba(255,255,255,0.6)", border: `1px solid ${C.line}`, padding: "11px 13px" }}>
-                            <p style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: C.inkSoft, margin: "0 0 3px" }}>What to discuss with your pharmacist or prescriber</p>
-                            <p style={{ fontSize: 13, lineHeight: 1.6, color: "#4F4233", margin: 0 }}>{f.discuss}</p>
-                          </div>
-                          <button onClick={() => setExpanded(p => ({ ...p, [f.key]: !p[f.key] }))}
-                            style={{ marginTop: 12, display: "inline-flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 600,
-                              color: C.inkSoft, background: "none", border: "none", cursor: "pointer", padding: 0 }}>
-                            <ChevronDown size={14} style={{ transition: "transform .2s", transform: isOpen ? "rotate(180deg)" : "none" }} />
-                            {isOpen ? "Hide" : "Show"} the physiology
-                          </button>
-                          {isOpen && (
-                            <p style={{ marginTop: 8, fontSize: 12.5, lineHeight: 1.6, color: C.inkSoft, borderLeft: `2px solid ${S.accent}`, paddingLeft: 12 }}>{f.mech}</p>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </section>
-              );
-            })}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ---- Shared page header ----------------------------------------------------
-function PageHead({ title, italic, sub }) {
-  return (
-    <div style={{ marginBottom: 22 }}>
-      <h1 style={{ fontFamily: serif, fontWeight: 700, color: C.ink, fontSize: "clamp(28px, 4vw, 38px)",
-        letterSpacing: "-0.015em", margin: 0, lineHeight: 1.1 }}>{title}</h1>
-      {italic && (
-        <p style={{ fontFamily: serif, fontStyle: "italic", fontWeight: 500, color: C.terraDeep,
-          fontSize: "clamp(16px, 2.4vw, 20px)", lineHeight: 1.35, margin: "14px 0 0", maxWidth: 560 }}>{italic}</p>
-      )}
-      {sub && <p style={{ fontSize: 14.5, color: C.inkSoft, maxWidth: 560, margin: "12px 0 0", lineHeight: 1.55 }}>{sub}</p>}
-    </div>
-  );
-}
-
-// ---- Dashboard -------------------------------------------------------------
-const TOOLS = [
-  { id: "interactions", title: "Check Interactions", desc: "Drug, food & supplement safety", Icon: Activity, accent: "#B5532E" },
-  { id: "meds",         title: "My Medications",     desc: "Manage your medication list",  Icon: Pill,     accent: "#5E5276" },
-  { id: "food",         title: "Food Safety",        desc: "What to eat & avoid",          Icon: Apple,    accent: "#9A5A1E" },
-  { id: "schedule",     title: "Schedule Builder",   desc: "Optimize your dose timing",    Icon: CalendarClock, accent: "#3E7A6E" },
-  { id: "symptom",      title: "Symptom Check",      desc: "Could it be an interaction?",  Icon: Stethoscope, accent: "#8E3A52" },
-  { id: "pharmacist",   title: "AI Pharmacist",      desc: "Ask about your medicines",     Icon: MessageCircle, accent: "#6B6256" },
-  { id: "news",         title: "Drug Safety News",   desc: "Recalls & safety updates",     Icon: Newspaper, accent: "#A9802F" },
-  { id: "bodymap",      title: "Body Impact Map",    desc: "Where a medicine acts",        Icon: PersonStanding, accent: "#3F6E8C" },
-];
-
-function Dashboard({ go }) {
-  return (
-    <div style={{ maxWidth: 940 }}>
-      <div className="hero">
-        <div>
-          <p style={{ fontSize: 11.5, letterSpacing: "0.22em", textTransform: "uppercase", color: C.terraDeep, fontWeight: 600, margin: 0 }}>
-            Medication safety, explained — not prescribed
-          </p>
-          <h1 style={{ fontFamily: serif, fontWeight: 700, color: C.ink, fontSize: "clamp(30px, 4.5vw, 44px)",
-            letterSpacing: "-0.02em", margin: "12px 0 0", lineHeight: 1.08 }}>
-            Welcome to What's Safe Together?
-          </h1>
-          <p style={{ fontFamily: serif, fontStyle: "italic", color: C.terraDeep, fontSize: "clamp(17px,2.6vw,22px)",
-            margin: "16px 0 0", maxWidth: 520, lineHeight: 1.35 }}>
-            “Your medicines are in conversation — let's read it back together.”
-          </p>
-          <p style={{ fontSize: 14, color: C.inkSoft, margin: "14px 0 0", maxWidth: 460, lineHeight: 1.6 }}>
-            The most important safety check is a conversation. Bring whatever you find here
-            to your pharmacist or prescriber — that's where it counts.
-          </p>
-        </div>
-        <figure className="hero-figure" style={{ borderRadius: 18, overflow: "hidden",
-          border: `6px solid ${C.surface}`, boxShadow: "0 26px 52px -28px rgba(43,35,28,0.5)" }}>
-          <img src={HERO_IMG} alt="An older woman and her pharmacist talking with each other"
-            style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }} />
-        </figure>
-      </div>
-
-      {/* Get started */}
-      <div style={{ marginTop: 28, borderRadius: 18, border: `1px solid ${C.line}`,
-        background: "linear-gradient(180deg,#F8EFE1,#F4ECDD)", padding: "22px 22px" }}>
-        <h2 style={{ fontFamily: serif, fontSize: 20, fontWeight: 600, color: C.ink, margin: 0 }}>Get started</h2>
-        <p style={{ fontSize: 14, color: C.inkSoft, margin: "6px 0 16px", lineHeight: 1.5 }}>
-          Add your medicines, then optionally a health profile, for more relevant checks.
-        </p>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-          <button onClick={() => go("interactions")} style={primaryBtn}>Add medications</button>
-          <button onClick={() => go("meds")} style={ghostBtn}>Health profile</button>
-        </div>
-      </div>
-
-      {/* Tools */}
-      <p style={{ marginTop: 30, fontSize: 11, letterSpacing: "0.16em", textTransform: "uppercase", color: C.inkSoft, fontWeight: 600 }}>Tools</p>
-      <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 14 }}>
-        {TOOLS.map(t => (
-          <button key={t.id} onClick={() => go(t.id)} className="tool-card"
-            style={{ textAlign: "left", borderRadius: 16, border: `1px solid ${C.line}`, background: C.surface,
-              padding: 16, cursor: "pointer", transition: "border-color .18s, transform .18s, box-shadow .18s" }}>
-            <span style={{ display: "flex", height: 38, width: 38, alignItems: "center", justifyContent: "center",
-              borderRadius: 11, background: t.accent + "1A", border: `1px solid ${t.accent}33` }}>
-              <t.Icon size={19} color={t.accent} />
-            </span>
-            <h3 style={{ fontFamily: serif, fontSize: 16.5, fontWeight: 600, color: C.ink, margin: "12px 0 2px" }}>{t.title}</h3>
-            <p style={{ fontSize: 12.5, color: C.inkSoft, margin: 0, lineHeight: 1.4 }}>{t.desc}</p>
-          </button>
-        ))}
-      </div>
-
-      <p style={{ marginTop: 26, display: "flex", alignItems: "center", gap: 7, fontSize: 11.5, color: C.inkFaint }}>
-        Educational demonstration only — not exhaustive, not personalized, and not a substitute for professional advice.
-      </p>
-    </div>
-  );
-}
-
-const primaryBtn = {
-  borderRadius: 10, border: "none", cursor: "pointer", padding: "10px 18px",
-  fontSize: 14, fontWeight: 600, color: "#FBF6EC", background: C.terra,
-  boxShadow: "0 8px 20px -10px rgba(181,83,46,0.7)",
-};
-const ghostBtn = {
-  borderRadius: 10, border: `1px solid ${C.line}`, cursor: "pointer", padding: "10px 18px",
-  fontSize: 14, fontWeight: 600, color: C.ink, background: C.surface,
-};
-
-// ---- Section stubs (styled, wired) -----------------------------------------
-const STUBS = {
-  meds:      { Icon: Pill, title: "My Medications", italic: "“Everything you take, in one quiet list.”", body: "Keep a running list of your prescriptions, over-the-counter medicines, and supplements so every other tool can read from the same picture. For now, add medicines in the Interaction Checker.", cta: "interactions", ctaLabel: "Open Interaction Checker" },
-  food:      { Icon: Apple, title: "Food Interactions", italic: "“Some foods carry on a conversation with your medicines too.”", body: "Grapefruit, leafy greens, calcium, and alcohol can all change how a medicine behaves. The Interaction Checker already includes grapefruit, calcium/antacids, iron, and alcohol — add them alongside your medicines to see what surfaces.", cta: "interactions", ctaLabel: "Check a food interaction" },
-  schedule:  { Icon: CalendarClock, title: "Schedule Builder", italic: "“When you take something can matter as much as what.”", body: "A timing planner that spaces medicines which shouldn't be taken together — for example, keeping levothyroxine or certain antibiotics hours apart from calcium and iron. Your pharmacist can confirm the schedule that fits your day.", cta: "interactions", ctaLabel: "See timing-sensitive pairs" },
-  symptom:   { Icon: Stethoscope, title: "Symptom Checker", italic: "“Is this new feeling worth a question?”", body: "Describe what you're noticing and see whether it lines up with a known effect of your medicines — never a diagnosis, always a prompt to talk to someone. If a symptom feels severe or sudden, seek care rather than search.", cta: "pharmacist", ctaLabel: "Ask the AI Pharmacist" },
-  emergency: { Icon: Siren, title: "Emergency", italic: "“When it can't wait, this is the short version.”", body: "Red-flag combinations and warning signs worth acting on quickly — like severe bleeding, trouble breathing, or sudden confusion. This tool is educational and can't call for help: for a medical emergency, contact your local emergency number right away.", cta: "interactions", ctaLabel: "Review serious interactions" },
-  plan:      { Icon: CalendarCheck, title: "Plan ahead", italic: "“A little preparation makes the next visit easier.”", body: "Build a printable summary of your medicines and the questions you'd like to ask before a pharmacy or clinic visit, so the important things don't get forgotten in the moment.", cta: "interactions", ctaLabel: "Gather questions to ask" },
-  pharmacist:{ Icon: MessageCircle, title: "AI Pharmacist", italic: "“Ask plainly. Get something you can take to a real pharmacist.”", body: "A conversational way to ask about your medicines in everyday language. It explains and points you toward the right conversation — it never tells you to start, stop, or change a medicine. Treat its answers as a starting point, not a prescription.", cta: "interactions", ctaLabel: "Start with your medicine list" },
-  news:      { Icon: Newspaper, title: "Drug Safety News", italic: "“The updates worth knowing, without the noise.”", body: "Recalls, safety communications, and label changes that might affect what you take. Connecting a live safety feed would surface these here; until then, your pharmacist is the most current source for a specific recall.", cta: "interactions", ctaLabel: "Check what you take" },
-  learn:     { Icon: BookOpen, title: "Learn & FAQ", italic: "“Why does any of this happen in the body?”", body: "Short, plain-language explainers on how interactions work — enzymes that clear medicines, additive effects on the heart or breathing, and why some medicines have a narrow safety margin. Every finding in the checker can also reveal its physiology.", cta: "interactions", ctaLabel: "See the physiology in action" },
-};
-
-function Stub({ id, go }) {
-  const s = STUBS[id];
-  return (
-    <div style={{ maxWidth: 680 }}>
-      <PageHead title={s.title} italic={s.italic} />
-      <div style={{ borderRadius: 18, border: `1px solid ${C.line}`, background: C.surface, padding: "26px 24px" }}>
-        <span style={{ display: "flex", height: 44, width: 44, alignItems: "center", justifyContent: "center",
-          borderRadius: 12, background: C.terra + "16", border: `1px solid ${C.terra}33`, marginBottom: 16 }}>
-          <s.Icon size={22} color={C.terra} />
-        </span>
-        <p style={{ fontSize: 14.5, lineHeight: 1.65, color: "#4F4233", margin: 0 }}>{s.body}</p>
-        <button onClick={() => go(s.cta)} style={{ ...primaryBtn, marginTop: 20, display: "inline-flex", alignItems: "center", gap: 8 }}>
-          {s.ctaLabel} <ArrowRight size={16} />
-        </button>
-      </div>
-      <p style={{ marginTop: 16, fontSize: 11.5, color: C.inkFaint, lineHeight: 1.6 }}>
-        Educational only. Always confirm anything about your medicines with your pharmacist or prescriber.
-      </p>
-    </div>
-  );
-}
-
-/* ============================================================================
-   WHERE CAN THIS MEDICATION AFFECT YOUR BODY?
-   A reusable, dark-themed body-impact map.
-
-   - Translucent gender-neutral silhouette (left) with neon organ glows.
-   - Severity color coding: high / moderate / low / therapeutic.
-   - Thin connector lines measured at runtime from each lit organ to its card.
-   - Glassmorphism cards (right) expand to clinical detail on click/hover.
-   - Driven by a small, curated, EDUCATIONAL medication dataset.
-
-   Educational only — not medical advice. Copy routes every action to a
-   clinician and never instructs starting/stopping/changing a medicine.
-============================================================================ */
 
 // ---- Impact severity tokens ------------------------------------------------
 const IMPACT = {
@@ -805,6 +791,7 @@ const SYS = {
   eyes:      { name: "Eyes",                    Icon: Eye,      pos: { x: 160, y: 104 } },
   endocrine: { name: "Endocrine System",        Icon: Dna,      pos: { x: 160, y: 150 } },
   heart:     { name: "Heart & Cardiovascular",  Icon: Heart,    pos: { x: 148, y: 250 } },
+  blood:     { name: "Blood & Clotting",         Icon: Droplets, pos: { x: 176, y: 290 } },
   lungs:     { name: "Lungs",                    Icon: Wind,     pos: { x: 190, y: 236 } },
   liver:     { name: "Liver",                    Icon: Hexagon,  pos: { x: 128, y: 322 } },
   digestive: { name: "Digestive System",        Icon: Droplets, pos: { x: 162, y: 376 } },
@@ -815,62 +802,205 @@ const SYS = {
   skin:      { name: "Skin",                     Icon: Hand,     pos: { x: 96, y: 300 } },
 };
 
-// ---- Curated, educational medication dataset -------------------------------
-const MEDS = {
-  amiodarone: {
-    name: "Amiodarone", cls: "Antiarrhythmic",
-    map: {
-      heart:     { sev: "high",     freq: "Common",   effects: ["QT prolongation", "Slowed heart rate", "Rhythm changes"], why: "Alters the heart's electrical recovery between beats.", monitor: "Periodic ECG and heart-rate checks.", inter: "Other QT-prolonging drugs, digoxin, warfarin." },
-      lungs:     { sev: "high",     freq: "Uncommon", effects: ["Lung inflammation or scarring (rare, serious)", "New cough or breathlessness"], why: "Can accumulate in lung tissue over time.", monitor: "Report any new cough or breathlessness; lung-function tests.", inter: "—" },
-      endocrine: { sev: "moderate", freq: "Common",   effects: ["Under- or over-active thyroid"], why: "High iodine content affects thyroid hormone.", monitor: "Thyroid blood tests at intervals.", inter: "—" },
-      liver:     { sev: "moderate", freq: "Uncommon", effects: ["Raised liver enzymes"], why: "Processed by the liver; can irritate it.", monitor: "Liver blood tests.", inter: "Statins (muscle risk)." },
-      eyes:      { sev: "low",      freq: "Common",   effects: ["Corneal deposits (usually harmless)", "Visual halos at night"], why: "Microdeposits form on the eye surface.", monitor: "Eye exam if vision changes.", inter: "—" },
-      skin:      { sev: "low",      freq: "Uncommon", effects: ["Sun sensitivity", "Bluish-grey tint with long-term use"], why: "Increases skin's reaction to sunlight.", monitor: "Use sun protection.", inter: "—" },
-    },
-  },
-  prednisone: {
-    name: "Prednisone", cls: "Corticosteroid",
-    map: {
-      bones:     { sev: "high",     freq: "Common",   effects: ["Lower bone density over time", "Higher fracture risk"], why: "Long courses reduce bone formation.", monitor: "Bone-density review for prolonged use; vitamin D/calcium.", inter: "—" },
-      endocrine: { sev: "high",     freq: "Common",   effects: ["Higher blood sugar", "Adrenal suppression if stopped abruptly"], why: "Mimics the body's own steroid hormones.", monitor: "Blood glucose; never stop abruptly without guidance.", inter: "Diabetes medicines." },
-      digestive: { sev: "moderate", freq: "Common",   effects: ["Stomach irritation", "Increased appetite"], why: "Can thin the stomach lining.", monitor: "Take with food; report stomach pain.", inter: "NSAIDs (added ulcer risk)." },
-      brain:     { sev: "moderate", freq: "Common",   effects: ["Mood changes", "Trouble sleeping", "Restlessness"], why: "Steroids influence mood and sleep regulation.", monitor: "Mention persistent mood changes.", inter: "—" },
-      skin:      { sev: "moderate", freq: "Common",   effects: ["Easy bruising", "Slower wound healing", "Thinner skin"], why: "Reduces collagen and skin repair.", monitor: "Protect skin from injury.", inter: "—" },
-    },
-  },
-  ibuprofen: {
-    name: "Ibuprofen", cls: "NSAID",
-    map: {
-      kidneys:   { sev: "high",     freq: "Uncommon", effects: ["Reduced kidney blood flow", "Fluid retention"], why: "Lowers protective prostaglandins in the kidney.", monitor: "Kidney function if used often; pause when dehydrated.", inter: "ACE inhibitors + diuretics ('triple whammy')." },
-      digestive: { sev: "high",     freq: "Common",   effects: ["Stomach irritation", "Ulcers or bleeding with regular use"], why: "Irritates and weakens the stomach lining.", monitor: "Take with food; watch for black stools.", inter: "Steroids, blood thinners, SSRIs." },
-      heart:     { sev: "moderate", freq: "Uncommon", effects: ["Raised blood pressure", "Fluid retention"], why: "Can counteract some blood-pressure control.", monitor: "Blood pressure if used regularly.", inter: "Blood-pressure medicines." },
-    },
-  },
-  sertraline: {
-    name: "Sertraline", cls: "SSRI",
-    map: {
-      brain:     { sev: "moderate", freq: "Common",   effects: ["Mood improvement (intended)", "Early jitteriness or headache", "Sleep changes"], why: "Raises available serotonin in the brain.", monitor: "Check in during the first few weeks.", inter: "Other serotonergic drugs, MAO inhibitors." },
-      digestive: { sev: "low",      freq: "Common",   effects: ["Nausea (often early, settles)", "Looser stools"], why: "Serotonin also acts on the gut.", monitor: "Take with food if nausea occurs.", inter: "—" },
-      repro:     { sev: "low",      freq: "Common",   effects: ["Changes in libido or function"], why: "Serotonin pathways influence sexual response.", monitor: "Mention if bothersome — options exist.", inter: "—" },
-      heart:     { sev: "low",      freq: "Rare",     effects: ["Mild QT effect at higher doses"], why: "Small effect on heart's electrical timing.", monitor: "Relevant mainly with other QT drugs.", inter: "Other QT-prolonging drugs." },
-    },
-  },
-  metformin: {
-    name: "Metformin", cls: "Antidiabetic",
-    map: {
-      endocrine: { sev: "positive", freq: "Common",   effects: ["Lowers blood sugar (intended)", "Helps insulin work better"], why: "Reduces glucose released by the liver.", monitor: "Routine blood-sugar monitoring.", inter: "—" },
-      digestive: { sev: "moderate", freq: "Common",   effects: ["Nausea, bloating, loose stools (often early)"], why: "Acts partly in the gut.", monitor: "Take with meals; slow-release form may help.", inter: "—" },
-      kidneys:   { sev: "low",      freq: "Common",   effects: ["Cleared by the kidneys — dose depends on kidney function"], why: "Eliminated mainly through the kidneys.", monitor: "Kidney function checked periodically.", inter: "Contrast dye, dehydration." },
-    },
-  },
-  atorvastatin: {
-    name: "Atorvastatin", cls: "Statin",
-    map: {
-      muscles:   { sev: "moderate", freq: "Uncommon", effects: ["Muscle aches", "Rarely, serious muscle breakdown"], why: "Can affect muscle-cell energy in some people.", monitor: "Report new muscle pain, weakness, or dark urine.", inter: "Certain antibiotics, antifungals, amiodarone." },
-      liver:     { sev: "low",      freq: "Uncommon", effects: ["Mildly raised liver enzymes (usually transient)"], why: "Processed by the liver.", monitor: "Occasional liver blood test.", inter: "—" },
-    },
-  },
+// ---- Body-impact derivation from the full drug catalog --------------------
+// Each rule maps a mechanism tag or drug class to a body system, a plain
+// language effect, and a severity. Whatever the person selects (medicines,
+// alcohol, grapefruit, supplements) is aggregated across all of it.
+
+const cls = k => DRUGS[k].cls;
+const isClass = (k, ...names) => names.includes(cls(k));
+
+const RULES = [
+  // ===== Parkinson's drug effects (body map) =====
+  { sys: "brain", sev: "moderate", when: k => has(k, "dopamine_agonist") || has(k, "levodopa"), effect: "Movement control, but can cause dyskinesia, sleepiness, or hallucinations", why: "These medicines replace or mimic dopamine in the brain.", monitor: "Report sudden sleep attacks, hallucinations, or new compulsive behaviors." },
+  { sys: "heart", sev: "moderate", when: k => has(k, "orthostatic"), effect: "Blood pressure can drop on standing (dizziness, fainting)", why: "Dopaminergic medicines relax blood vessels.", monitor: "Rise slowly, stay hydrated; report fainting or falls." },
+  { sys: "digestive", sev: "low", when: k => has(k, "parkinson"), effect: "Nausea, and levodopa works best around meal timing", why: "Dopaminergic medicines act on the gut and compete with food for absorption.", monitor: "Ask about taking levodopa before protein meals." },
+  // ===== Nutrient / food factors (body map) =====
+  { sys: "digestive", sev: "low", when: k => has(k, "nutrient"), effect: "Affects how medicines are absorbed (timing matters)", why: "Food, minerals, and fiber change gut absorption of drugs.", monitor: "Keep intake consistent; ask a pharmacist about timing." },
+  // ===== Household chemical hazards (body map) =====
+  { sys: "lungs", sev: "high", when: k => has(k, "bleach") || has(k, "ammonia") || has(k, "co_gas") || has(k, "paraquat") || has(k, "pulmonary_tox") || (has(k, "hydrocarbon") && has(k, "aspiration")), effect: "Airway and lung injury; toxic gas if mixed, or aspiration risk", why: "Chlorine/ammonia vapors, fumes, and inhaled hydrocarbons injure the airways and lungs.", monitor: "Use with ventilation, never mix products, and get fresh air for coughing or breathlessness." },
+  { sys: "brain", sev: "moderate", when: k => has(k, "hydrocarbon") || has(k, "organophosphate") || has(k, "carbamate") || has(k, "co_gas") || has(k, "toxic_alcohol") || has(k, "methanol") || has(k, "glycol"), effect: "Headache, dizziness, confusion, or nervous-system effects", why: "Solvents, fumes, and toxic alcohols affect the brain and nerves.", monitor: "Get to fresh air; seek help for confusion, drowsiness, or collapse." },
+  { sys: "skin", sev: "high", when: k => has(k, "corrosive"), effect: "Burns to skin and eyes on contact", why: "Strong acids, alkalis, and oxidizers destroy tissue.", monitor: "Wear gloves/eye protection; rinse exposures with water and call Poison Control." },
+  { sys: "digestive", sev: "high", when: k => has(k, "corrosive"), effect: "Severe mouth, throat, and stomach burns if swallowed", why: "Corrosive chemicals injure the digestive tract on contact.", monitor: "Do NOT induce vomiting; call Poison Control at 1-800-222-1222 right away." },
+  { sys: "kidneys", sev: "high", when: k => has(k, "glycol") || has(k, "methanol") || has(k, "toxic_alcohol"), effect: "Can cause kidney failure and dangerous acid buildup", why: "Ethylene glycol and methanol form toxic acids the kidneys can't clear.", monitor: "A tiny amount can be serious \u2014 call Poison Control immediately after any swallow." },
+  { sys: "blood", sev: "moderate", when: k => has(k, "co_gas") || has(k, "naphthalene") || has(k, "rodenticide_anticoag"), effect: "Interferes with oxygen carrying, red cells, or clotting", why: "CO blocks oxygen; naphthalene can break down red cells; rat poison blocks clotting.", monitor: "Seek care for unusual bruising/bleeding, or for headache and confusion with fumes." },
+  { sys: "liver", sev: "moderate", when: k => has(k, "phenol") || has(k, "hydrocarbon") || has(k, "formaldehyde"), effect: "Can stress or damage the liver", why: "Some solvents and disinfectants are processed by, and can harm, the liver.", monitor: "Avoid skin contact and fumes; use ventilation." },
+  { sys: "heart", sev: "moderate", when: k => has(k, "organophosphate") || has(k, "carbamate"), effect: "Slow heart, heavy secretions, and weakness (cholinergic effect)", why: "These pesticides overstimulate the body's 'rest' nervous system.", monitor: "Pesticide exposure with drooling, tearing, or weakness is an emergency \u2014 call Poison Control." },
+  { sys: "digestive", sev: "low", when: k => has(k, "chem"), effect: "Can irritate or poison if swallowed", why: "Household chemicals are not meant to be ingested.", monitor: "Keep away from children and pets; for any swallow, call Poison Control at 1-800-222-1222." },
+  // Heart & cardiovascular
+  { sys: "heart", sev: "moderate", when: k => has(k, "qt"), effect: "Can lengthen the QT interval (the heart's electrical reset)", why: "Adds to the time the heart takes to recharge between beats; risk grows when several QT medicines stack.", monitor: "An ECG or potassium/magnesium check may be advised, especially when combined with other QT medicines." },
+  { sys: "heart", sev: "high", when: k => k === "digoxin", effect: "Narrow safety margin — toxicity can disturb heart rhythm", why: "Small changes in level can tip digoxin into a toxic range.", monitor: "Periodic digoxin level and heart-rate checks." },
+  { sys: "heart", sev: "low", when: k => has(k, "nitrate") || has(k, "pde5"), effect: "Can lower blood pressure by relaxing vessels", why: "Widens blood vessels.", monitor: "Nitrates and PDE5 (erectile-dysfunction) medicines must not be taken close together." },
+  { sys: "heart", sev: "low", when: k => isClass(k, "Beta blocker", "Calcium channel blocker", "ACE inhibitor", "ARB", "Diuretic", "Loop diuretic", "Potassium-sparing diuretic"), effect: "Acts on blood pressure and/or heart rate (usually intended)", why: "The cardiovascular system is the target.", monitor: "Routine blood-pressure checks." },
+  { sys: "heart", sev: "moderate", when: k => has(k, "sympathomimetic"), effect: "Can raise heart rate and blood pressure", why: "Stimulant effect on the cardiovascular system.", monitor: "Use cautiously with high blood pressure or heart disease." },
+
+  // Blood & clotting
+  { sys: "blood", sev: "high", when: k => has(k, "anticoagulant"), effect: "Thins the blood to prevent clots (intended) — raises bleeding risk", why: "Reduces the blood's ability to form clots.", monitor: "Watch for unusual bruising or bleeding that won't stop; warfarin needs INR checks. Risk adds up with aspirin or anti-inflammatories." },
+  { sys: "blood", sev: "high", when: k => has(k, "antiplatelet"), effect: "Keeps platelets from clumping (intended) — raises bleeding risk", why: "Makes platelets less sticky so clots form less easily.", monitor: "Bleeding risk stacks with other blood thinners and NSAIDs; report black stools or bleeding gums." },
+  { sys: "blood", sev: "moderate", when: k => has(k, "bleeding") && !has(k, "anticoagulant") && !has(k, "antiplatelet"), effect: "Can add to bleeding risk", why: "Affects platelets or the stomach lining, adding to bleeding tendency.", monitor: "Be cautious combining with blood thinners; watch for unusual bruising or bleeding." },
+  { sys: "blood", sev: "moderate", when: k => has(k, "myelosuppression"), effect: "Can lower blood cell counts", why: "Suppresses bone-marrow production of blood cells.", monitor: "Periodic complete blood count (CBC)." },
+
+  // Lungs & breathing
+  { sys: "lungs", sev: "high", when: k => has(k, "resp_depress"), effect: "Can slow breathing — more so combined or during sleep", why: "Suppresses the brain's drive to breathe.", monitor: "Risk rises with other sedatives; ask about naloxone for opioids." },
+  { sys: "lungs", sev: "low", when: k => isClass(k, "Bronchodilator"), effect: "Opens the airways (intended)", why: "Relaxes airway muscle.", monitor: "—" },
+
+  // Brain & nervous system
+  { sys: "brain", sev: "moderate", when: k => has(k, "cns_depress"), effect: "Drowsiness, slowed thinking, fall risk in older adults", why: "Depresses central nervous system activity.", monitor: "Caution with driving; combine sedating medicines carefully." },
+  { sys: "brain", sev: "moderate", when: k => has(k, "serotonergic"), effect: "Mood effects; rarely serotonin syndrome when stacked", why: "Raises serotonin signaling.", monitor: "Know the warning signs when combined with other serotonergic medicines." },
+  { sys: "brain", sev: "moderate", when: k => has(k, "seizure_threshold"), effect: "Can lower the seizure threshold", why: "Makes seizures slightly more likely in susceptible people.", monitor: "Most relevant with a seizure history or other lowering agents." },
+  { sys: "brain", sev: "low", when: k => has(k, "anticholinergic"), effect: "Possible confusion, especially over 65", why: "Blocks acetylcholine signaling in the brain.", monitor: "Watch total anticholinergic burden in older adults." },
+  { sys: "brain", sev: "low", when: k => isClass(k, "Antipsychotic", "Mood stabilizer", "MAO inhibitor"), effect: "Acts on the nervous system (intended)", why: "The brain is the target.", monitor: "—" },
+
+  // Eyes
+  { sys: "eyes", sev: "low", when: k => has(k, "anticholinergic"), effect: "Blurred vision, dry eyes", why: "Reduces tear production and focusing.", monitor: "Usually mild and reversible." },
+
+  // Endocrine
+  { sys: "endocrine", sev: "high", when: k => isClass(k, "Corticosteroid"), effect: "Raises blood sugar; adrenal suppression if stopped abruptly", why: "Mimics the body's own steroid hormones.", monitor: "Blood sugar; never stop a steroid course abruptly without guidance." },
+  { sys: "endocrine", sev: "positive", when: k => isClass(k, "Antidiabetic", "Sulfonylurea", "SGLT2 inhibitor", "GLP-1 agonist", "Thyroid hormone"), effect: "Helps regulate blood sugar or hormones (intended)", why: "The endocrine system is the target.", monitor: "Routine monitoring (e.g., blood sugar or thyroid)." },
+  { sys: "endocrine", sev: "moderate", when: k => has(k, "hypoglycemia"), effect: "Can cause low blood sugar", why: "Lowers glucose and can overshoot.", monitor: "Recognize and treat low-sugar symptoms." },
+
+  // Liver
+  { sys: "liver", sev: "moderate", when: k => has(k, "hepatotoxic"), effect: "Can stress the liver", why: "Processed by, and can irritate, the liver.", monitor: "Liver blood tests with regular use; mind total acetaminophen and alcohol." },
+  { sys: "liver", sev: "low", when: k => has(k, "statin"), effect: "May mildly raise liver enzymes (usually transient)", why: "Cleared by the liver.", monitor: "Occasional liver blood test." },
+
+  // Digestive
+  { sys: "digestive", sev: "high", when: k => isClass(k, "NSAID", "NSAID (COX-2)"), effect: "Stomach irritation; ulcers or bleeding with regular use", why: "Weakens the stomach's protective lining.", monitor: "Take with food; watch for black stools or stomach pain." },
+  { sys: "digestive", sev: "moderate", when: k => has(k, "gastric_emptying") || k === "metformin", effect: "Nausea, bloating, looser stools (often early)", why: "Acts partly within the gut.", monitor: "Take with meals; often settles over time." },
+  { sys: "digestive", sev: "low", when: k => cls(k).indexOf("Antibiotic") === 0, effect: "Can upset the stomach or disturb gut bacteria", why: "Antibiotics also affect normal gut flora.", monitor: "Report severe or persistent diarrhea." },
+  { sys: "digestive", sev: "low", when: k => has(k, "anticholinergic"), effect: "Constipation and dry mouth", why: "Slows gut movement.", monitor: "Fluids and fiber can help." },
+
+  // Kidneys & electrolytes
+  { sys: "kidneys", sev: "high", when: k => has(k, "nephrotoxic"), effect: "Can reduce kidney blood flow and cause fluid retention", why: "Lowers protective prostaglandins in the kidney.", monitor: "Kidney function with frequent use; pause when dehydrated or ill." },
+  { sys: "kidneys", sev: "moderate", when: k => has(k, "hyperkalemia"), effect: "Can raise blood potassium", why: "Reduces potassium excretion.", monitor: "Potassium and kidney checks; watch salt substitutes." },
+  { sys: "kidneys", sev: "moderate", when: k => has(k, "electrolyte"), effect: "Shifts fluid and electrolyte balance", why: "Acts on the kidney's salt and water handling.", monitor: "Electrolyte checks when starting or when unwell." },
+  { sys: "kidneys", sev: "low", when: k => has(k, "renal_clear"), effect: "Cleared by the kidneys — dose depends on kidney function", why: "Eliminated mainly through the kidneys.", monitor: "Kidney function checked periodically." },
+
+  // Muscles
+  { sys: "muscles", sev: "moderate", when: k => has(k, "myopathy") || has(k, "statin"), effect: "Muscle aches; rarely serious muscle breakdown", why: "Can affect muscle-cell energy in some people.", monitor: "Report new muscle pain, weakness, or dark urine." },
+
+  // Bones & joints
+  { sys: "bones", sev: "high", when: k => isClass(k, "Corticosteroid"), effect: "Lower bone density and higher fracture risk over time", why: "Long courses reduce bone formation.", monitor: "Bone-density review and calcium/vitamin D for prolonged use." },
+
+  // Skin
+  { sys: "skin", sev: "moderate", when: k => isClass(k, "Corticosteroid"), effect: "Easy bruising, thinner skin, slower healing", why: "Reduces collagen and skin repair.", monitor: "Protect skin from injury." },
+  { sys: "skin", sev: "low", when: k => k === "doxycycline" || cls(k).indexOf("fluoroquinolone") > -1 || k === "tmpsmx", effect: "Sun sensitivity", why: "Increases the skin's reaction to sunlight.", monitor: "Use sun protection." },
+
+  // Reproductive
+  { sys: "repro", sev: "low", when: k => isClass(k, "SSRI", "SNRI"), effect: "Changes in libido or sexual function", why: "Serotonin pathways influence sexual response.", monitor: "Mention if bothersome — options exist." },
+
+  // Anticonvulsants (nervous system)
+  { sys: "brain", sev: "moderate", when: k => isClass(k, "Anticonvulsant"), effect: "Drowsiness, dizziness, or coordination effects; mood changes for some", why: "Acts on nerve signaling in the brain (often the intended effect).", monitor: "Report any new rash (some can cause serious rashes), marked drowsiness, or mood changes." },
+  { sys: "liver", sev: "low", when: k => k === "carbamazepine" || k === "phenytoin", effect: "Processed by the liver; can affect liver enzymes", why: "Cleared by, and can induce, liver enzymes.", monitor: "Liver blood tests with long-term use." },
+
+  // Acid reducers
+  { sys: "digestive", sev: "low", when: k => isClass(k, "Proton pump inhibitor", "H2 blocker"), effect: "Lowers stomach acid (intended); can reduce absorption of magnesium, B12, calcium over time", why: "Less stomach acid changes how some nutrients and medicines are absorbed.", monitor: "Periodic magnesium/B12 with long-term use." },
+  { sys: "bones", sev: "low", when: k => isClass(k, "Proton pump inhibitor"), effect: "Long-term use linked to higher fracture risk", why: "Prolonged acid suppression may affect calcium absorption and bone.", monitor: "Adequate calcium/vitamin D; review the need for long courses." },
+
+  // Azole antifungals
+  { sys: "liver", sev: "moderate", when: k => isClass(k, "Antifungal"), effect: "Can stress the liver", why: "Azole antifungals are processed by, and can irritate, the liver.", monitor: "Liver blood tests with longer courses." },
+
+  // Calcineurin inhibitors
+  { sys: "kidneys", sev: "moderate", when: k => k === "cyclosporine" || k === "tacrolimus", effect: "Can reduce kidney function and raise blood pressure", why: "Calcineurin inhibitors lower kidney blood flow.", monitor: "Kidney function, blood pressure, and drug levels." },
+
+  // Urate-lowering (gout)
+  { sys: "bones", sev: "positive", when: k => isClass(k, "Gout (urate-lowering)"), effect: "Lowers uric acid to prevent gout attacks (intended)", why: "Reduces urate that deposits in joints.", monitor: "Periodic uric acid level." },
+  { sys: "skin", sev: "low", when: k => has(k, "xo_inh"), effect: "Rarely a serious skin reaction", why: "Allopurinol/febuxostat can trigger hypersensitivity rashes in some people.", monitor: "Stop and seek care for a spreading rash, especially with fever or blistering." },
+
+  // Colchicine
+  { sys: "digestive", sev: "moderate", when: k => k === "colchicine", effect: "Diarrhea and nausea are common, especially at higher doses", why: "Acts on rapidly dividing gut-lining cells.", monitor: "Lower doses reduce GI effects; toxicity rises with interacting medicines." },
+
+  // Tamoxifen
+  { sys: "blood", sev: "moderate", when: k => k === "tamoxifen", effect: "Can increase the risk of blood clots", why: "Hormonal (anti-estrogen) therapy raises clotting tendency.", monitor: "Report leg swelling/pain or sudden breathlessness." },
+  { sys: "endocrine", sev: "low", when: k => k === "tamoxifen", effect: "Blocks estrogen's effect in breast tissue (intended)", why: "Selective estrogen-receptor modulation.", monitor: "Routine oncology follow-up." },
+
+  // Mineral supplements / antacids
+  { sys: "digestive", sev: "low", when: k => has(k, "cation_binder"), effect: "Can cause constipation; binds some medicines in the gut", why: "Calcium and iron slow the gut and attach to certain medicines, reducing their absorption.", monitor: "Separate from interacting medicines by a few hours; fluids and fiber help." },
+
+  // Oncology effects
+  { sys: "heart", sev: "high", when: k => has(k, "cardiotoxic"), effect: "Can weaken the heart muscle or strain the heart", why: "Some cancer therapies (anthracyclines, HER2 antibodies, certain TKIs, fluoropyrimidines) can affect heart function.", monitor: "Heart-function checks (echo / ejection fraction); report breathlessness, swelling, or palpitations." },
+  { sys: "brain", sev: "moderate", when: k => has(k, "neurotoxic"), effect: "Peripheral neuropathy — numbness, tingling, or weakness in hands and feet", why: "Damages peripheral nerves; can build up over repeated cycles.", monitor: "Report new numbness, tingling, balance problems, or weakness early." },
+  { sys: "digestive", sev: "moderate", when: k => has(k, "emetogenic"), effect: "Nausea and vomiting are common", why: "Chemotherapy triggers the brain's nausea pathways and irritates the gut.", monitor: "Anti-nausea medicines are usually given; stay hydrated and report if you can't keep fluids down." },
+  { sys: "digestive", sev: "high", when: k => has(k, "gi_tox"), effect: "Can cause severe diarrhea or mouth sores", why: "Affects the fast-dividing cells lining the gut.", monitor: "Report diarrhea promptly — dehydration can become serious; ask about a rescue plan." },
+  { sys: "lungs", sev: "high", when: k => has(k, "pulmonary_tox"), effect: "Rare but serious lung inflammation or scarring", why: "Can injure lung tissue with cumulative dosing.", monitor: "Report any new cough, breathlessness, or fever; lung-function checks may be done." },
+  { sys: "blood", sev: "moderate", when: k => has(k, "clot_risk"), effect: "Increases the risk of blood clots", why: "Raises the blood's tendency to clot.", monitor: "Often paired with a blood thinner; report leg swelling/pain or sudden breathlessness." },
+  { sys: "repro", sev: "high", when: k => has(k, "teratogen"), effect: "Can cause serious harm to a developing baby", why: "Toxic to a fetus — strict pregnancy prevention is required.", monitor: "Pregnancy testing and contraception programs (e.g., REMS) apply; never share these medicines." },
+  { sys: "bones", sev: "moderate", when: k => isClass(k, "Aromatase inhibitor"), effect: "Can lower bone density over time", why: "Reducing estrogen speeds bone loss.", monitor: "Bone-density (DEXA) scans and calcium/vitamin D; report new bone pain." },
+  { sys: "endocrine", sev: "moderate", when: k => isClass(k, "GnRH agonist"), effect: "Lowers sex-hormone levels (intended); hot flashes are common", why: "Suppresses estrogen or testosterone production.", monitor: "Bone health and cardiovascular/metabolic checks over time." },
+  { sys: "bones", sev: "low", when: k => isClass(k, "GnRH agonist"), effect: "Bone thinning with long-term use", why: "Low sex hormones reduce bone density.", monitor: "Bone-density review for prolonged therapy." },
+  { sys: "endocrine", sev: "low", when: k => isClass(k, "Hormonal therapy (oncology)", "Anti-androgen", "Anti-androgen (CYP17)"), effect: "Blocks hormone signaling the cancer depends on (intended)", why: "The hormone pathway is the treatment target.", monitor: "Routine oncology follow-up." },
+  { sys: "skin", sev: "moderate", when: k => has(k, "egfr_skin"), effect: "Acne-like rash and dry skin are common", why: "EGFR-blocking therapies affect the skin, where EGFR is active.", monitor: "Skin care and sun protection help; report severe or infected rash." },
+  { sys: "digestive", sev: "low", when: k => has(k, "egfr_skin"), effect: "Diarrhea is common", why: "EGFR therapies also affect the gut lining.", monitor: "Stay hydrated; report persistent diarrhea." },
+  { sys: "blood", sev: "low", when: k => has(k, "infection_risk"), effect: "Lowers immune (white) cells, raising infection risk", why: "Depletes certain immune cells.", monitor: "Report fevers or signs of infection; vaccination and screening (e.g., hepatitis B) may be advised." },
+  // Immunotherapy (immune-related effects can hit several organs)
+  { sys: "endocrine", sev: "moderate", when: k => has(k, "immunotherapy"), effect: "Immune system can inflame hormone glands (thyroid, adrenal, pituitary)", why: "Checkpoint inhibitors release immune cells that may attack healthy glands.", monitor: "Periodic thyroid and other hormone checks; report fatigue, weight change, or dizziness." },
+  { sys: "digestive", sev: "moderate", when: k => has(k, "immunotherapy"), effect: "Immune-related colitis — diarrhea that needs prompt attention", why: "Immune activation can inflame the bowel.", monitor: "Report diarrhea or abdominal pain early; it can escalate quickly." },
+  { sys: "liver", sev: "moderate", when: k => has(k, "immunotherapy"), effect: "Immune-related hepatitis (liver inflammation)", why: "Immune activation can target the liver.", monitor: "Liver blood tests before cycles." },
+  { sys: "lungs", sev: "moderate", when: k => has(k, "immunotherapy"), effect: "Immune-related pneumonitis (lung inflammation)", why: "Immune activation can inflame the lungs.", monitor: "Report new or worsening cough or breathlessness." },
+  { sys: "skin", sev: "low", when: k => has(k, "immunotherapy"), effect: "Rash or itching", why: "Common immune-related skin reaction.", monitor: "Report widespread or blistering rash." },
+];
+
+// Drug-specific organ effects not captured by the generic tags
+const KEY_EXTRAS = {
+  amiodarone: [
+    { sys: "lungs", sev: "high", effect: "Rare but serious lung inflammation or scarring", why: "Can accumulate in lung tissue over time.", monitor: "Report any new cough or breathlessness." },
+    { sys: "endocrine", sev: "moderate", effect: "Under- or over-active thyroid", why: "Its high iodine content affects the thyroid.", monitor: "Thyroid blood tests at intervals." },
+    { sys: "eyes", sev: "low", effect: "Corneal deposits (usually harmless)", why: "Microdeposits form on the eye surface.", monitor: "Eye exam if vision changes." },
+    { sys: "skin", sev: "low", effect: "Sun sensitivity; bluish-grey tint long-term", why: "Increases the skin's light sensitivity.", monitor: "Use sun protection." },
+    { sys: "liver", sev: "moderate", effect: "Can raise liver enzymes", why: "Processed by the liver.", monitor: "Liver blood tests." },
+  ],
+  alcohol: [
+    { sys: "brain", sev: "moderate", effect: "Sedation and impaired coordination", why: "Depresses the nervous system, adding to sedating medicines.", monitor: "Be cautious combining with sedatives or opioids." },
+    { sys: "liver", sev: "high", effect: "Liver strain, especially with other liver-stressing medicines", why: "Metabolized by, and toxic to, the liver.", monitor: "Mind combined acetaminophen and alcohol." },
+    { sys: "digestive", sev: "moderate", effect: "Stomach irritation; worsens NSAID bleeding risk", why: "Irritates the stomach lining.", monitor: "Avoid pairing with NSAIDs on an empty stomach." },
+  ],
+  grapefruit: [
+    { sys: "liver", sev: "moderate", effect: "Raises the level of some medicines (gut enzyme block)", why: "Blocks intestinal CYP3A4, increasing how much is absorbed.", monitor: "Ask which of your medicines interact with grapefruit." },
+  ],
+  lithium: [
+    { sys: "kidneys", sev: "high", effect: "Narrow margin — level rises with dehydration or certain pills", why: "Cleared by the kidneys; NSAIDs, some BP and water pills raise it.", monitor: "Periodic lithium levels and hydration awareness." },
+  ],
+  methotrexate: [
+    { sys: "kidneys", sev: "high", effect: "Cleared by kidneys; toxicity rises if it builds up", why: "Reduced kidney clearance raises toxicity.", monitor: "Avoid extra NSAIDs without checking; regular labs." },
+    { sys: "liver", sev: "moderate", effect: "Can stress the liver with ongoing use", why: "Hepatic effects over time.", monitor: "Liver blood tests." },
+  ],
 };
+
+const SEV_RANK = { high: 4, moderate: 3, low: 2, positive: 1 };
+
+function deriveBodyImpacts(sel) {
+  const acc = {};
+  const push = (drug, sys, sev, effect, why, monitor) => {
+    const a = (acc[sys] ||= { items: [], drugs: new Set() });
+    a.drugs.add(drug);
+    a.items.push({ sev, effect, why, monitor, drug });
+  };
+  for (const k of sel) {
+    if (!DRUGS[k]) continue;
+    for (const r of RULES) if (r.when(k)) push(k, r.sys, r.sev, r.effect, r.why, r.monitor);
+    (KEY_EXTRAS[k] || []).forEach(e => push(k, e.sys, e.sev, e.effect, e.why, e.monitor));
+  }
+  const map = {};
+  for (const sys of Object.keys(acc)) {
+    const a = acc[sys];
+    const nonPos = a.items.filter(i => i.sev !== "positive");
+    const dom = (nonPos.length ? nonPos : a.items).reduce((m, i) => SEV_RANK[i.sev] > SEV_RANK[m.sev] ? i : m);
+    const byText = new Map();
+    a.items.forEach(i => {
+      const ex = byText.get(i.effect);
+      if (!ex) byText.set(i.effect, { text: i.effect, sev: i.sev, drugs: new Set([i.drug]) });
+      else { ex.drugs.add(i.drug); if (SEV_RANK[i.sev] > SEV_RANK[ex.sev]) ex.sev = i.sev; }
+    });
+    const effects = [...byText.values()].sort((x, y) => SEV_RANK[y.sev] - SEV_RANK[x.sev]);
+    map[sys] = {
+      sev: dom.sev,
+      drugs: [...a.drugs],
+      effects: effects.map(e => ({ text: e.text, drugs: [...e.drugs] })),
+      why: dom.why,
+      monitor: dom.monitor,
+    };
+  }
+  return map;
+}
 
 const BP = 860; // stack below this container width
 
@@ -886,6 +1016,7 @@ function OrganGlyph({ id }) {
     case "eyes": return (<g><ellipse cx="-7" cy="0" rx="5" ry="3.4" /><ellipse cx="7" cy="0" rx="5" ry="3.4" /></g>);
     case "endocrine": return (<g><ellipse cx="-6" cy="0" rx="6" ry="4.5" /><ellipse cx="6" cy="0" rx="6" ry="4.5" /><rect x="-2.5" y="-2" width="5" height="4" rx="1.5" /></g>);
     case "heart": return (<path d="M0,7 C-6,-4 -19,-3 -18,7 C-17,17 -4,23 0,28 C4,23 17,17 18,7 C19,-3 6,-4 0,7 Z" transform="scale(0.92)" />);
+    case "blood": return (<path d="M0,-15 C7,-5 13,1 13,8 A13,13 0 1 1 -13,8 C-13,1 -7,-5 0,-15 Z" transform="scale(0.78)" />);
     case "lungs": return (<g><path d="M-3,-14 C-15,-10 -19,6 -15,18 C-12,24 -4,22 -4,14 L-3,-14 Z" /><path d="M3,-14 C15,-10 19,6 15,18 C12,24 4,22 4,14 L3,-14 Z" /></g>);
     case "liver": return (<path d="M-20,-8 C-2,-14 18,-12 20,-4 C21,6 8,14 -6,13 C-16,12 -22,2 -20,-8 Z" />);
     case "digestive": return (<path d="M-4,-15 C9,-16 12,-4 4,-1 C-7,3 -10,11 0,13 C12,15 14,4 9,0" fill="none" stroke="currentColor" strokeWidth="6.5" strokeLinecap="round" />);
@@ -983,93 +1114,406 @@ function BodySilhouette({ activeMap, emphasized, onPick, anchorRefs }) {
   );
 }
 
-// ---- Card ------------------------------------------------------------------
-function SystemCard({ id, entry, cardRef, expanded, emphasized, onToggle, onHover }) {
+// ---- Shared helpers --------------------------------------------------------
+const uid = () => Math.random().toString(36).slice(2, 9);
+const uniq = a => [...new Set(a)];
+
+// ---- Drug directory + search (curated + bundled seed + live RxNorm) --------
+const CURATED_DIR = Object.keys(DRUGS).map(k => ({ name: DRUGS[k].name, cls: DRUGS[k].cls, key: k, aliases: DRUGS[k].aliases || [], src: "curated" }));
+const _curatedNames = new Set(CURATED_DIR.map(d => d.name.toLowerCase()));
+const SEED_DIR = (typeof SEED_DRUGS !== "undefined" ? SEED_DRUGS : []).filter(d => !_curatedNames.has(d.name.toLowerCase()))
+  .map(d => ({ name: d.name, cls: d.cls || "", key: null, aliases: d.brands || [], src: "seed" }));
+const STATIC_DIR = [...CURATED_DIR, ...SEED_DIR];
+const DIRECTORY_SIZE = STATIC_DIR.length;
+
+function searchDirectory(q, rxNames, curatedOnly) {
+  const t = q.trim().toLowerCase();
+  if (!t) return [];
+  const hit = d => d.name.toLowerCase().includes(t) || (d.aliases || []).some(a => String(a).toLowerCase().includes(t)) || (d.key && d.key.includes(t));
+  const starts = d => d.name.toLowerCase().startsWith(t);
+  const out = [], seen = new Set();
+  const pushAll = arr => { for (const d of arr) { if (out.length >= 14) break; const k = d.name.toLowerCase(); if (seen.has(k) || !hit(d)) continue; seen.add(k); out.push(d); } };
+  const cur = STATIC_DIR.filter(d => d.src === "curated");
+  const seed = STATIC_DIR.filter(d => d.src === "seed");
+  pushAll(cur.filter(starts)); pushAll(cur);
+  if (!curatedOnly) { pushAll(seed.filter(starts)); pushAll(seed); }
+  if (!curatedOnly && out.length < 14 && rxNames) {
+    for (const name of rxNames) {
+      if (out.length >= 14) break;
+      const low = name.toLowerCase();
+      if (seen.has(low)) continue;
+      if (low.startsWith(t) || low.includes(t)) { seen.add(low); out.push({ name, cls: "", key: null, src: "rxnorm" }); }
+    }
+  }
+  return out;
+}
+
+let _rxCache = null;
+async function fetchRxNames() {
+  if (_rxCache) return _rxCache;
+  const res = await fetch("https://rxnav.nlm.nih.gov/REST/displaynames.json");
+  const data = await res.json();
+  _rxCache = (data && data.displayTermsList && data.displayTermsList.term) || [];
+  return _rxCache;
+}
+
+// NIH Dietary Supplement Label Database (DSLD) — live supplement search (~178k labels)
+async function fetchDsld(q) {
+  const url = "https://dsldapi.od.nih.gov/dsld/v9/search-filter?status=1&size=12&q=" + encodeURIComponent(q);
+  const res = await fetch(url);
+  const data = await res.json();
+  const hits = (data && data.hits) || [];
+  const out = [];
+  for (const h of hits) {
+    const s = h && h._source; if (!s) continue;
+    const name = s.fullName || s.bundleName; if (!name) continue;
+    out.push({ name: String(name).trim(), cls: s.brandName ? String(s.brandName).trim() + " \u00b7 supplement" : "Supplement", key: null, src: "dsld" });
+  }
+  return out;
+}
+const RxNormContext = React.createContext({ rxNames: null, status: "idle", load: () => {} });
+function RxNormProvider({ children }) {
+  const [rxNames, setRxNames] = useState(null);
+  const [status, setStatus] = useState("idle");
+  const load = useCallback(() => {
+    setStatus(s => {
+      if (s !== "idle") return s;
+      fetchRxNames().then(n => { setRxNames(n); setStatus("ready"); }).catch(() => setStatus("error"));
+      return "loading";
+    });
+  }, []);
+  return <RxNormContext.Provider value={{ rxNames, status, load }}>{children}</RxNormContext.Provider>;
+}
+
+const SCOREBAND = s => s >= 85 ? { label: "Looking good", color: "#2F8F6B" }
+  : s >= 60 ? { label: "Worth a review", color: "#B0591E" }
+  : { label: "Needs attention", color: "#B4332B" };
+
+function computeScore(findings) {
+  const pen = { Contraindicated: 28, Major: 14, Moderate: 7, Minor: 2 };
+  let s = 100;
+  findings.forEach(f => { s -= (pen[f.sev] || 0); });
+  return Math.max(0, s);
+}
+
+function riskFlags(keys) {
+  const cnt = tag => keys.filter(k => has(k, tag)).length;
+  const anyClass = (...n) => keys.some(k => n.includes(DRUGS[k]?.cls));
+  const flags = [];
+  const add = (label, on, detail, level) => { if (on) flags.push({ label, detail, level }); };
+  add("QT prolongation", cnt("qt") >= 2, "Two or more medicines can lengthen the heart's QT interval.", "high");
+  add("Sedation", cnt("cns_depress") + cnt("resp_depress") >= 2, "Several medicines add drowsiness or slow breathing.", (cnt("resp_depress") && cnt("cns_depress")) ? "high" : "moderate");
+  add("Bleeding", cnt("bleeding") >= 2, "Combined blood thinners / anti-inflammatories raise bleeding risk.", "high");
+  add("Kidney strain", cnt("nephrotoxic") >= 1, "Anti-inflammatories or related medicines can stress the kidneys.", "moderate");
+  add("Liver strain", cnt("hepatotoxic") >= 1, "One or more medicines can affect the liver.", "moderate");
+  add("Blood pressure", anyClass("ACE inhibitor", "ARB", "Beta blocker", "Calcium channel blocker", "Diuretic", "Loop diuretic", "Potassium-sparing diuretic") && cnt("nephrotoxic") >= 1, "Anti-inflammatories may blunt blood-pressure control.", "moderate");
+  add("Boxed warning: opioid + sedative", keys.some(k => DRUGS[k]?.cls === "Opioid") && keys.some(k => DRUGS[k]?.cls === "Benzodiazepine" || k === "zolpidem"), "Opioid plus benzodiazepine carries a boxed breathing-risk warning.", "high");
+  return flags;
+}
+
+function duplicateTherapies(meds) {
+  const byCls = {};
+  meds.forEach(m => { const k = m.key; if (!k || !DRUGS[k]) return; const c = DRUGS[k].cls; (byCls[c] ||= new Set()).add(DRUGS[k].name); });
+  return Object.entries(byCls).filter(([, s]) => s.size >= 2).map(([cls, s]) => ({ cls, names: [...s] }));
+}
+
+function foodFindings(keys) {
+  const out = [];
+  const names = tag => keys.filter(k => has(k, tag)).map(k => DRUGS[k].name);
+  const namesClass = (...c) => keys.filter(k => c.includes(DRUGS[k]?.cls)).map(k => DRUGS[k].name);
+  const push = (cat, level, Icon, title, reason, drugs) => out.push({ cat, level, Icon, title, reason, drugs: drugs || [] });
+  let n;
+  if ((n = names("cyp3a4_sub")).length) push("Grapefruit", "avoid", Citrus, "Avoid grapefruit", "Grapefruit blocks a gut enzyme and can raise the blood level of these medicines.", n);
+  if ((n = keys.filter(k => has(k, "cns_depress") || has(k, "resp_depress") || has(k, "hepatotoxic")).map(k => DRUGS[k].name)).length) push("Alcohol", "avoid", Wine, "Limit or avoid alcohol", "Adds sedation and/or strains the liver alongside these medicines.", n);
+  if (keys.includes("warfarin")) push("Vitamin K", "caution", Leaf, "Keep vitamin K steady", "Large swings in leafy-green (vitamin K) intake change how warfarin works.", ["Warfarin"]);
+  if ((n = keys.filter(k => has(k, "absorption_cation") || has(k, "cation_binds")).map(k => DRUGS[k].name)).length) push("Dairy & minerals", "caution", Milk, "Separate from dairy, calcium, iron, antacids", "Minerals bind these medicines and block absorption — space them several hours apart.", n);
+  if ((n = names("cyp1a2_sub")).length) push("Caffeine", "caution", Coffee, "Watch caffeine", "Caffeine clearance can change with these medicines (jitteriness, poor sleep).", n);
+  if ((n = namesClass("MAO inhibitor")).length) push("Tyramine foods", "avoid", Utensils, "Avoid aged & fermented foods", "Aged cheese, cured meats and tap beer (tyramine) can spike blood pressure with MAO inhibitors.", n);
+  if ((n = names("hyperkalemia")).length) push("Potassium", "caution", Utensils, "Go easy on salt substitutes", "Many salt substitutes are high in potassium, which these medicines also raise.", n);
+  if (keys.includes("stjohnswort") || names("cyp3a4_sub").length) push("Herbal supplements", "info", Leaf, "Disclose every supplement", "St. John's Wort and other herbals can change medicine levels — always tell your pharmacist.", []);
+  return out;
+}
+
+const LABS = {
+  liver: ["ALT", "AST", "Bilirubin"], kidneys: ["Creatinine", "eGFR", "Potassium"],
+  heart: ["ECG (QTc)", "Potassium", "Magnesium"], endocrine: ["Blood glucose / HbA1c", "Thyroid (TSH)"],
+  blood: ["INR (for warfarin)", "Complete blood count (CBC)", "Platelets"],
+  bones: ["Bone density (DEXA)", "Vitamin D"], muscles: ["Creatine kinase (CK)"],
+  lungs: ["Chest imaging if breathless"], digestive: ["Hemoglobin if bleeding"],
+  eyes: ["Eye exam if vision changes"], brain: [], repro: [], skin: [],
+};
+
+const SYMPTOM_LIST = ["Headache", "Nausea", "Vomiting", "Dizziness", "Rash", "Swelling", "Fatigue", "Bleeding", "Chest Pain", "Shortness of Breath", "Anxiety", "Depression", "Insomnia", "Muscle Pain", "Fever"];
+const EMERGENCY_SX = ["Chest Pain", "Shortness of Breath", "Bleeding", "Swelling"];
+const SX_TAGS = {
+  Headache: ["nitrate", "serotonergic"], Nausea: ["gastric_emptying", "serotonergic", "hepatotoxic"],
+  Vomiting: ["gastric_emptying"], Dizziness: ["cns_depress", "qt", "nitrate"], Rash: [],
+  Swelling: ["nephrotoxic", "hyperkalemia"], Fatigue: ["cns_depress"], Bleeding: ["bleeding"],
+  "Chest Pain": ["qt"], "Shortness of Breath": ["resp_depress"], Anxiety: ["sympathomimetic", "serotonergic"],
+  Depression: ["cns_depress"], Insomnia: ["sympathomimetic"], "Muscle Pain": ["myopathy", "statin"], Fever: ["serotonergic"],
+};
+const BAND = { red: "#B4332B", amber: "#B0591E", green: "#2F8F6B" };
+function symptomEval(checked, severity, keys) {
+  const emergency = checked.some(s => EMERGENCY_SX.includes(s)) || severity >= 8;
+  const matches = checked.map(s => ({ symptom: s, drugs: keys.filter(k => (SX_TAGS[s] || []).some(t => has(k, t))).map(k => DRUGS[k].name) })).filter(m => m.drugs.length);
+  let action, band;
+  if (emergency) { action = "Seek emergency care now"; band = "red"; }
+  else if (severity >= 5 || matches.length >= 2) { action = "Contact your physician"; band = "amber"; }
+  else if (matches.length >= 1) { action = "Contact your pharmacist"; band = "amber"; }
+  else { action = "Keep monitoring — no red flags found"; band = "green"; }
+  const confidence = matches.length >= 2 ? "Moderate" : matches.length === 1 ? "Low–moderate" : "Low";
+  return { action, band, confidence, matches, emergency };
+}
+
+const SLOTS = ["Morning", "Noon", "Afternoon", "Evening", "Night"];
+const SLOT_ICON = { Morning: Sunrise, Noon: Sun, Afternoon: Sun, Evening: Sunset, Night: Moon };
+const SLOT_TIME = { Morning: "08:00", Noon: "12:00", Afternoon: "15:00", Evening: "18:00", Night: "22:00" };
+const medSlots = m => (m.slots && m.slots.length ? m.slots : [m.slot || "Morning"]);
+function guessFood(k) {
+  if (!k) return "With or without food";
+  if (k === "levothyroxine") return "Empty stomach, 30–60 min before breakfast";
+  if (["NSAID", "NSAID (COX-2)", "Corticosteroid"].includes(DRUGS[k]?.cls)) return "Take with food";
+  if (has(k, "cation_binds") || has(k, "absorption_cation")) return "Away from dairy / calcium / iron";
+  return "With or without food";
+}
+function buildICS(meds) {
+  const esc = s => String(s || "").replace(/[,;\n]/g, " ");
+  const L = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//WhatsSafeTogether//EN"];
+  meds.forEach(m => {
+    medSlots(m).forEach(sl => {
+      const t = (SLOT_TIME[sl] || m.time || "08:00").replace(":", "") + "00";
+      L.push("BEGIN:VEVENT", "UID:" + m.id + "-" + sl + "@wst", "SUMMARY:Take " + esc(m.name) + (m.dose ? " (" + esc(m.dose) + ")" : "") + " — " + sl, "RRULE:FREQ=DAILY", "DTSTART:20250101T" + t, "DURATION:PT10M", "DESCRIPTION:" + esc(m.withFood || ""), "END:VEVENT");
+    });
+  });
+  L.push("END:VCALENDAR");
+  return L.join("\r\n");
+}
+function downloadICS(meds) {
+  const href = "data:text/calendar;charset=utf-8," + encodeURIComponent(buildICS(meds));
+  const a = document.createElement("a"); a.href = href; a.download = "medication-schedule.ics"; a.click();
+}
+
+// ---- Provider summary (exportable to take to pharmacy / clinic) ------------
+function gatherSummary(meds, keys, findings, score, symptoms) {
+  const band = SCOREBAND(score);
+  const flags = riskFlags(keys);
+  const dups = duplicateTherapies(meds);
+  const food = foodFindings(keys);
+  const impact = deriveBodyImpacts(keys);
+  const labs = uniq(Object.keys(impact).flatMap(id => LABS[id] || []));
+  const bySlot = SLOTS.map(s => ({ slot: s, items: meds.filter(m => medSlots(m).includes(s)) })).filter(s => s.items.length);
+  const refills = meds.filter(m => m.startDate);
+  const questions = [];
+  if (findings.some(f => f.sev === "Contraindicated" || f.sev === "Major")) questions.push("Are any of my flagged interactions safe to continue as-is?");
+  if (flags.length) questions.push("Should I be monitored for " + flags.slice(0, 2).map(f => f.label.toLowerCase()).join(" or ") + "?");
+  if (dups.length) questions.push("Do I still need both medicines in the same class (" + dups.map(d => d.cls).join(", ") + ")?");
+  questions.push("Which lab tests are due, and when?");
+  questions.push("Is my current medication list still right for me?");
+  return { band, flags, dups, food, labs, bySlot, refills, questions };
+}
+
+function summaryToText(meds, keys, findings, score, symptoms) {
+  const g = gatherSummary(meds, keys, findings, score, symptoms);
+  const L = [];
+  const sevOrder = { Contraindicated: 0, Major: 1, Moderate: 2, Minor: 3 };
+  L.push("WHAT'S SAFE TOGETHER? — MEDICATION SUMMARY");
+  L.push("Prepared for a pharmacy / healthcare-provider visit");
+  L.push("Date: " + new Date().toLocaleDateString());
+  L.push("");
+  L.push("NOTE: Educational summary generated by the patient. Not a medical record and not");
+  L.push("a substitute for professional advice. Please review the full list together.");
+  L.push("");
+  L.push("MEDICATION SAFETY SCORE: " + score + "/100 (" + g.band.label + ")");
+  L.push("");
+  L.push("------------------------------------------------------------");
+  L.push("CURRENT MEDICATIONS (" + meds.length + ")");
+  L.push("------------------------------------------------------------");
+  if (!meds.length) L.push("  (none entered)");
+  meds.forEach((m, i) => {
+    L.push((i + 1) + ". " + m.name + (m.strength ? " " + m.strength : ""));
+    const line2 = [m.dose, m.freq, m.route, m.time && ("at " + m.time), medSlots(m).join(", "), m.withFood].filter(Boolean).join(" · ");
+    if (line2) L.push("   " + line2);
+    const line3 = [m.purpose && ("Purpose: " + m.purpose), m.physician && ("Prescriber: " + m.physician), m.pharmacy && ("Pharmacy: " + m.pharmacy), m.startDate && ("Started: " + m.startDate)].filter(Boolean).join(" · ");
+    if (line3) L.push("   " + line3);
+    if (m.notes) L.push("   Notes: " + m.notes);
+  });
+  L.push("");
+  if (g.flags.length) {
+    L.push("RISK FLAGS: " + g.flags.map(f => f.label).join(", "));
+    L.push("");
+  }
+  if (g.dups.length) {
+    L.push("POSSIBLE DUPLICATE THERAPY:");
+    g.dups.forEach(d => L.push("  - " + d.cls + ": " + d.names.join(", ")));
+    L.push("");
+  }
+  L.push("------------------------------------------------------------");
+  L.push("DRUG INTERACTIONS (" + findings.length + ")");
+  L.push("------------------------------------------------------------");
+  if (!findings.length) L.push("  None found in this tool's database (not a guarantee of safety).");
+  [...findings].sort((a, b) => sevOrder[a.sev] - sevOrder[b.sev]).forEach(f => {
+    L.push("[" + f.sev.toUpperCase() + "] " + f.title);
+    L.push("   Medicines: " + f.drugs.map(d => DRUGS[d]?.name || d).join(", "));
+    L.push("   Possible signs: " + f.body);
+    L.push("   Action: " + f.discuss);
+    if (f.sev === "Contraindicated" || f.sev === "Major") L.push("   >> Worth contacting prescriber/pharmacist.");
+    L.push("");
+  });
+  if (g.food.length) {
+    L.push("------------------------------------------------------------");
+    L.push("FOOD / SUPPLEMENT NOTES");
+    L.push("------------------------------------------------------------");
+    g.food.forEach(it => { L.push("  - " + it.title + (it.drugs.length ? " (" + it.drugs.join(", ") + ")" : "")); L.push("    " + it.reason); });
+    L.push("");
+  }
+  if (g.bySlot.length) {
+    L.push("------------------------------------------------------------");
+    L.push("DAILY SCHEDULE");
+    L.push("------------------------------------------------------------");
+    g.bySlot.forEach(s => { L.push(s.slot + ":"); s.items.forEach(m => L.push("   " + (m.time || "") + "  " + m.name + " — " + (m.withFood || ""))); });
+    L.push("");
+  }
+  if (g.labs.length) {
+    L.push("SUGGESTED LAB TESTS: " + g.labs.join(", "));
+    L.push("");
+  }
+  if (symptoms.length) {
+    L.push("------------------------------------------------------------");
+    L.push("RECENT SYMPTOM CHECK-INS");
+    L.push("------------------------------------------------------------");
+    symptoms.slice(-6).reverse().forEach(s => L.push("  " + s.date + " — " + (s.items.join(", ") || "general") + " (severity " + s.severity + "/10) -> " + s.eval.action));
+    L.push("");
+  }
+  L.push("------------------------------------------------------------");
+  L.push("QUESTIONS TO ASK");
+  L.push("------------------------------------------------------------");
+  g.questions.forEach((q, i) => L.push("  " + (i + 1) + ". " + q));
+  L.push("");
+  L.push("Generated by What's Safe Together? — educational use only.");
+  return L.join("\n");
+}
+
+function downloadText(name, content) {
+  const href = "data:text/plain;charset=utf-8," + encodeURIComponent(content);
+  const a = document.createElement("a"); a.href = href; a.download = name; a.click();
+}
+
+function printSummary(meds, keys, findings, score, symptoms) {
+  const text = summaryToText(meds, keys, findings, score, symptoms);
+  const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const w = window.open("", "_blank");
+  if (!w) { downloadText("medication-summary.txt", text); return; }
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Medication Summary</title>' +
+    '<style>@page{margin:18mm}body{font:13px/1.55 ui-sans-serif,system-ui,Segoe UI,Roboto,sans-serif;color:#2B231C;max-width:760px;margin:24px auto;padding:0 18px}h1{font-size:20px;margin:0 0 2px}pre{white-space:pre-wrap;font:12.5px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace}</style>' +
+    '</head><body><pre>' + esc(text) + '</pre><script>window.onload=function(){setTimeout(function(){window.print();},250);}<\/script></body></html>');
+  w.document.close();
+}
+
+// ---- Shared UI bits --------------------------------------------------------
+const serifH = serif;
+const card = { borderRadius: 16, border: `1px solid ${C.line}`, background: C.surface, padding: 18 };
+const eyebrow = { fontSize: 11, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: C.inkSoft };
+const primaryBtn = { borderRadius: 10, border: "none", cursor: "pointer", padding: "10px 18px", fontSize: 14, fontWeight: 600, color: "#FBF6EC", background: C.terra, boxShadow: "0 8px 20px -10px rgba(181,83,46,0.7)", display: "inline-flex", alignItems: "center", gap: 8 };
+const ghostBtn = { borderRadius: 10, border: `1px solid ${C.line}`, cursor: "pointer", padding: "10px 18px", fontSize: 14, fontWeight: 600, color: C.ink, background: C.surface, display: "inline-flex", alignItems: "center", gap: 8 };
+
+function PageHead({ title, italic, sub }) {
+  return (
+    <div style={{ marginBottom: 22 }}>
+      <h1 style={{ fontFamily: serifH, fontWeight: 700, color: C.ink, fontSize: "clamp(28px, 4vw, 38px)", letterSpacing: "-0.015em", margin: 0, lineHeight: 1.1 }}>{title}</h1>
+      {italic && <p style={{ fontFamily: serifH, fontStyle: "italic", fontWeight: 500, color: C.terraDeep, fontSize: "clamp(16px, 2.4vw, 20px)", lineHeight: 1.35, margin: "14px 0 0", maxWidth: 560 }}>{italic}</p>}
+      {sub && <p style={{ fontSize: 14.5, color: C.inkSoft, maxWidth: 580, margin: "12px 0 0", lineHeight: 1.55 }}>{sub}</p>}
+    </div>
+  );
+}
+
+const JOURNEY = [["dashboard", "Dashboard"], ["meds", "Medications"], ["interactions", "Interactions"], ["bodymap", "Body Map"], ["food", "Food"], ["schedule", "Schedule"], ["symptom", "Symptoms"], ["summary", "Summary"]];
+function Journey({ page, go }) {
+  const idx = JOURNEY.findIndex(s => s[0] === page);
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 22 }}>
+      {JOURNEY.map((s, i) => {
+        const done = i < idx, cur = i === idx;
+        return (
+          <button key={s[0]} onClick={() => go(s[0])} style={{ display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 999, border: `1px solid ${cur ? C.terra : C.line}`, background: cur ? C.terra : done ? "#EEE1CF" : C.surface, color: cur ? "#FBF6EC" : done ? C.ink : C.inkFaint, padding: "5px 11px", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+            <span style={{ opacity: 0.7, fontSize: 10.5 }}>{i + 1}</span>{s[1]}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function Field({ label, value, onChange, placeholder, type = "text", options }) {
+  return (
+    <label style={{ display: "block" }}>
+      <span style={{ display: "block", fontSize: 10.5, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: C.inkSoft, marginBottom: 5 }}>{label}</span>
+      {options ? (
+        <select className="wst-input" value={value} onChange={e => onChange(e.target.value)} style={{ width: "100%", boxSizing: "border-box", borderRadius: 10, border: `1px solid ${C.line}`, background: C.surface, padding: "10px 12px", fontSize: 14, color: C.ink, outline: "none" }}>
+          {options.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+      ) : (
+        <input className="wst-input" value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} type={type} style={{ width: "100%", boxSizing: "border-box", borderRadius: 10, border: `1px solid ${C.line}`, background: C.surface, padding: "10px 12px", fontSize: 14, color: C.ink, outline: "none" }} />
+      )}
+    </label>
+  );
+}
+
+function Toggle({ on, onChange, label, desc }) {
+  return (
+    <button onClick={() => onChange(!on)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, width: "100%", textAlign: "left", border: `1px solid ${C.line}`, background: C.surface, borderRadius: 12, padding: "12px 14px", cursor: "pointer" }}>
+      <span>
+        <span style={{ display: "block", fontSize: 14, fontWeight: 600, color: C.ink }}>{label}</span>
+        {desc && <span style={{ display: "block", fontSize: 12, color: C.inkSoft, marginTop: 2 }}>{desc}</span>}
+      </span>
+      <span style={{ flexShrink: 0, width: 42, height: 24, borderRadius: 999, background: on ? C.terra : "#D8CDBA", position: "relative", transition: "background .15s" }}>
+        <span style={{ position: "absolute", top: 2, left: on ? 20 : 2, width: 20, height: 20, borderRadius: 999, background: "#fff", transition: "left .15s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
+      </span>
+    </button>
+  );
+}
+
+function ScoreBadge({ sev }) {
+  const v = SEV[sev];
+  const major = sev === "Contraindicated" || sev === "Major";
+  return (
+    <span style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 4, borderRadius: 999, border: `1px solid ${v.bd}`, background: "rgba(255,255,255,0.6)", padding: "3px 9px", fontSize: 11, fontWeight: 700, color: v.text }}>
+      {major ? <ShieldAlert size={12} /> : <AlertTriangle size={12} />}{sev}
+    </span>
+  );
+}
+
+// ---- Card (Body Impact Map) ------------------------------------------------
+function SystemCard({ id, data, labs, multi, cardRef, expanded, emphasized, onToggle, onHover }) {
   const sys = SYS[id];
-  const imp = IMPACT[entry.sev];
-  const dots = FREQ_DOTS[entry.freq] || 0;
+  const imp = IMPACT[data.sev];
   const Icon = sys.Icon;
   return (
-    <div
-      ref={cardRef}
-      onMouseEnter={() => onHover(id)}
-      onMouseLeave={() => onHover(null)}
-      onClick={() => onToggle(id)}
-      style={{
-        borderRadius: 18,
-        border: `1px solid ${emphasized ? imp.color + "AA" : "rgba(255,255,255,0.09)"}`,
-        background: "linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.02))",
-        backdropFilter: "blur(14px)",
-        WebkitBackdropFilter: "blur(14px)",
-        boxShadow: emphasized
-          ? `0 10px 40px -14px ${imp.glow}, inset 0 0 0 1px ${imp.soft}`
-          : "0 10px 30px -20px rgba(0,0,0,0.8)",
-        padding: 16,
-        cursor: "pointer",
-        transition: "border-color .2s, box-shadow .2s, transform .2s",
-        transform: emphasized ? "translateY(-1px)" : "none",
-      }}
-    >
+    <div ref={cardRef} onMouseEnter={() => onHover(id)} onMouseLeave={() => onHover(null)} onClick={() => onToggle(id)}
+      style={{ borderRadius: 18, border: `1px solid ${emphasized ? imp.color + "AA" : "rgba(255,255,255,0.09)"}`, background: "linear-gradient(180deg, rgba(255,255,255,0.055), rgba(255,255,255,0.02))", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", boxShadow: emphasized ? `0 10px 40px -14px ${imp.glow}, inset 0 0 0 1px ${imp.soft}` : "0 10px 30px -20px rgba(0,0,0,0.8)", padding: 16, cursor: "pointer", transition: "border-color .2s, box-shadow .2s, transform .2s", transform: emphasized ? "translateY(-1px)" : "none" }}>
       <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-        <span style={{
-          flexShrink: 0, display: "flex", height: 40, width: 40, alignItems: "center", justifyContent: "center",
-          borderRadius: 12, background: imp.soft, border: `1px solid ${imp.color}55`,
-          boxShadow: `0 0 14px -2px ${imp.glow}`,
-        }}>
-          <Icon size={20} color={imp.color} />
-        </span>
-
+        <span style={{ flexShrink: 0, display: "flex", height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 12, background: imp.soft, border: `1px solid ${imp.color}55`, boxShadow: `0 0 14px -2px ${imp.glow}` }}><Icon size={20} color={imp.color} /></span>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-            <h3 style={{ margin: 0, fontSize: 15.5, fontWeight: 600, color: "#EAF1FB", letterSpacing: "-0.01em" }}>
-              {sys.name}
-            </h3>
-            <span style={{
-              flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5,
-              borderRadius: 999, padding: "3px 9px", fontSize: 11, fontWeight: 600,
-              color: imp.color, background: imp.soft, border: `1px solid ${imp.color}55`,
-            }}>
-              <span style={{ height: 6, width: 6, borderRadius: 999, background: imp.color, boxShadow: `0 0 6px ${imp.color}` }} />
-              {imp.label}
-            </span>
+            <h3 style={{ margin: 0, fontSize: 15.5, fontWeight: 600, color: "#EAF1FB", letterSpacing: "-0.01em" }}>{sys.name}</h3>
+            <span style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5, borderRadius: 999, padding: "3px 9px", fontSize: 11, fontWeight: 600, color: imp.color, background: imp.soft, border: `1px solid ${imp.color}55` }}><span style={{ height: 6, width: 6, borderRadius: 999, background: imp.color, boxShadow: `0 0 6px ${imp.color}` }} />{imp.label}</span>
           </div>
-
-          <ul style={{ margin: "9px 0 0", padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 4 }}>
-            {entry.effects.map((e, i) => (
+          <ul style={{ margin: "10px 0 0", padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 9 }}>
+            {data.effects.map((e, i) => (
               <li key={i} style={{ display: "flex", gap: 8, fontSize: 13, lineHeight: 1.45, color: "#A9B6CA" }}>
                 <span style={{ marginTop: 7, height: 4, width: 4, borderRadius: 999, background: imp.color, flexShrink: 0, opacity: 0.85 }} />
-                {e}
+                <span>{e.text}{multi && <span style={{ display: "inline-flex", flexWrap: "wrap", gap: 4, marginLeft: 6 }}>{e.drugs.map(d => <span key={d} style={{ borderRadius: 5, background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", padding: "0 6px", fontSize: 10.5, color: "#90A2BA" }}>{DRUGS[d]?.name || d}</span>)}</span>}</span>
               </li>
             ))}
           </ul>
-
-          {/* frequency meter */}
           <div style={{ marginTop: 11, display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 10.5, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6F7C92", fontWeight: 600 }}>
-              Frequency
-            </span>
-            <span style={{ display: "inline-flex", gap: 3 }}>
-              {[0, 1, 2].map(i => (
-                <span key={i} style={{
-                  height: 6, width: 6, borderRadius: 999,
-                  background: i < dots ? imp.color : "rgba(255,255,255,0.14)",
-                  boxShadow: i < dots ? `0 0 6px ${imp.color}` : "none",
-                }} />
-              ))}
-            </span>
-            <span style={{ fontSize: 12, color: "#90A0B6" }}>{entry.freq}</span>
-            <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 3, fontSize: 11.5, color: "#7E8CA3" }}>
-              {expanded ? "Less" : "Details"}
-              <ChevronDown size={13} style={{ transition: "transform .2s", transform: expanded ? "rotate(180deg)" : "none" }} />
-            </span>
+            <span style={{ fontSize: 10.5, letterSpacing: "0.06em", textTransform: "uppercase", color: "#6F7C92", fontWeight: 600 }}>{data.drugs.length === 1 ? "From 1 item" : `From ${data.drugs.length} items`}</span>
+            <span style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 3, fontSize: 11.5, color: "#7E8CA3" }}>{expanded ? "Less" : "Details"}<ChevronDown size={13} style={{ transition: "transform .2s", transform: expanded ? "rotate(180deg)" : "none" }} /></span>
           </div>
-
-          {/* expanded clinical detail */}
           {expanded && (
             <div style={{ marginTop: 12, borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 12, display: "grid", gap: 10 }}>
-              <Detail label="Why this system is affected" value={entry.why} />
-              <Detail label="Monitoring" value={entry.monitor} />
-              <Detail label="Related interactions" value={entry.inter} />
+              <Detail label="Why this system is affected" value={data.why} />
+              <Detail label="Monitoring / what to discuss" value={data.monitor} />
+              {labs && labs.length > 0 && <Detail label="Related lab tests" value={labs.join(" · ")} />}
             </div>
           )}
         </div>
@@ -1077,7 +1521,6 @@ function SystemCard({ id, entry, cardRef, expanded, emphasized, onToggle, onHove
     </div>
   );
 }
-
 function Detail({ label, value }) {
   return (
     <div>
@@ -1087,348 +1530,3324 @@ function Detail({ label, value }) {
   );
 }
 
-// ---- Main ------------------------------------------------------------------
-function BodyImpactMap() {
-  const [medKey, setMedKey] = useState("amiodarone");
+// ---- Body Impact Map -------------------------------------------------------
+function BodyImpactMap({ baseSel, go }) {
+  const [sel, setSel] = useState(baseSel);
+  const [q, setQ] = useState("");
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(0);
   const [expanded, setExpanded] = useState(null);
   const [hovered, setHovered] = useState(null);
   const [lines, setLines] = useState([]);
   const [stacked, setStacked] = useState(false);
+  const rowRef = useRef(null), boxRef = useRef(null), anchorRefs = useRef({}), cardRefs = useRef({});
 
-  const rowRef = useRef(null);
-  const anchorRefs = useRef({});
-  const cardRefs = useRef({});
+  useEffect(() => { setSel(prev => uniq([...baseSel, ...prev])); }, [baseSel]);
+  useEffect(() => { const onDoc = e => { if (boxRef.current && !boxRef.current.contains(e.target)) setOpen(false); }; document.addEventListener("mousedown", onDoc); return () => document.removeEventListener("mousedown", onDoc); }, []);
 
-  const med = MEDS[medKey];
-
-  // active systems sorted by vertical body position (nicer connectors)
-  const active = useMemo(() => {
-    return Object.entries(med.map)
-      .map(([id, entry]) => ({ id, entry }))
-      .sort((a, b) => SYS[a.id].pos.y - SYS[b.id].pos.y);
-  }, [med]);
-
-  const activeMap = useMemo(() => med.map, [med]);
+  const matches = useMemo(() => { const t = q.trim().toLowerCase(); if (!t) return []; return Object.keys(DRUGS).filter(k => !sel.includes(k) && (DRUGS[k].name.toLowerCase().includes(t) || k.includes(t) || (DRUGS[k].aliases || []).some(a => a.includes(t)))).slice(0, 8); }, [q, sel]);
+  const impactMap = useMemo(() => deriveBodyImpacts(sel), [sel]);
+  const activeList = useMemo(() => Object.keys(impactMap).map(id => ({ id, data: impactMap[id] })).sort((a, b) => SYS[a.id].pos.y - SYS[b.id].pos.y), [impactMap]);
   const emphasized = expanded || hovered;
+  const multi = sel.length > 1;
+  const counts = useMemo(() => { const c = {}; activeList.forEach(({ data }) => { c[data.sev] = (c[data.sev] || 0) + 1; }); return c; }, [activeList]);
 
-  // legend counts
-  const counts = useMemo(() => {
-    const c = {};
-    active.forEach(({ entry }) => { c[entry.sev] = (c[entry.sev] || 0) + 1; });
-    return c;
-  }, [active]);
+  const addDrug = k => { setSel(p => [...p, k]); setQ(""); setOpen(false); setActive(0); };
+  const removeDrug = k => setSel(p => p.filter(x => x !== k));
+  const onKey = e => { if (!open || !matches.length) return; if (e.key === "ArrowDown") { e.preventDefault(); setActive(a => Math.min(a + 1, matches.length - 1)); } else if (e.key === "ArrowUp") { e.preventDefault(); setActive(a => Math.max(a - 1, 0)); } else if (e.key === "Enter") { e.preventDefault(); addDrug(matches[active]); } else if (e.key === "Escape") setOpen(false); };
 
   const recompute = useCallback(() => {
-    const cont = rowRef.current;
-    if (!cont) return;
-    const cb = cont.getBoundingClientRect();
-    setStacked(cb.width < BP);
+    const cont = rowRef.current; if (!cont) return;
+    const cb = cont.getBoundingClientRect(); setStacked(cb.width < BP);
     if (cb.width < BP) { setLines([]); return; }
     const next = [];
-    for (const { id, entry } of active) {
-      const a = anchorRefs.current[id];
-      const c = cardRefs.current[id];
-      if (!a || !c) continue;
-      const ab = a.getBoundingClientRect();
-      const cr = c.getBoundingClientRect();
-      const x1 = ab.left + ab.width / 2 - cb.left;
-      const y1 = ab.top + ab.height / 2 - cb.top;
-      const x2 = cr.left - cb.left;
-      const y2 = cr.top + cr.height / 2 - cb.top;
-      next.push({ id, x1, y1, x2, y2, color: IMPACT[entry.sev].color });
-    }
+    for (const { id, data } of activeList) { const a = anchorRefs.current[id], c = cardRefs.current[id]; if (!a || !c) continue; const ab = a.getBoundingClientRect(), cr = c.getBoundingClientRect(); next.push({ id, x1: ab.left + ab.width / 2 - cb.left, y1: ab.top + ab.height / 2 - cb.top, x2: cr.left - cb.left, y2: cr.top + cr.height / 2 - cb.top, color: IMPACT[data.sev].color }); }
     setLines(next);
-  }, [active]);
-
-  useLayoutEffect(() => { recompute(); }, [recompute, expanded, medKey]);
-  useEffect(() => {
-    const id = requestAnimationFrame(recompute);
-    return () => cancelAnimationFrame(id);
-  }, [recompute, expanded]);
-  useEffect(() => {
-    const cont = rowRef.current;
-    if (!cont || typeof ResizeObserver === "undefined") return;
-    const ro = new ResizeObserver(() => recompute());
-    ro.observe(cont);
-    window.addEventListener("resize", recompute);
-    return () => { ro.disconnect(); window.removeEventListener("resize", recompute); };
-  }, [recompute]);
+  }, [activeList]);
+  useLayoutEffect(() => { recompute(); }, [recompute, expanded, sel]);
+  useEffect(() => { const r = requestAnimationFrame(recompute); return () => cancelAnimationFrame(r); }, [recompute, expanded]);
+  useEffect(() => { const cont = rowRef.current; if (!cont || typeof ResizeObserver === "undefined") return; const ro = new ResizeObserver(() => recompute()); ro.observe(cont); window.addEventListener("resize", recompute); return () => { ro.disconnect(); window.removeEventListener("resize", recompute); }; }, [recompute]);
 
   const pickFromBody = id => setExpanded(p => (p === id ? null : id));
   const toggleCard = id => setExpanded(p => (p === id ? null : id));
 
   return (
     <div style={{ maxWidth: 1160 }}>
-      <PageHead
-        title="Body Impact Map"
-        italic="“Where does each medicine make itself felt?”"
-        sub="Pick a medication and see which organs and body systems it may affect — grouped, color-coded, and explained."
-      />
-    <div style={{
-      borderRadius: 22, overflow: "hidden", border: "1px solid rgba(43,35,28,0.10)",
-      boxShadow: "0 22px 55px -30px rgba(43,35,28,0.45)",
-      background:
-        "radial-gradient(900px 480px at 18% 0%, rgba(37,99,235,0.16), transparent 60%)," +
-        "radial-gradient(760px 520px at 92% 12%, rgba(56,189,248,0.10), transparent 60%)," +
-        "#0B1220",
-      color: "#E6EDF7",
-      fontFamily: "'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
-    }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        @keyframes organPulse { 0%,100% { opacity: .9 } 50% { opacity: .62 } }
-        .organ-live { animation: organPulse 3.4s ease-in-out infinite; }
-        .med-pill:hover { border-color: rgba(120,170,255,0.5) !important; color:#E6EDF7 !important; }
-        .conn-dim { transition: opacity .2s; }
-        @media (prefers-reduced-motion: reduce) {
-          .organ-live { animation: none !important; }
-        }
-      `}</style>
+      <Journey page="bodymap" go={go} />
+      <PageHead title="Body Impact Map" italic={"\u201cWhere does each thing you take make itself felt?\u201d"} sub="Your medication profile is loaded automatically. Add alcohol, grapefruit, or a supplement to see the combined effect; tap any organ for details and related lab tests." />
+      <div style={{ borderRadius: 22, overflow: "hidden", border: "1px solid rgba(43,35,28,0.10)", boxShadow: "0 22px 55px -30px rgba(43,35,28,0.45)", background: "radial-gradient(900px 480px at 18% 0%, rgba(37,99,235,0.16), transparent 60%),radial-gradient(760px 520px at 92% 12%, rgba(56,189,248,0.10), transparent 60%),#0B1220", color: "#E6EDF7", fontFamily: "'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" }}>
+        <style>{`@keyframes organPulse{0%,100%{opacity:.9}50%{opacity:.62}} .organ-live{animation:organPulse 3.4s ease-in-out infinite} .conn-dim{transition:opacity .2s} .bm-input::placeholder{color:#67748C} .bm-input:focus{border-color:rgba(120,170,255,0.7)!important;box-shadow:0 0 0 3px rgba(59,130,246,0.18)} .bm-row:hover{background:rgba(255,255,255,0.06)} @media (prefers-reduced-motion:reduce){.organ-live{animation:none!important}}`}</style>
+        <div style={{ maxWidth: 1180, margin: "0 auto", padding: "32px 28px 52px" }}>
+          <div ref={boxRef} style={{ position: "relative", maxWidth: 560 }}>
+            <label style={{ display: "block", fontSize: 11, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: "#6F7C92", marginBottom: 9 }}>Add to the map</label>
+            <div style={{ position: "relative" }}>
+              <Search size={17} color="#67748C" style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)" }} />
+              <input className="bm-input" value={q} onChange={e => { setQ(e.target.value); setOpen(true); setActive(0); }} onFocus={() => setOpen(true)} onKeyDown={onKey} placeholder={"Add a medicine, alcohol, grapefruit, a supplement\u2026"} aria-label="Search what you take" style={{ width: "100%", boxSizing: "border-box", borderRadius: 12, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.04)", padding: "13px 14px 13px 42px", fontSize: 15, color: "#E6EDF7", outline: "none", transition: "border-color .15s, box-shadow .15s" }} />
+              {open && matches.length > 0 && (
+                <ul style={{ listStyle: "none", margin: "8px 0 0", padding: 0, position: "absolute", zIndex: 20, width: "100%", overflow: "hidden", borderRadius: 12, border: "1px solid rgba(255,255,255,0.12)", background: "#0F1A2E", boxShadow: "0 18px 40px -18px rgba(0,0,0,0.8)" }}>
+                  {matches.map((k, i) => (<li key={k}><button className="bm-row" onMouseEnter={() => setActive(i)} onClick={() => addDrug(k)} style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between", padding: "11px 16px", textAlign: "left", border: "none", cursor: "pointer", background: i === active ? "rgba(255,255,255,0.06)" : "transparent" }}><span style={{ fontSize: 14.5, color: "#E6EDF7" }}>{DRUGS[k].name}</span><span style={{ fontSize: 12, color: "#6F7C92" }}>{DRUGS[k].cls}</span></button></li>))}
+                </ul>
+              )}
+            </div>
+            {sel.length > 0 && (
+              <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+                {sel.map(k => (<span key={k} style={{ display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 999, border: "1px solid rgba(255,255,255,0.14)", background: "rgba(255,255,255,0.05)", padding: "5px 6px 5px 13px", fontSize: 13.5, color: "#E0E8F3" }}>{DRUGS[k]?.name || k}<button onClick={() => removeDrug(k)} aria-label="Remove" style={{ display: "flex", height: 20, width: 20, alignItems: "center", justifyContent: "center", borderRadius: 999, border: "none", background: "transparent", cursor: "pointer" }}><X size={13} color="#9DAAC0" /></button></span>))}
+                <button onClick={() => setSel(baseSel)} style={{ fontSize: 12.5, color: "#8FA0B8", background: "none", border: "none", cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 2, marginLeft: 4 }}>reset to my list</button>
+              </div>
+            )}
+          </div>
 
-      <div style={{ maxWidth: 1180, margin: "0 auto", padding: "40px 28px 56px" }}>
-
-        {/* Medication selector */}
-        <div style={{ marginTop: 22, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
-          <span style={{ fontSize: 11, letterSpacing: "0.12em", textTransform: "uppercase", color: "#6F7C92", fontWeight: 600, marginRight: 4 }}>
-            Medication
-          </span>
-          {Object.entries(MEDS).map(([k, m]) => {
-            const on = k === medKey;
-            return (
-              <button
-                key={k}
-                className="med-pill"
-                onClick={() => { setMedKey(k); setExpanded(null); }}
-                style={{
-                  borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer",
-                  border: `1px solid ${on ? "rgba(120,170,255,0.7)" : "rgba(255,255,255,0.1)"}`,
-                  background: on ? "linear-gradient(180deg, rgba(59,130,246,0.32), rgba(59,130,246,0.16))" : "rgba(255,255,255,0.03)",
-                  color: on ? "#EAF1FB" : "#9DAAC0",
-                  boxShadow: on ? "0 0 22px -6px rgba(59,130,246,0.6)" : "none",
-                  transition: "all .18s",
-                }}
-              >
-                {m.name}
-                <span style={{ marginLeft: 7, fontWeight: 500, fontSize: 11.5, color: on ? "#A9C4F2" : "#6F7C92" }}>{m.cls}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Legend */}
-        <div style={{ marginTop: 16, display: "flex", flexWrap: "wrap", gap: 16 }}>
-          {Object.entries(IMPACT).map(([k, v]) => (
-            <span key={k} style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, color: "#9DAAC0" }}>
-              <span style={{ height: 10, width: 10, borderRadius: 999, background: v.color, boxShadow: `0 0 9px ${v.color}` }} />
-              {v.label}{counts[k] ? <span style={{ color: "#6F7C92" }}> · {counts[k]}</span> : null}
-            </span>
-          ))}
-        </div>
-
-        {/* Body + cards row */}
-        <div
-          ref={rowRef}
-          style={{
-            position: "relative",
-            marginTop: 26,
-            display: "grid",
-            gridTemplateColumns: stacked ? "1fr" : "minmax(300px, 420px) 1fr",
-            gap: stacked ? 24 : 36,
-            alignItems: "start",
-          }}
-        >
-          {/* Connector overlay */}
-          {!stacked && (
-            <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 2, overflow: "visible" }}>
-              {lines.map(l => {
-                const dim = emphasized && emphasized !== l.id;
-                const hot = emphasized === l.id;
-                const mx = (l.x1 + l.x2) / 2;
-                return (
-                  <g key={l.id} className="conn-dim" style={{ opacity: dim ? 0.22 : 1 }}>
-                    <path
-                      d={`M ${l.x1} ${l.y1} C ${mx} ${l.y1}, ${mx} ${l.y2}, ${l.x2} ${l.y2}`}
-                      fill="none"
-                      stroke={l.color}
-                      strokeWidth={hot ? 2 : 1.3}
-                      strokeOpacity={hot ? 0.95 : 0.55}
-                      style={{ filter: hot ? `drop-shadow(0 0 5px ${l.color})` : "none" }}
-                    />
-                    <circle cx={l.x1} cy={l.y1} r={hot ? 4 : 3} fill={l.color} />
-                    <circle cx={l.x2} cy={l.y2} r={hot ? 4 : 3} fill={l.color} />
-                  </g>
-                );
-              })}
-            </svg>
+          {sel.length === 0 ? (
+            <div style={{ marginTop: 28, borderRadius: 16, border: "1px dashed rgba(255,255,255,0.14)", background: "rgba(255,255,255,0.02)", padding: "44px 24px", textAlign: "center" }}>
+              <Plus size={26} color="#5C6779" style={{ display: "block", margin: "0 auto" }} />
+              <p style={{ marginTop: 10, fontSize: 14.5, color: "#9DAAC0" }}>Add medicines on the My Medications page, or search above to explore.</p>
+            </div>
+          ) : (
+            <>
+              <div style={{ marginTop: 20, display: "flex", flexWrap: "wrap", gap: 16 }}>
+                {Object.entries(IMPACT).map(([k, v]) => (<span key={k} style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 12.5, color: "#9DAAC0" }}><span style={{ height: 10, width: 10, borderRadius: 999, background: v.color, boxShadow: `0 0 9px ${v.color}` }} />{v.label}{counts[k] ? <span style={{ color: "#6F7C92" }}> {"\u00b7"} {counts[k]}</span> : null}</span>))}
+              </div>
+              <div ref={rowRef} style={{ position: "relative", marginTop: 24, display: "grid", gridTemplateColumns: stacked ? "1fr" : "minmax(300px, 420px) 1fr", gap: stacked ? 24 : 36, alignItems: "start" }}>
+                {!stacked && (
+                  <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 2, overflow: "visible" }}>
+                    {lines.map(l => { const dim = emphasized && emphasized !== l.id; const hot = emphasized === l.id; const mx = (l.x1 + l.x2) / 2; return (<g key={l.id} className="conn-dim" style={{ opacity: dim ? 0.22 : 1 }}><path d={`M ${l.x1} ${l.y1} C ${mx} ${l.y1}, ${mx} ${l.y2}, ${l.x2} ${l.y2}`} fill="none" stroke={l.color} strokeWidth={hot ? 2 : 1.3} strokeOpacity={hot ? 0.95 : 0.55} style={{ filter: hot ? `drop-shadow(0 0 5px ${l.color})` : "none" }} /><circle cx={l.x1} cy={l.y1} r={hot ? 4 : 3} fill={l.color} /><circle cx={l.x2} cy={l.y2} r={hot ? 4 : 3} fill={l.color} /></g>); })}
+                  </svg>
+                )}
+                <div style={{ position: stacked ? "static" : "sticky", top: 20, height: stacked ? 520 : 640, borderRadius: 22, border: "1px solid rgba(255,255,255,0.07)", background: "linear-gradient(180deg, rgba(20,34,58,0.5), rgba(11,18,32,0.2))", boxShadow: "inset 0 0 60px -20px rgba(56,120,210,0.25)", padding: "18px 8px", zIndex: 1 }}>
+                  <BodySilhouette activeMap={impactMap} emphasized={emphasized} onPick={pickFromBody} anchorRefs={anchorRefs} />
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 14, position: "relative", zIndex: 1 }}>
+                  {activeList.map(({ id, data }) => (<SystemCard key={id} id={id} data={data} labs={LABS[id]} multi={multi} cardRef={el => { if (el) cardRefs.current[id] = el; }} expanded={expanded === id} emphasized={emphasized === id} onToggle={toggleCard} onHover={setHovered} />))}
+                </div>
+              </div>
+            </>
           )}
 
-          {/* Body panel */}
-          <div style={{
-            position: stacked ? "static" : "sticky", top: 20,
-            height: stacked ? 520 : 640,
-            borderRadius: 22,
-            border: "1px solid rgba(255,255,255,0.07)",
-            background: "linear-gradient(180deg, rgba(20,34,58,0.5), rgba(11,18,32,0.2))",
-            boxShadow: "inset 0 0 60px -20px rgba(56,120,210,0.25)",
-            padding: "18px 8px",
-            zIndex: 1,
-          }}>
-            <BodySilhouette
-              activeMap={activeMap}
-              emphasized={emphasized}
-              onPick={pickFromBody}
-              anchorRefs={anchorRefs}
-            />
-          </div>
-
-          {/* Cards */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 14, position: "relative", zIndex: 1 }}>
-            {active.map(({ id, entry }) => (
-              <SystemCard
-                key={id}
-                id={id}
-                entry={entry}
-                cardRef={el => { if (el) cardRefs.current[id] = el; }}
-                expanded={expanded === id}
-                emphasized={emphasized === id}
-                onToggle={toggleCard}
-                onHover={setHovered}
-              />
-            ))}
+          <div style={{ marginTop: 28, display: "flex", flexWrap: "wrap", gap: 10 }}><button onClick={() => go("food")} style={primaryBtn}>Continue to Food Interactions <ArrowRight size={16} /></button></div>
+          <div style={{ marginTop: 22, display: "flex", gap: 14, alignItems: "flex-start", borderRadius: 18, border: "1px solid rgba(16,185,129,0.28)", background: "linear-gradient(180deg, rgba(16,185,129,0.10), rgba(16,185,129,0.03))", padding: "16px 18px" }}>
+            <span style={{ flexShrink: 0, display: "flex", height: 38, width: 38, alignItems: "center", justifyContent: "center", borderRadius: 11, background: "rgba(16,185,129,0.16)", border: "1px solid rgba(16,185,129,0.4)" }}><ShieldCheck size={20} color="#34D399" /></span>
+            <div><p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#D7F5E8" }}>Educational information only</p><p style={{ margin: "3px 0 0", fontSize: 13, lineHeight: 1.55, color: "#9FC8B7" }}>A general model of well-known organ effects — not exhaustive or personalized. Always consult your healthcare provider.</p></div>
           </div>
         </div>
-
-        {/* Disclaimer banner */}
-        <div style={{
-          marginTop: 30, display: "flex", gap: 14, alignItems: "flex-start",
-          borderRadius: 18,
-          border: "1px solid rgba(16,185,129,0.28)",
-          background: "linear-gradient(180deg, rgba(16,185,129,0.10), rgba(16,185,129,0.03))",
-          padding: "16px 18px",
-        }}>
-          <span style={{
-            flexShrink: 0, display: "flex", height: 38, width: 38, alignItems: "center", justifyContent: "center",
-            borderRadius: 11, background: "rgba(16,185,129,0.16)", border: "1px solid rgba(16,185,129,0.4)",
-          }}>
-            <ShieldCheck size={20} color="#34D399" />
-          </span>
-          <div>
-            <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#D7F5E8" }}>Educational information only</p>
-            <p style={{ margin: "3px 0 0", fontSize: 13, lineHeight: 1.55, color: "#9FC8B7" }}>
-              This does not replace medical advice and can't see your full health picture. Always consult
-              your healthcare provider about your medications and any risks before making changes.
-            </p>
-          </div>
-        </div>
-
-        <p style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 7, fontSize: 11.5, color: "#5C6779" }}>
-          <Info size={13} /> Demonstration dataset of well-known effects — not exhaustive or personalized.
-        </p>
       </div>
-    </div>
     </div>
   );
 }
+
+// ---- Dashboard -------------------------------------------------------------
+const TOOLS = [["meds", "Add Medication", Pill, "#5E5276"], ["pillid", "Pill Identifier", ScanLine, "#6B6256"], ["findmed", "Find My Medication", MapPin, "#1FA6A6"], ["interactions", "Check Interactions", Activity, "#B5532E"], ["painsafe", "Pain-Reliever Safety", ShieldCheck, "#9A1F4B"], ["bodymap", "Body Impact Map", PersonStanding, "#3F6E8C"], ["food", "Food Interactions", Apple, "#9A5A1E"], ["schedule", "Schedule Builder", CalendarClock, "#3E7A6E"], ["symptom", "Symptom Checker", Stethoscope, "#8E3A52"]];
+
+function Dashboard({ meds, symptoms, findings, score, go }) {
+  const band = SCOREBAND(score);
+  const keys = uniq(meds.map(m => m.key).filter(Boolean));
+  const slotMeds = SLOTS.map(s => ({ slot: s, items: meds.filter(m => medSlots(m).includes(s)) }));
+  const recent = symptoms.slice(-2).reverse();
+  return (
+    <div style={{ maxWidth: 980 }}>
+      <div className="hero">
+        <div>
+          <p style={{ ...eyebrow, letterSpacing: "0.22em", color: C.terraDeep, margin: 0 }}>Medication safety, explained — not prescribed</p>
+          <h1 style={{ fontFamily: serifH, fontWeight: 700, color: C.ink, fontSize: "clamp(30px, 4.5vw, 44px)", letterSpacing: "-0.02em", margin: "12px 0 0", lineHeight: 1.08 }}>Welcome to What's Safe Together?</h1>
+          <p style={{ fontFamily: serifH, fontStyle: "italic", color: C.terraDeep, fontSize: "clamp(17px,2.6vw,22px)", margin: "16px 0 0", maxWidth: 500, lineHeight: 1.35 }}>{"\u201cYour medicines are in conversation \u2014 let's read it back together.\u201d"}</p>
+          <div style={{ display: "flex", gap: 10, marginTop: 18, flexWrap: "wrap" }}>
+            <button onClick={() => go("meds")} style={primaryBtn}>Add My Medications</button>
+            <button onClick={() => go("interactions")} style={ghostBtn}>Check Interactions</button>
+          </div>
+        </div>
+        <figure className="hero-figure" style={{ borderRadius: 18, overflow: "hidden", border: `6px solid ${C.surface}`, boxShadow: "0 26px 52px -28px rgba(43,35,28,0.5)" }}>
+          <img src={HERO_IMG} alt="An older woman and her pharmacist talking with each other" style={{ display: "block", width: "100%", height: "100%", objectFit: "cover" }} />
+        </figure>
+      </div>
+
+      {/* Emergency quick-access — large, reachable in a hurry */}
+      <div style={{ marginTop: 22, display: "grid", gridTemplateColumns: "1.4fr 1fr 1fr", gap: 12 }} className="emerg-grid">
+        <button onClick={() => go("emergency")} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, border: "none", cursor: "pointer", borderRadius: 16, padding: "22px 18px", background: "linear-gradient(180deg,#8A160F,#5E0F0B)", color: "#fff", boxShadow: "0 16px 36px -18px rgba(94,15,11,0.65)" }}>
+          <Siren size={30} color="#fff" />
+          <span style={{ textAlign: "left" }}><span style={{ display: "block", fontFamily: serifH, fontSize: 22, fontWeight: 700, lineHeight: 1.1 }}>Emergency</span><span style={{ fontSize: 12.5, color: "#FBE2DE" }}>Warning signs & help near me</span></span>
+        </button>
+        <button onClick={() => go("meds")} style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 7, border: `1.5px solid ${C.line}`, cursor: "pointer", borderRadius: 16, padding: "18px 12px", background: "#fff", color: C.ink }}>
+          <Pill size={26} color={C.terra} />
+          <span style={{ fontFamily: serifH, fontSize: 16, fontWeight: 600, lineHeight: 1.1, textAlign: "center" }}>My Drug List</span>
+          <span style={{ fontSize: 11.5, color: C.inkFaint }}>{meds.length} medicine{meds.length === 1 ? "" : "s"}</span>
+        </button>
+        <button onClick={() => go("summary")} style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 7, border: `1.5px solid ${C.line}`, cursor: "pointer", borderRadius: 16, padding: "18px 12px", background: "#fff", color: C.ink }}>
+          <FileText size={26} color={C.terra} />
+          <span style={{ fontFamily: serifH, fontSize: 16, fontWeight: 600, lineHeight: 1.1, textAlign: "center" }}>My Notes & Summary</span>
+          <span style={{ fontSize: 11.5, color: C.inkFaint }}>Show to responders</span>
+        </button>
+      </div>
+
+      {/* Self-Management Guide — easy to find on the landing page */}
+      <button onClick={() => go("guide")} style={{ width: "100%", marginTop: 14, display: "flex", alignItems: "center", gap: 15, textAlign: "left", cursor: "pointer", border: "none", borderRadius: 18, padding: "18px 20px", background: "linear-gradient(120deg,#0E3A36,#1F5B54)", color: "#EAF3F1", boxShadow: "0 18px 40px -22px rgba(14,58,54,0.7)" }}>
+        <span style={{ height: 48, width: 48, borderRadius: 13, background: "rgba(255,255,255,0.14)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><HeartPulse size={26} color="#fff" /></span>
+        <span style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ display: "block", fontFamily: serifH, fontSize: 20, fontWeight: 700, color: "#fff", lineHeight: 1.1 }}>Self-Management Guide</span>
+          <span style={{ display: "block", fontSize: 13, color: "#C7DED9", marginTop: 3 }}>Living with diabetes, high blood pressure, heart, COPD, arthritis, kidney, mood, Parkinson's & more — plain-language plans, trackers & checklists.</span>
+        </span>
+        <ArrowRight size={20} color="#fff" style={{ flexShrink: 0 }} />
+      </button>
+
+      {meds.length === 0 ? (
+        <div style={{ marginTop: 28, borderRadius: 18, border: `1px solid ${C.line}`, background: "linear-gradient(180deg,#F8EFE1,#F4ECDD)", padding: 22 }}>
+          <h2 style={{ fontFamily: serifH, fontSize: 20, fontWeight: 600, color: C.ink, margin: 0 }}>Get started</h2>
+          <p style={{ fontSize: 14, color: C.inkSoft, margin: "6px 0 16px", lineHeight: 1.5 }}>Add your medicines to unlock interaction checks, your body impact map, food guidance, and a personalized schedule.</p>
+          <button onClick={() => go("meds")} style={primaryBtn}>Add My Medications <ArrowRight size={16} /></button>
+        </div>
+      ) : (
+        <div style={{ marginTop: 26, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 14 }}>
+          <div style={card}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}><Clock size={16} color={C.terra} /><h3 style={{ margin: 0, fontFamily: serifH, fontSize: 16, color: C.ink }}>Today's schedule</h3></div>
+            {slotMeds.filter(s => s.items.length).map(s => { const I = SLOT_ICON[s.slot]; return (<div key={s.slot} style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 6 }}><I size={14} color={C.inkSoft} style={{ marginTop: 2 }} /><span style={{ fontSize: 13, color: C.inkSoft }}><strong style={{ color: C.ink }}>{s.slot}:</strong> {s.items.map(m => m.name).join(", ")}</span></div>); })}
+            {!slotMeds.some(s => s.items.length) && <p style={{ fontSize: 13, color: C.inkFaint, margin: 0 }}>No doses scheduled yet.</p>}
+          </div>
+          <div style={card}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}><AlertTriangle size={16} color={C.terra} /><h3 style={{ margin: 0, fontFamily: serifH, fontSize: 16, color: C.ink }}>Active alerts</h3></div>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginBottom: 10 }}><span style={{ fontSize: 22, fontWeight: 700, color: band.color }}>{score}</span><span style={{ fontSize: 12, color: C.inkSoft }}>/100 · {band.label}</span></div>
+            {findings.slice(0, 2).map(f => <p key={f.key} style={{ fontSize: 12.5, color: C.inkSoft, margin: "0 0 5px", lineHeight: 1.4 }}>• {f.title}</p>)}
+            {findings.length === 0 && <p style={{ fontSize: 13, color: C.inkFaint, margin: 0 }}>No interactions flagged.</p>}
+            <button onClick={() => go("interactions")} style={{ ...ghostBtn, marginTop: 8, padding: "7px 12px", fontSize: 12.5 }}>Open checker <ArrowRight size={14} /></button>
+          </div>
+          <div style={card}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}><ClipboardList size={16} color={C.terra} /><h3 style={{ margin: 0, fontFamily: serifH, fontSize: 16, color: C.ink }}>Recent check-ins</h3></div>
+            {recent.length ? recent.map(s => <p key={s.id} style={{ fontSize: 12.5, color: C.inkSoft, margin: "0 0 5px" }}>• {s.date} — <span style={{ color: BAND[s.eval.band], fontWeight: 600 }}>{s.eval.action}</span></p>) : <p style={{ fontSize: 13, color: C.inkFaint, margin: 0 }}>No check-ins yet.</p>}
+            <button onClick={() => go("symptom")} style={{ ...ghostBtn, marginTop: 8, padding: "7px 12px", fontSize: 12.5 }}>Check in <ArrowRight size={14} /></button>
+          </div>
+        </div>
+      )}
+
+      {meds.length > 0 && (
+        <div style={{ marginTop: 18, borderRadius: 14, border: `1px solid ${C.line}`, background: C.surface, padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 13.5, color: C.inkSoft, display: "inline-flex", alignItems: "center", gap: 8 }}><FileText size={16} color={C.terra} />Heading to the pharmacy or a checkup? Take a summary with you.</span>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button onClick={() => printSummary(meds, keys, findings, score, symptoms)} style={{ ...primaryBtn, padding: "8px 14px", fontSize: 13 }}><Printer size={15} /> Print / Save PDF</button>
+            <button onClick={() => downloadText("medication-summary.txt", summaryToText(meds, keys, findings, score, symptoms))} style={{ ...ghostBtn, padding: "8px 14px", fontSize: 13 }}><Download size={15} /> Download</button>
+          </div>
+        </div>
+      )}
+
+      <p style={{ ...eyebrow, marginTop: 30 }}>Quick actions</p>
+      <div style={{ marginTop: 12, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))", gap: 14 }}>
+        {TOOLS.map(([id, title, Icon, accent]) => (
+          <button key={id} onClick={() => go(id)} className="tool-card" style={{ textAlign: "left", borderRadius: 16, border: `1px solid ${C.line}`, background: C.surface, padding: 16, cursor: "pointer", transition: "border-color .18s, transform .18s, box-shadow .18s" }}>
+            <span style={{ display: "flex", height: 38, width: 38, alignItems: "center", justifyContent: "center", borderRadius: 11, background: accent + "1A", border: `1px solid ${accent}33` }}><Icon size={19} color={accent} /></span>
+            <h3 style={{ fontFamily: serifH, fontSize: 16, fontWeight: 600, color: C.ink, margin: "12px 0 0" }}>{title}</h3>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ---- My Medications --------------------------------------------------------
+// ---- Camera scanning: barcode (native) + bottle OCR (Tesseract) ------------
+let _tessPromise = null;
+function loadTesseract() {
+  if (typeof window !== "undefined" && window.Tesseract) return Promise.resolve(window.Tesseract);
+  if (_tessPromise) return _tessPromise;
+  _tessPromise = new Promise((res, rej) => {
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"; s.async = true;
+    s.onload = () => res(window.Tesseract); s.onerror = () => rej(new Error("ocr"));
+    document.head.appendChild(s);
+  });
+  return _tessPromise;
+}
+async function lookupNdc(code) {
+  const digits = String(code).replace(/\D/g, "");
+  const cands = [digits, digits.slice(1, 11), digits.slice(0, 11), digits.slice(1, 12)].filter((v, i, a) => v && v.length >= 8 && a.indexOf(v) === i);
+  for (const c of cands) {
+    try {
+      const url = 'https://api.fda.gov/drug/ndc.json?search=packaging.package_ndc:"' + c + '"&limit=1';
+      const r = await fetch(url); if (!r.ok) continue;
+      const d = await r.json(); const hit = d.results && d.results[0];
+      if (hit) return { name: (hit.brand_name || hit.generic_name || "").trim(), generic: hit.generic_name, brand: hit.brand_name };
+    } catch (e) {}
+  }
+  return null;
+}
+function suggestFromText(text) {
+  const words = String(text).split(/[^A-Za-z]+/).filter(w => w.length >= 4);
+  const cand = new Set();
+  words.forEach((w, i) => { cand.add(w); if (words[i + 1]) cand.add(w + " " + words[i + 1]); });
+  const out = []; const seen = new Set();
+  for (const term of cand) {
+    for (const m of searchDirectory(term, null)) {
+      const k = m.name.toLowerCase();
+      if (!seen.has(k)) { seen.add(k); out.push(m); }
+    }
+    if (out.length >= 8) break;
+  }
+  out.sort((a, b) => (a.src === "curated" ? 0 : 1) - (b.src === "curated" ? 0 : 1));
+  return out.slice(0, 6);
+}
+
+function ScannerModal({ mode, onClose, onPick }) {
+  const videoRef = useRef(null); const streamRef = useRef(null); const loopRef = useRef(null);
+  const [status, setStatus] = useState("starting"); // starting|scanning|busy|result|error|denied|unsupported
+  const [msg, setMsg] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    let dead = false;
+    if (mode === "barcode" && !("BarcodeDetector" in window)) { setStatus("unsupported"); }
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false })
+      .then(stream => {
+        if (dead) { stream.getTracks().forEach(t => t.stop()); return; }
+        streamRef.current = stream;
+        if (videoRef.current) { videoRef.current.srcObject = stream; videoRef.current.play().catch(() => {}); }
+        if (mode === "barcode" && "BarcodeDetector" in window) startBarcode();
+        else if (mode === "barcode") setStatus("unsupported");
+        else setStatus("scanning");
+      })
+      .catch(err => setStatus(err && err.name === "NotAllowedError" ? "denied" : "error"));
+    return () => { dead = true; if (loopRef.current) clearInterval(loopRef.current); if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop()); };
+    // eslint-disable-next-line
+  }, [mode]);
+
+  const startBarcode = () => {
+    setStatus("scanning"); setMsg("Point the camera at the barcode.");
+    let det; try { det = new window.BarcodeDetector({ formats: ["upc_a", "upc_e", "ean_13", "ean_8", "code_128", "code_39", "data_matrix", "qr_code"] }); } catch (e) { setStatus("unsupported"); return; }
+    loopRef.current = setInterval(async () => {
+      if (!videoRef.current || videoRef.current.readyState < 2) return;
+      try {
+        const codes = await det.detect(videoRef.current);
+        if (codes && codes.length) {
+          clearInterval(loopRef.current);
+          const code = codes[0].rawValue;
+          setStatus("busy"); setMsg("Read barcode " + code + " — looking it up…");
+          const hit = await lookupNdc(code);
+          if (hit && hit.name) {
+            const dirMatch = searchDirectory(hit.name, null)[0];
+            setSuggestions(dirMatch ? [dirMatch, { name: hit.name, cls: "from barcode", key: null }] : [{ name: hit.name, cls: "from barcode", key: null }]);
+            setMsg("Found a likely match for barcode " + code + ".");
+          } else { setSuggestions([]); setMsg("Read barcode " + code + ", but couldn't match a product automatically. Try Scan bottle, search, or enter it manually."); }
+          setStatus("result");
+        }
+      } catch (e) {}
+    }, 500);
+  };
+
+  const capture = async () => {
+    if (!videoRef.current) return;
+    setStatus("busy"); setProgress(0); setMsg("Reading the label…");
+    const v = videoRef.current; const c = document.createElement("canvas");
+    c.width = v.videoWidth || 720; c.height = v.videoHeight || 960;
+    c.getContext("2d").drawImage(v, 0, 0, c.width, c.height);
+    try {
+      const T = await loadTesseract();
+      const { data } = await T.recognize(c, "eng", { logger: m => { if (m.status === "recognizing text") setProgress(Math.round(m.progress * 100)); } });
+      const sug = suggestFromText(data.text || "");
+      setSuggestions(sug);
+      setMsg(sug.length ? "Found possible medicines on the label — tap to add." : "Couldn't confidently read a medicine name. Try better light, or search/enter manually.");
+      setStatus("result");
+    } catch (e) { setStatus("error"); setMsg("Couldn't run label reading here. You can search or enter the medicine manually."); }
+  };
+
+  const title = mode === "barcode" ? "Scan barcode" : "Scan bottle";
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 80, background: "rgba(20,15,10,0.72)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{ width: 420, maxWidth: "100%", background: C.surface, borderRadius: 20, overflow: "hidden", boxShadow: "0 30px 70px -30px rgba(0,0,0,0.6)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 16px", borderBottom: `1px solid ${C.line}` }}>
+          <span style={{ fontFamily: serifH, fontSize: 16, color: C.ink }}>{title}</span>
+          <button onClick={onClose} style={{ height: 30, width: 30, borderRadius: 999, border: "none", background: "#E3D8C4", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><X size={15} color={C.ink} /></button>
+        </div>
+
+        <div style={{ position: "relative", background: "#000", aspectRatio: "3/4", maxHeight: 360 }}>
+          <video ref={videoRef} playsInline muted style={{ width: "100%", height: "100%", objectFit: "cover", display: (status === "denied" || status === "error" || status === "unsupported") ? "none" : "block" }} />
+          {mode === "barcode" && (status === "scanning" || status === "starting") && <div style={{ position: "absolute", left: "12%", right: "12%", top: "44%", height: 2, background: "#5FD0A8", boxShadow: "0 0 10px #5FD0A8" }} />}
+          {(status === "denied" || status === "error" || status === "unsupported") && (
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: 22, textAlign: "center" }}>
+              <p style={{ color: "#FBE2DE", fontSize: 13, lineHeight: 1.55 }}>{status === "denied" ? "Camera permission was blocked. Allow camera access in your browser, or enter the medicine manually." : status === "unsupported" ? "Live barcode scanning isn't supported in this browser. Try Scan bottle, or search/enter manually." : "Couldn't start the camera here. On your phone or a supported browser this works; for now, search or enter manually."}</p>
+            </div>
+          )}
+          {status === "busy" && <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.45)", display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ color: "#fff", fontSize: 13 }}>{mode === "bottle" ? "Reading label… " + progress + "%" : "Looking up…"}</span></div>}
+        </div>
+
+        <div style={{ padding: "14px 16px" }}>
+          {msg && <p style={{ margin: "0 0 10px", fontSize: 12.5, color: C.inkSoft, lineHeight: 1.5 }}>{msg}</p>}
+          {status === "scanning" && mode === "bottle" && <button onClick={capture} style={{ ...primaryBtn, width: "100%", justifyContent: "center" }}><ScanLine size={16} /> Capture & read label</button>}
+          {suggestions.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 7, marginTop: 4 }}>
+              {suggestions.map((s, i) => (
+                <button key={i} onClick={() => onPick(s)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, border: `1px solid ${C.line}`, background: "#fff", borderRadius: 11, padding: "10px 12px", cursor: "pointer", textAlign: "left" }}>
+                  <span style={{ fontSize: 14, color: C.ink }}>{s.name}{s.cls ? <span style={{ fontSize: 11.5, color: C.inkFaint }}> · {s.cls}</span> : null}</span>
+                  {s.key ? <span style={{ fontSize: 9.5, fontWeight: 700, color: "#2F8F6B", background: "#2F8F6B15", borderRadius: 999, padding: "1px 6px" }}>ANALYZED</span> : <Plus size={14} color={C.terra} />}
+                </button>
+              ))}
+            </div>
+          )}
+          {(status === "result" || status === "denied" || status === "error" || status === "unsupported") && (
+            <button onClick={() => onPick(null)} style={{ ...ghostBtn, width: "100%", justifyContent: "center", marginTop: 8 }}><Pencil size={14} /> Enter manually instead</button>
+          )}
+          <p style={{ margin: "10px 0 0", fontSize: 10.5, color: C.inkFaint, lineHeight: 1.5 }}>Scanning happens on your device; images aren't uploaded. Always confirm the medicine and strength against the label — scans can misread.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MyMedications({ meds, setMeds, go }) {
+  const [q, setQ] = useState(""); const [open, setOpen] = useState(false); const [active, setActive] = useState(0);
+  const [form, setForm] = useState(null); const boxRef = useRef(null);
+  const rx = useContext(RxNormContext);
+  const [dsld, setDsld] = useState([]); const [dsldStatus, setDsldStatus] = useState("idle");
+  useEffect(() => { const onDoc = e => { if (boxRef.current && !boxRef.current.contains(e.target)) setOpen(false); }; document.addEventListener("mousedown", onDoc); return () => document.removeEventListener("mousedown", onDoc); }, []);
+  useEffect(() => {
+    const t = q.trim();
+    if (t.length < 3) { setDsld([]); setDsldStatus("idle"); return; }
+    let cancelled = false; setDsldStatus("loading");
+    const id = setTimeout(() => {
+      fetchDsld(t).then(r => { if (!cancelled) { setDsld(r); setDsldStatus("ready"); } }).catch(() => { if (!cancelled) { setDsld([]); setDsldStatus("error"); } });
+    }, 350);
+    return () => { cancelled = true; clearTimeout(id); };
+  }, [q]);
+  const matches = useMemo(() => {
+    const base = searchDirectory(q, rx.rxNames);
+    const seen = new Set(base.map(d => d.name.toLowerCase()));
+    const merged = [...base];
+    for (const d of dsld) { const k = d.name.toLowerCase(); if (!seen.has(k)) { seen.add(k); merged.push(d); if (merged.length >= 22) break; } }
+    return merged;
+  }, [q, rx.rxNames, dsld]);
+  const startAdd = r => { const key = r ? r.key : null; setForm({ id: uid(), key, name: r ? r.name : "", cls: r ? (r.cls || (key ? DRUGS[key].cls : "")) : "", strength: "", dose: "", freq: "Once daily", route: "Oral", time: "08:00", slot: "Morning", slots: ["Morning"], startDate: "", physician: "", pharmacy: "", purpose: "", notes: "", withFood: guessFood(key) }); setQ(""); setOpen(false); };
+  const save = () => { setMeds(prev => prev.some(m => m.id === form.id) ? prev.map(m => m.id === form.id ? form : m) : [...prev, form]); setForm(null); };
+  const set = (f, v) => setForm(p => ({ ...p, [f]: v }));
+  const nameOnly = meds.filter(m => !m.key).length;
+  const [scan, setScan] = useState(null);
+  return (
+    <div style={{ maxWidth: 860 }}>
+      <Journey page="meds" go={go} />
+      <PageHead title="My Medications" italic={"\u201cEverything you take, in one quiet list.\u201d"} sub="Build your profile once — every other tool reads from it." />
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
+        {[["Search", Search], ["Scan bottle", ScanLine], ["Scan barcode", ScanLine], ["Import from pharmacy", Upload], ["Manual entry", Pencil]].map(([lbl, Icon], i) => (
+          <button key={lbl} onClick={() => i === 0 ? boxRef.current?.querySelector("input")?.focus() : i === 1 ? setScan("bottle") : i === 2 ? setScan("barcode") : startAdd(null)} style={{ ...ghostBtn, padding: "8px 12px", fontSize: 12.5 }}><Icon size={14} /> {lbl}</button>
+        ))}
+      </div>
+      {scan && <ScannerModal mode={scan} onClose={() => setScan(null)} onPick={r => { setScan(null); startAdd(r && !r.key && r.cls === "from barcode" ? { ...r, cls: "" } : r); }} />}
+      <div ref={boxRef} style={{ position: "relative", maxWidth: 560, marginBottom: 18 }}>
+        <Search size={17} color={C.inkFaint} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)" }} />
+        <input className="wst-input" value={q} onChange={e => { setQ(e.target.value); setOpen(true); setActive(0); }} onFocus={() => { setOpen(true); rx.load(); }} onKeyDown={e => { if (!open || !matches.length) return; if (e.key === "ArrowDown") { e.preventDefault(); setActive(a => Math.min(a + 1, matches.length - 1)); } else if (e.key === "ArrowUp") { e.preventDefault(); setActive(a => Math.max(a - 1, 0)); } else if (e.key === "Enter") { e.preventDefault(); startAdd(matches[active]); } else if (e.key === "Escape") setOpen(false); }} placeholder="Search any medicine (brand or generic)…" style={{ width: "100%", boxSizing: "border-box", borderRadius: 11, border: `1px solid ${C.line}`, background: C.surface, padding: "13px 14px 13px 42px", fontSize: 15, color: C.ink, outline: "none" }} />
+        {open && matches.length > 0 && (
+          <ul style={{ listStyle: "none", margin: "8px 0 0", padding: 0, position: "absolute", zIndex: 20, width: "100%", overflow: "hidden", borderRadius: 11, border: `1px solid ${C.line}`, background: C.surface, boxShadow: "0 14px 34px -16px rgba(43,35,28,0.30)" }}>
+            {matches.map((m, i) => (<li key={m.name + i}><button className="wst-row" onMouseEnter={() => setActive(i)} onClick={() => startAdd(m)} style={{ display: "flex", width: "100%", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "11px 16px", textAlign: "left", border: "none", cursor: "pointer", background: i === active ? "#F4EAD8" : "transparent" }}>
+              <span style={{ fontSize: 14.5, color: C.ink }}>{m.name}{m.aliases && m.aliases.length ? <span style={{ fontSize: 11.5, color: C.inkFaint }}> · {m.aliases.slice(0, 2).join(", ")}</span> : null}</span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6, flexShrink: 0 }}>{m.cls && <span style={{ fontSize: 11.5, color: C.inkFaint }}>{m.cls}</span>}{m.key ? <span style={{ fontSize: 9.5, fontWeight: 700, color: "#2F8F6B", background: "#2F8F6B15", border: "1px solid #2F8F6B40", borderRadius: 999, padding: "1px 6px" }}>ANALYZED</span> : null}</span>
+            </button></li>))}
+          </ul>
+        )}
+        <p style={{ fontSize: 11.5, color: C.inkFaint, margin: "8px 0 0" }}>
+          Searching {DIRECTORY_SIZE.toLocaleString()} bundled medicines & supplements{rx.status === "ready" ? " + the full U.S. RxNorm drug list" : rx.status === "loading" ? " · loading the full U.S. drug list…" : ""}{dsldStatus === "ready" ? " + NIH's 178k-label supplement database" : dsldStatus === "loading" ? " · checking NIH supplement database…" : ""}.
+          <span style={{ color: "#2F8F6B" }}> ANALYZED</span> medicines get full interaction & body-impact analysis.
+        </p>
+      </div>
+
+      {form && (
+        <div style={{ ...card, marginBottom: 20 }}>
+          <h3 style={{ fontFamily: serifH, fontSize: 17, margin: "0 0 14px", color: C.ink }}>{meds.some(m => m.id === form.id) ? "Edit medication" : "Add medication"}</h3>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px,1fr))", gap: 12 }}>
+            <Field label="Medication name" value={form.name} onChange={v => set("name", v)} placeholder="e.g. Atorvastatin" />
+            <Field label="Strength" value={form.strength} onChange={v => set("strength", v)} placeholder="e.g. 20 mg" />
+            <Field label="Dose" value={form.dose} onChange={v => set("dose", v)} placeholder="e.g. 1 tablet" />
+            <Field label="Frequency" value={form.freq} onChange={v => set("freq", v)} options={["Once daily", "Twice daily", "Three times daily", "Four times daily", "Every other day", "Weekly", "Every 2 weeks", "Monthly", "As needed"]} />
+            <Field label="Route" value={form.route} onChange={v => set("route", v)} options={["Oral", "Injection", "Topical", "Inhaled", "Patch", "Other"]} />
+            <Field label="Time taken" value={form.time} onChange={v => set("time", v)} type="time" />
+            <div>
+              <label style={{ ...eyebrow, display: "block", marginBottom: 6 }}>Times of day <span style={{ textTransform: "none", fontWeight: 400, color: C.inkFaint }}>(pick one or more)</span></label>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                {SLOTS.map(s => { const cur = form.slots && form.slots.length ? form.slots : [form.slot || "Morning"]; const on = cur.includes(s); return (
+                  <button key={s} type="button" onClick={() => { const next = on ? cur.filter(x => x !== s) : [...cur, s]; set("slots", next.length ? next : cur); }} style={{ borderRadius: 999, padding: "7px 14px", fontSize: 13, fontWeight: on ? 600 : 400, cursor: "pointer", border: `1px solid ${on ? C.terra : C.line}`, background: on ? C.terra : C.surface, color: on ? "#FBF6EC" : C.inkSoft }}>{s}</button>
+                ); })}
+              </div>
+            </div>
+            <Field label="Start date" value={form.startDate} onChange={v => set("startDate", v)} type="date" />
+            <Field label="Food instruction" value={form.withFood} onChange={v => set("withFood", v)} options={["With or without food", "Take with food", "Empty stomach, 30–60 min before breakfast", "Away from dairy / calcium / iron"]} />
+            <Field label="Prescribing physician" value={form.physician} onChange={v => set("physician", v)} placeholder="Dr. …" />
+            <Field label="Pharmacy" value={form.pharmacy} onChange={v => set("pharmacy", v)} placeholder="Pharmacy name" />
+            <Field label="Purpose" value={form.purpose} onChange={v => set("purpose", v)} placeholder="e.g. cholesterol" />
+          </div>
+          <div style={{ marginTop: 12 }}><Field label="Notes" value={form.notes} onChange={v => set("notes", v)} placeholder="Anything to remember…" /></div>
+          <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
+            <button onClick={save} style={{ ...primaryBtn, opacity: form.name ? 1 : 0.5 }} disabled={!form.name}><Check size={16} /> Save</button>
+            <button onClick={() => setForm(null)} style={ghostBtn}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {meds.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {meds.map(m => (
+            <div key={m.id} style={{ ...card, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+              <div>
+                <h3 style={{ fontFamily: serifH, fontSize: 16.5, margin: 0, color: C.ink }}>{m.name} {m.strength && <span style={{ fontSize: 13, color: C.inkSoft, fontWeight: 400 }}>· {m.strength}</span>} {m.key
+                  ? <span style={{ fontSize: 9.5, fontWeight: 700, color: "#2F8F6B", background: "#2F8F6B15", border: "1px solid #2F8F6B40", borderRadius: 999, padding: "1px 6px", verticalAlign: "2px" }}>ANALYZED</span>
+                  : <span style={{ fontSize: 9.5, fontWeight: 700, color: "#B0591E", background: "#B0591E12", border: "1px solid #B0591E40", borderRadius: 999, padding: "1px 6px", verticalAlign: "2px" }}>NAME ONLY</span>}</h3>
+                <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "4px 0 0", lineHeight: 1.5 }}>{[m.dose, m.freq, m.route, medSlots(m).join(", "), m.withFood].filter(Boolean).join(" · ")}</p>
+                {(m.purpose || m.physician || m.pharmacy) && <p style={{ fontSize: 12, color: C.inkFaint, margin: "3px 0 0" }}>{[m.purpose && ("For " + m.purpose), m.physician, m.pharmacy].filter(Boolean).join(" · ")}</p>}
+              </div>
+              <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                <button onClick={() => setForm({ ...m, slots: medSlots(m) })} aria-label="Edit" style={{ ...ghostBtn, padding: 8 }}><Pencil size={15} /></button>
+                <button onClick={() => setMeds(prev => prev.filter(x => x.id !== m.id))} aria-label="Remove" style={{ ...ghostBtn, padding: 8 }}><Trash2 size={15} /></button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {meds.length > 0 && (
+        <div style={{ marginTop: 22, borderRadius: 16, border: `1px solid ${C.line}`, background: "#F1F0E6", padding: 18, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
+          <p style={{ margin: 0, fontFamily: serifH, fontSize: 16, color: C.ink }}><CheckCircle2 size={17} color="#2F8F6B" style={{ verticalAlign: "-3px", marginRight: 6 }} />Your medication profile has been created.</p>
+          <button onClick={() => go("interactions")} style={primaryBtn}>Run Interaction Check <ArrowRight size={16} /></button>
+        </div>
+      )}
+      <p style={{ marginTop: 16, fontSize: 11.5, color: C.inkFaint }}>Scanning and pharmacy import are shown for demonstration — enter details manually for now. Educational only.{nameOnly > 0 ? " " + nameOnly + " of your medicines are recorded by name only (from the wider directory): they appear in your list, schedule, and provider summary, but interaction and body-impact analysis covers your ANALYZED medicines. Confirm the rest with your pharmacist." : ""}</p>
+    </div>
+  );
+}
+
+// ---- Interaction Checker ---------------------------------------------------
+function Interactions({ meds, findings, score, go }) {
+  const keys = uniq(meds.map(m => m.key).filter(Boolean));
+  const band = SCOREBAND(score);
+  const flags = riskFlags(keys);
+  const dups = duplicateTherapies(meds);
+  const cat = sev => sev === "Contraindicated" ? "Critical" : sev === "Minor" ? "Mild" : "Moderate";
+  const grouped = {}; findings.forEach(f => { (grouped[cat(f.sev)] ||= []).push(f); });
+  const order = ["Critical", "Moderate", "Mild"];
+  const fatal = findings.filter(f => f.fatal);
+  const flagColor = l => l === "high" ? "#B4332B" : "#B0591E";
+  return (
+    <div style={{ maxWidth: 860 }}>
+      <Journey page="interactions" go={go} />
+      <PageHead title="Interaction Checker" italic={"\u201cWhich of yours deserve a question \u2014 and who should you ask?\u201d"} sub="Your full list is analyzed automatically for interactions, duplicates, and high-risk patterns." />
+      {keys.length < 2 ? (
+        <div style={{ ...card, textAlign: "center", padding: "40px 24px" }}>
+          <Plus size={26} color={C.inkFaint} style={{ display: "block", margin: "0 auto" }} />
+          <p style={{ marginTop: 10, fontSize: 14.5, color: C.inkSoft }}>Add at least two medicines to run a full interaction check.</p>
+          <button onClick={() => go("meds")} style={{ ...primaryBtn, marginTop: 14 }}>Add medications <ArrowRight size={16} /></button>
+        </div>
+      ) : (
+        <>
+          {fatal.length > 0 && (
+            <div style={{ borderRadius: 16, background: "#7A1410", color: "#FFF4F2", padding: "18px 20px", marginBottom: 16, boxShadow: "0 14px 34px -16px rgba(122,20,16,0.55)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                <ShieldAlert size={22} color="#fff" />
+                <span style={{ fontFamily: serifH, fontSize: 19, fontWeight: 700 }}>High-alert combination — check before your next dose</span>
+              </div>
+              <p style={{ margin: "0 0 12px", fontSize: 13.5, lineHeight: 1.6, color: "#FBE2DE" }}>
+                {fatal.length === 1 ? "One combination in your list" : fatal.length + " combinations in your list"} match a pattern that, in some people, can be life-threatening. This isn't a diagnosis — but please <strong style={{ color: "#fff" }}>speak with a pharmacist or prescriber before taking these together again</strong>. Don't stop a prescribed medicine on your own.
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {fatal.map(f => (
+                  <div key={f.key} style={{ display: "flex", alignItems: "flex-start", gap: 9, background: "rgba(255,255,255,0.10)", borderRadius: 11, padding: "10px 12px" }}>
+                    <Siren size={15} color="#FFD2CC" style={{ flexShrink: 0, marginTop: 2 }} />
+                    <div>
+                      <p style={{ margin: 0, fontWeight: 600, fontSize: 13.5 }}>{f.title}</p>
+                      <p style={{ margin: "3px 0 0", fontSize: 12, color: "#F3C9C4" }}>{f.drugs.map(d => DRUGS[d] ? DRUGS[d].name : d).join(" + ")}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p style={{ margin: "12px 0 0", fontSize: 11.5, color: "#E9B4AE" }}>If you feel very unwell now — trouble breathing, fainting, severe bleeding, chest pain, confusion — call your local emergency number.</p>
+            </div>
+          )}
+          <div style={{ ...card, display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap" }}>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 40, fontWeight: 700, color: band.color, lineHeight: 1, fontFamily: serifH }}>{score}</div>
+              <div style={{ fontSize: 11, color: C.inkSoft, letterSpacing: "0.08em", textTransform: "uppercase" }}>Safety score</div>
+            </div>
+            <div style={{ flex: 1, minWidth: 200 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}><span style={{ height: 10, width: 10, borderRadius: 999, background: band.color }} /><span style={{ fontWeight: 600, color: C.ink }}>{band.label}</span></div>
+              <div style={{ marginTop: 8, height: 8, borderRadius: 999, background: "#E7DCC8", overflow: "hidden" }}><div style={{ width: score + "%", height: "100%", background: band.color }} /></div>
+              <p style={{ fontSize: 12, color: C.inkSoft, margin: "8px 0 0" }}>Based on {findings.length} interaction{findings.length === 1 ? "" : "s"} across {keys.length} medicines. Higher is calmer.</p>
+            </div>
+          </div>
+
+          {meds.length > keys.length && (
+            <div style={{ marginTop: 14, borderRadius: 12, border: `1px solid ${C.line}`, background: "#F6EFE2", padding: "11px 14px", fontSize: 12.5, color: C.inkSoft, display: "flex", gap: 8 }}>
+              <Info size={15} color={C.terra} style={{ flexShrink: 0, marginTop: 1 }} />
+              <span>{meds.length - keys.length} of your medicine(s) are recorded by name only and aren't in the analyzed set, so they're not included in the checks below. Ask your pharmacist to review those for interactions.</span>
+            </div>
+          )}
+
+          {flags.length > 0 && (
+            <div style={{ marginTop: 16, display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {flags.map(f => (<span key={f.label} title={f.detail} style={{ display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 999, border: `1px solid ${flagColor(f.level)}55`, background: flagColor(f.level) + "12", color: flagColor(f.level), padding: "5px 12px", fontSize: 12.5, fontWeight: 600 }}><AlertTriangle size={13} />{f.label}</span>))}
+            </div>
+          )}
+
+          {dups.length > 0 && (
+            <div style={{ ...card, marginTop: 16 }}>
+              <h3 style={{ fontFamily: serifH, fontSize: 16, margin: "0 0 8px", color: C.ink }}>Possible duplicate therapy</h3>
+              {dups.map(d => <p key={d.cls} style={{ fontSize: 13, color: C.inkSoft, margin: "0 0 4px" }}>Two {d.cls.toLowerCase()} medicines: <strong style={{ color: C.ink }}>{d.names.join(", ")}</strong></p>)}
+              <p style={{ fontSize: 12, color: C.inkFaint, margin: "6px 0 0" }}>Ask whether both are intended.</p>
+            </div>
+          )}
+
+          {findings.length === 0 ? (
+            <div style={{ ...card, marginTop: 16, fontSize: 13.5, color: C.inkSoft }}>No drug-to-drug interactions found in this tool's database. Not a guarantee — confirm with your pharmacist.</div>
+          ) : order.filter(o => grouped[o]).map(o => (
+            <section key={o} style={{ marginTop: 24 }}>
+              <h2 style={{ fontFamily: serifH, fontSize: 19, color: C.ink, margin: "0 0 12px" }}>{o} <span style={{ fontSize: 13, color: C.inkFaint, fontWeight: 400 }}>· {grouped[o].length}</span></h2>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {grouped[o].map(f => { const v = SEV[f.sev]; const contact = f.sev === "Contraindicated" || f.sev === "Major"; return (
+                  <div key={f.key} style={{ borderRadius: 13, border: `1px solid ${v.bd}`, background: v.bg, padding: 18 }}>
+                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+                      <h3 style={{ fontFamily: serifH, fontWeight: 600, fontSize: 17, lineHeight: 1.25, color: C.ink, margin: 0 }}>{f.title}</h3>
+                      <ScoreBadge sev={f.sev} />
+                    </div>
+                    <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 6 }}>{f.drugs.map(d => <span key={d} style={{ borderRadius: 6, background: "rgba(255,255,255,0.7)", border: `1px solid ${C.line}`, padding: "2px 7px", fontSize: 11.5, color: C.inkSoft }}>{DRUGS[d]?.name || d}</span>)}</div>
+                    <p style={{ marginTop: 12, fontSize: 13.5, lineHeight: 1.6, color: "#4F4233" }}><strong>Possible signs:</strong> {f.body}</p>
+                    <div style={{ marginTop: 12, borderRadius: 9, background: "rgba(255,255,255,0.6)", border: `1px solid ${C.line}`, padding: "11px 13px" }}>
+                      <p style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: C.inkSoft, margin: "0 0 3px" }}>Recommended action</p>
+                      <p style={{ fontSize: 13, lineHeight: 1.6, color: "#4F4233", margin: 0 }}>{f.discuss}</p>
+                    </div>
+                    <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                      <span style={{ fontSize: 11.5, fontWeight: 600, color: contact ? "#B4332B" : "#2F8F6B", display: "inline-flex", alignItems: "center", gap: 5 }}>{contact ? <ShieldAlert size={13} /> : <CheckCircle2 size={13} />}{contact ? "Contact your physician or pharmacist" : "Routine — mention at your next visit"}</span>
+                    </div>
+                    <details style={{ marginTop: 10 }}>
+                      <summary style={{ fontSize: 12, color: C.inkSoft, cursor: "pointer" }}>Why it happens</summary>
+                      <p style={{ fontSize: 12.5, lineHeight: 1.6, color: C.inkSoft, borderLeft: `2px solid ${SYSTEMS[f.sys]?.accent || C.terra}`, paddingLeft: 12, margin: "8px 0 0" }}>{f.mech}</p>
+                    </details>
+                  </div>); })}
+              </div>
+            </section>
+          ))}
+
+          <div style={{ marginTop: 26 }}><button onClick={() => go("bodymap")} style={primaryBtn}>View Body Impact Map <ArrowRight size={16} /></button></div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ---- Food Interactions -----------------------------------------------------
+function FoodInteractions({ keys, go }) {
+  const items = foodFindings(keys);
+  const levelMeta = { avoid: { c: "#B4332B", t: "Avoid" }, caution: { c: "#B0591E", t: "Caution" }, info: { c: "#3E7A6E", t: "Good to know" } };
+  const groups = ["avoid", "caution", "info"].map(l => ({ l, items: items.filter(i => i.level === l) })).filter(g => g.items.length);
+  return (
+    <div style={{ maxWidth: 820 }}>
+      <Journey page="food" go={go} />
+      <PageHead title="Food Interactions" italic={"\u201cSome foods carry on a conversation with your medicines too.\u201d"} sub="Foods, drinks, and supplements that interact with what you take." />
+      {keys.length === 0 ? (
+        <div style={{ ...card, textAlign: "center", padding: "40px 24px" }}><p style={{ fontSize: 14.5, color: C.inkSoft, margin: 0 }}>Add medicines to see food interactions.</p><button onClick={() => go("meds")} style={{ ...primaryBtn, marginTop: 14 }}>Add medications</button></div>
+      ) : (
+        <>
+          {groups.map(g => (
+            <section key={g.l} style={{ marginBottom: 22 }}>
+              <h2 style={{ fontFamily: serifH, fontSize: 18, color: levelMeta[g.l].c, margin: "0 0 12px" }}>{levelMeta[g.l].t}</h2>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {g.items.map((it, i) => { const Icon = it.Icon; const m = levelMeta[it.level]; return (
+                  <div key={i} style={{ ...card, borderLeft: `3px solid ${m.c}` }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}><span style={{ display: "flex", height: 34, width: 34, alignItems: "center", justifyContent: "center", borderRadius: 10, background: m.c + "15", border: `1px solid ${m.c}33` }}><Icon size={17} color={m.c} /></span><h3 style={{ fontFamily: serifH, fontSize: 16, margin: 0, color: C.ink }}>{it.title}</h3></div>
+                    <p style={{ fontSize: 13.5, color: "#4F4233", margin: "10px 0 0", lineHeight: 1.55 }}>{it.reason}</p>
+                    {it.drugs.length > 0 && <div style={{ marginTop: 8, display: "flex", flexWrap: "wrap", gap: 6 }}>{it.drugs.map(d => <span key={d} style={{ borderRadius: 6, background: "#F1EADB", border: `1px solid ${C.line}`, padding: "2px 7px", fontSize: 11.5, color: C.inkSoft }}>{d}</span>)}</div>}
+                  </div>); })}
+              </div>
+            </section>
+          ))}
+          {items.length === 0 && <div style={{ ...card, fontSize: 13.5, color: C.inkSoft }}>No specific food interactions flagged for your list — still worth asking your pharmacist about grapefruit and alcohol.</div>}
+
+          <div style={{ ...card, marginTop: 6 }}>
+            <h3 style={{ fontFamily: serifH, fontSize: 16, margin: "0 0 8px", color: C.ink }}>Everyday good habits</h3>
+            <p style={{ fontSize: 13, color: C.inkSoft, margin: "0 0 6px", lineHeight: 1.5 }}><GlassWater size={14} color="#3E7A6E" style={{ verticalAlign: "-2px", marginRight: 6 }} />Stay hydrated — water helps the kidneys clear many medicines.</p>
+            <p style={{ fontSize: 13, color: C.inkSoft, margin: "0 0 6px", lineHeight: 1.5 }}><Utensils size={14} color="#9A5A1E" style={{ verticalAlign: "-2px", marginRight: 6 }} />Keep meal timing consistent so "with food" and "empty stomach" instructions actually land.</p>
+            <p style={{ fontSize: 13, color: C.inkSoft, margin: 0, lineHeight: 1.5 }}><Leaf size={14} color="#2F8F6B" style={{ verticalAlign: "-2px", marginRight: 6 }} />A balanced plate (greens, protein, whole grains) is safe with most medicines — keep big diet changes gradual.</p>
+          </div>
+          <div style={{ marginTop: 22 }}><button onClick={() => go("schedule")} style={primaryBtn}>Build My Medication Schedule <ArrowRight size={16} /></button></div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ---- Schedule Builder ------------------------------------------------------
+function ScheduleBuilder({ meds, setMeds, go }) {
+  const toggleSlot = (id, slot) => setMeds(prev => prev.map(m => { if (m.id !== id) return m; const cur = medSlots(m); const next = cur.includes(slot) ? cur.filter(x => x !== slot) : [...cur, slot]; return { ...m, slots: next.length ? next : cur }; }));
+  const bySlot = SLOTS.map(s => ({ slot: s, items: meds.filter(m => medSlots(m).includes(s)) }));
+  const conflict = items => { const binders = items.filter(m => m.key && (has(m.key, "absorption_cation") || has(m.key, "cation_binds"))); const cations = items.filter(m => m.key && has(m.key, "cation_binder")); return binders.length && cations.length ? `${binders.map(b => b.name).join(", ")} should be spaced from ${cations.map(c => c.name).join(", ")}.` : null; };
+  return (
+    <div style={{ maxWidth: 900 }}>
+      <Journey page="schedule" go={go} />
+      <PageHead title="Schedule Builder" italic={"\u201cWhen you take something can matter as much as what.\u201d"} sub="A safe daily layout. Move any medicine between times of day; export it to your calendar or print it." />
+      {meds.length === 0 ? (
+        <div style={{ ...card, textAlign: "center", padding: "40px 24px" }}><p style={{ fontSize: 14.5, color: C.inkSoft, margin: 0 }}>Add medicines to build a schedule.</p><button onClick={() => go("meds")} style={{ ...primaryBtn, marginTop: 14 }}>Add medications</button></div>
+      ) : (
+        <>
+          <div style={{ display: "flex", gap: 10, marginBottom: 18, flexWrap: "wrap" }}>
+            <button onClick={() => downloadICS(meds)} style={primaryBtn}><Download size={16} /> Export to calendar (.ics)</button>
+            <button onClick={() => window.print()} style={ghostBtn}><Printer size={16} /> Print schedule</button>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px,1fr))", gap: 14 }}>
+            {bySlot.map(({ slot, items }) => { const I = SLOT_ICON[slot]; const warn = conflict(items); return (
+              <div key={slot} style={{ ...card }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}><span style={{ display: "flex", height: 30, width: 30, alignItems: "center", justifyContent: "center", borderRadius: 9, background: C.terra + "15" }}><I size={16} color={C.terra} /></span><h3 style={{ fontFamily: serifH, fontSize: 16, margin: 0, color: C.ink }}>{slot}</h3></div>
+                {items.length === 0 && <p style={{ fontSize: 12.5, color: C.inkFaint, margin: 0 }}>—</p>}
+                {items.map(m => (
+                  <div key={m.id} style={{ borderRadius: 10, border: `1px solid ${C.line}`, background: "#FBF7EF", padding: "9px 10px", marginBottom: 8 }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 600, color: C.ink }}>{m.name} <span style={{ fontWeight: 400, color: C.inkSoft }}>{m.time}</span></div>
+                    <div style={{ fontSize: 11.5, color: C.inkSoft, marginTop: 2 }}>{m.withFood}</div>
+                    <div style={{ fontSize: 11, color: C.inkFaint, marginTop: 2, display: "flex", alignItems: "center", gap: 4 }}><GlassWater size={11} /> take with water</div>
+                    <div style={{ marginTop: 6, display: "flex", gap: 4, flexWrap: "wrap" }}>{SLOTS.map(s2 => { const on = medSlots(m).includes(s2); return <button key={s2} onClick={() => toggleSlot(m.id, s2)} style={{ fontSize: 10.5, border: `1px solid ${on ? C.terra : C.line}`, background: on ? C.terra : C.surface, color: on ? "#FBF6EC" : C.inkSoft, borderRadius: 6, padding: "2px 6px", cursor: "pointer" }}>{s2}</button>; })}</div>
+                  </div>
+                ))}
+                {warn && <p style={{ fontSize: 11.5, color: "#B0591E", margin: "4px 0 0", display: "flex", gap: 5 }}><AlertTriangle size={12} style={{ marginTop: 1, flexShrink: 0 }} />{warn}</p>}
+              </div>); })}
+          </div>
+          <div style={{ ...card, marginTop: 16 }}>
+            <h3 style={{ fontFamily: serifH, fontSize: 15, margin: "0 0 6px", color: C.ink }}>Missed a dose?</h3>
+            <p style={{ fontSize: 13, color: C.inkSoft, margin: 0, lineHeight: 1.55 }}>If you remember soon, take it. If it's almost time for the next dose, skip the missed one — don't double up. When in doubt, ask your pharmacist; some medicines (like warfarin and insulin) have specific rules.</p>
+          </div>
+          <div style={{ marginTop: 22 }}><button onClick={() => go("symptom")} style={primaryBtn}>Monitor My Symptoms <ArrowRight size={16} /></button></div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ---- Symptom Checker -------------------------------------------------------
+function SymptomChecker({ keys, symptoms, setSymptoms, go }) {
+  const [checked, setChecked] = useState([]);
+  const [severity, setSeverity] = useState(3);
+  const [duration, setDuration] = useState("");
+  const [started, setStarted] = useState("");
+  const [notes, setNotes] = useState("");
+  const [result, setResult] = useState(null);
+  const toggle = s => setChecked(p => p.includes(s) ? p.filter(x => x !== s) : [...p, s]);
+  const evaluate = () => { const r = symptomEval(checked, severity, keys); setResult(r); setSymptoms(prev => [...prev, { id: uid(), date: new Date().toLocaleDateString(), items: checked, severity, duration, started, notes, eval: r }]); };
+  return (
+    <div style={{ maxWidth: 820 }}>
+      <Journey page="symptom" go={go} />
+      <PageHead title="Symptom Checker" italic={"\u201cIs this new feeling worth a question?\u201d"} sub="Tell us how you're feeling. This is never a diagnosis — it points you toward the right next step." />
+
+      <div style={{ ...card, marginBottom: 18 }}>
+        <p style={{ ...eyebrow, margin: "0 0 10px" }}>Have you experienced any of these today?</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {SYMPTOM_LIST.map(s => { const on = checked.includes(s); const emer = EMERGENCY_SX.includes(s); return (
+            <button key={s} onClick={() => toggle(s)} style={{ borderRadius: 999, padding: "7px 13px", fontSize: 13, fontWeight: 600, cursor: "pointer", border: `1px solid ${on ? (emer ? "#B4332B" : C.terra) : C.line}`, background: on ? (emer ? "#B4332B" : C.terra) : C.surface, color: on ? "#FBF6EC" : C.inkSoft }}>{s}</button>); })}
+        </div>
+        <div style={{ marginTop: 16, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px,1fr))", gap: 14, alignItems: "end" }}>
+          <div>
+            <span style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: "0.1em", textTransform: "uppercase", color: C.inkSoft }}>Severity: {severity}/10</span>
+            <input type="range" min="0" max="10" value={severity} onChange={e => setSeverity(+e.target.value)} style={{ width: "100%", accentColor: C.terra }} />
+          </div>
+          <Field label="How long" value={duration} onChange={setDuration} placeholder="e.g. 2 days" />
+          <Field label="When it started" value={started} onChange={setStarted} type="date" />
+        </div>
+        <div style={{ marginTop: 12 }}><Field label="Notes (optional)" value={notes} onChange={setNotes} placeholder="Anything else…" /></div>
+        <button onClick={evaluate} disabled={!checked.length} style={{ ...primaryBtn, marginTop: 16, opacity: checked.length ? 1 : 0.5 }}><ListChecks size={16} /> Evaluate</button>
+      </div>
+
+      {result && (
+        <div style={{ borderRadius: 16, border: `1px solid ${BAND[result.band]}55`, background: BAND[result.band] + "10", padding: 18, marginBottom: 18 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>{result.emergency ? <Siren size={20} color={BAND[result.band]} /> : <Stethoscope size={20} color={BAND[result.band]} />}<h3 style={{ fontFamily: serifH, fontSize: 18, margin: 0, color: C.ink }}>{result.action}</h3></div>
+          <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "8px 0 0" }}>Confidence: {result.confidence}</p>
+          {result.matches.length > 0 && <div style={{ marginTop: 10 }}>{result.matches.map(m => <p key={m.symptom} style={{ fontSize: 13, color: "#4F4233", margin: "0 0 4px" }}>• <strong>{m.symptom}</strong> could relate to: {m.drugs.join(", ")}</p>)}</div>}
+          {result.emergency && <p style={{ fontSize: 13, color: "#B4332B", fontWeight: 600, margin: "10px 0 0" }}>If this is severe or sudden, call your local emergency number now.</p>}
+          <p style={{ fontSize: 11.5, color: C.inkFaint, margin: "10px 0 0" }}>Educational only — this can't diagnose. When unsure, contact a professional.</p>
+        </div>
+      )}
+
+      {symptoms.length > 0 && (
+        <div style={card}>
+          <h3 style={{ fontFamily: serifH, fontSize: 16, margin: "0 0 10px", color: C.ink }}>Recent check-ins</h3>
+          {symptoms.slice(-4).reverse().map(s => (
+            <div key={s.id} style={{ borderTop: `1px solid ${C.line}`, paddingTop: 8, marginTop: 8 }}>
+              <p style={{ fontSize: 13, margin: 0, color: C.ink }}><strong>{s.date}</strong> · {s.items.join(", ") || "general check-in"} <span style={{ color: BAND[s.eval.band], fontWeight: 600 }}>→ {s.eval.action}</span></p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ---- Notifications ---------------------------------------------------------
+// ---- Google Sign-In + browser push -----------------------------------------
+// Swap in your real OAuth Web client ID from Google Cloud Console → Credentials.
+// (A client ID is PUBLIC and safe to ship; do NOT put a client SECRET in this file.)
+const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com";
+const GSI_READY = typeof GOOGLE_CLIENT_ID === "string" && !GOOGLE_CLIENT_ID.startsWith("YOUR_");
+let _gsiPromise = null;
+function loadGsi() {
+  if (typeof window !== "undefined" && window.google && window.google.accounts && window.google.accounts.id) return Promise.resolve();
+  if (_gsiPromise) return _gsiPromise;
+  _gsiPromise = new Promise((res, rej) => {
+    const s = document.createElement("script");
+    s.src = "https://accounts.google.com/gsi/client"; s.async = true; s.defer = true;
+    s.onload = () => res(); s.onerror = () => rej(new Error("gsi"));
+    document.head.appendChild(s);
+  });
+  return _gsiPromise;
+}
+function decodeJwt(t) {
+  try { return JSON.parse(decodeURIComponent(atob(t.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")).split("").map(c => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2)).join(""))); }
+  catch (e) { return null; }
+}
+
+function Notifications({ notify, setNotify, account, setAccount }) {
+  const setPref = (k, v) => setNotify(p => ({ ...p, prefs: { ...p.prefs, [k]: v } }));
+  const set = (k, v) => setNotify(p => ({ ...p, [k]: v }));
+  const btnRef = useRef(null);
+  const [gsiErr, setGsiErr] = useState(false);
+  const [pushPerm, setPushPerm] = useState(typeof Notification !== "undefined" ? Notification.permission : "unsupported");
+
+  useEffect(() => {
+    if (account || !GSI_READY) return;
+    let dead = false;
+    loadGsi().then(() => {
+      if (dead || !btnRef.current || !window.google) return;
+      try {
+        window.google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: resp => { const p = decodeJwt(resp.credential); if (p) setAccount({ name: p.name, email: p.email, picture: p.picture, sub: p.sub }); } });
+        window.google.accounts.id.renderButton(btnRef.current, { theme: "outline", size: "large", shape: "pill", text: "continue_with", width: 260 });
+      } catch (e) { setGsiErr(true); }
+    }).catch(() => setGsiErr(true));
+    return () => { dead = true; };
+  }, [account, setAccount]);
+
+  const signOut = () => { try { window.google && window.google.accounts.id.disableAutoSelect(); } catch (e) {} setAccount(null); };
+  const enablePush = () => {
+    if (typeof Notification === "undefined") { setPushPerm("unsupported"); return; }
+    Notification.requestPermission().then(p => {
+      setPushPerm(p);
+      if (p === "granted") { try { new Notification("What's Safe Together?", { body: "Browser reminders are on. We'll nudge you here while the app is open." }); } catch (e) {} }
+    });
+  };
+
+  const PREFS = [["reminders", "Medication reminders"], ["missed", "Missed-dose alerts"], ["interactions", "Drug interaction alerts"], ["food", "Food interaction alerts"], ["refills", "Refill reminders"], ["appts", "Appointment reminders"], ["labs", "Lab monitoring reminders"], ["daily", "Daily symptom check-ins"], ["weekly", "Weekly health summary"], ["critical", "Critical safety alerts"]];
+  const ChannelBadge = ({ ok, text }) => <span style={{ fontSize: 10, fontWeight: 700, borderRadius: 999, padding: "2px 8px", background: ok ? "#E6F4EC" : "#F1ECE0", color: ok ? "#2E7D5B" : C.inkFaint }}>{text}</span>;
+
+  return (
+    <div style={{ maxWidth: 680 }}>
+      <PageHead title="Notifications & Communication" italic={"\u201cThe right nudge, on the channel you actually read.\u201d"} sub="Choose how and when we check in. (Text and email delivery require the messaging service, which is coming soon — your settings save in this session for now.)" />
+
+      {/* Account */}
+      <div style={{ ...card, marginBottom: 16 }}>
+        <h3 style={{ fontFamily: serifH, fontSize: 16.5, margin: "0 0 4px", color: C.ink }}>Your account</h3>
+        <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "0 0 14px", lineHeight: 1.5 }}>Sign in to connect notifications to you. We use Google only to confirm your name and email — nothing about your medicines is sent to Google.</p>
+        {account ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            {account.picture ? <img src={account.picture} alt="" referrerPolicy="no-referrer" style={{ height: 44, width: 44, borderRadius: 999 }} /> : <span style={{ height: 44, width: 44, borderRadius: 999, background: C.terra + "22", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: serifH, color: C.terraDeep, fontWeight: 700 }}>{(account.name || "?").slice(0, 1)}</span>}
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <p style={{ margin: 0, fontWeight: 600, color: C.ink, fontSize: 14.5 }}>{account.name}</p>
+              <p style={{ margin: "2px 0 0", fontSize: 12.5, color: C.inkSoft, overflow: "hidden", textOverflow: "ellipsis" }}>{account.email}</p>
+            </div>
+            <button onClick={signOut} style={{ ...ghostBtn, padding: "8px 14px" }}>Sign out</button>
+          </div>
+        ) : (
+          <div>
+            {GSI_READY ? <div ref={btnRef} style={{ minHeight: 44 }} /> : (
+              <div style={{ borderRadius: 11, border: `1px dashed ${C.inkFaint}`, background: "#FBF6EC", padding: "12px 14px", fontSize: 12.5, color: C.inkSoft, lineHeight: 1.55 }}>
+                <strong style={{ color: C.ink }}>Google Sign-In is ready to switch on.</strong> Add your Google OAuth <em>Web client ID</em> (from Google Cloud Console → APIs &amp; Services → Credentials) into <code>GOOGLE_CLIENT_ID</code>, and add your site URL as an authorized JavaScript origin. The button appears here automatically once it's set.
+              </div>
+            )}
+            {gsiErr && <p style={{ fontSize: 12, color: C.inkFaint, marginTop: 8 }}>Couldn't load Google Sign-In here (it needs a live, allowed origin — works on your deployed site).</p>}
+          </div>
+        )}
+        {account && <div style={{ marginTop: 12, borderRadius: 10, background: "#F6EFE2", padding: "10px 12px", fontSize: 12.5, color: C.inkSoft }}><Info size={13} style={{ verticalAlign: "-2px", marginRight: 5 }} />Account connected. Text/email <strong>delivery is coming soon</strong> — it needs the secure messaging service we're building.</div>}
+      </div>
+
+      {/* Channels */}
+      <div style={{ ...card, marginBottom: 16 }}>
+        <h3 style={{ fontFamily: serifH, fontSize: 16.5, margin: "0 0 12px", color: C.ink }}>How to reach you</h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px,1fr))", gap: 12 }}>
+          <Field label="Mobile number" value={notify.phone} onChange={v => set("phone", v)} placeholder="+1 555 123 4567" />
+          <Field label="Email address" value={notify.email} onChange={v => set("email", v)} placeholder="you@example.com" />
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 16 }}>
+          {/* Push — genuinely works in-browser */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, border: `1px solid ${C.line}`, borderRadius: 11, padding: "11px 13px" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13.5, color: C.ink }}><Bell size={15} color={C.terra} /> Browser push {pushPerm === "granted" ? <ChannelBadge ok text="ON" /> : <ChannelBadge text={pushPerm === "denied" ? "BLOCKED" : "OFF"} />}</span>
+            {pushPerm === "granted" ? <span style={{ fontSize: 12, color: "#2E7D5B" }}>Enabled on this device</span>
+              : pushPerm === "denied" ? <span style={{ fontSize: 12, color: C.inkFaint }}>Allow in browser settings</span>
+              : pushPerm === "unsupported" ? <span style={{ fontSize: 12, color: C.inkFaint }}>Not supported here</span>
+              : <button onClick={enablePush} style={{ ...primaryBtn, padding: "7px 13px", fontSize: 12.5 }}>Enable push</button>}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, border: `1px solid ${C.line}`, borderRadius: 11, padding: "11px 13px" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13.5, color: C.ink }}><Phone size={15} color={C.terra} /> Text message (SMS)</span>
+            <ChannelBadge text="COMING SOON" />
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, border: `1px solid ${C.line}`, borderRadius: 11, padding: "11px 13px" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13.5, color: C.ink }}><Mail size={15} color={C.terra} /> Email</span>
+            <ChannelBadge text="COMING SOON" />
+          </div>
+        </div>
+        <p style={{ fontSize: 11.5, color: C.inkFaint, marginTop: 12, lineHeight: 1.5 }}>Browser push works on this device while the app is open. Scheduled background delivery, texts, and emails need our secure messaging service (in development) and a connected account.</p>
+      </div>
+
+      <p style={{ ...eyebrow, marginBottom: 10 }}>What to notify me about</p>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px,1fr))", gap: 10 }}>
+        {PREFS.map(([k, label]) => <Toggle key={k} on={notify.prefs[k]} onChange={v => setPref(k, v)} label={label} />)}
+      </div>
+      <p style={{ marginTop: 16, fontSize: 11.5, color: C.inkFaint }}>Critical safety alerts are recommended on. Educational tool — not a monitoring or emergency service. See our <strong>Policies, Terms &amp; Privacy</strong> for how sign-in and data are handled.</p>
+    </div>
+  );
+}
+
+// ---- Health Summary --------------------------------------------------------
+function HealthSummary({ meds, keys, findings, score, symptoms }) {
+  const band = SCOREBAND(score);
+  const adherence = Math.max(60, 100 - symptoms.length * 2);
+  const impact = deriveBodyImpacts(keys);
+  const rank = { high: 3, moderate: 2, low: 1, positive: 0 };
+  const organs = Object.keys(impact).map(id => ({ id, name: SYS[id].name, sev: impact[id].sev })).sort((a, b) => rank[b.sev] - rank[a.sev]).slice(0, 4);
+  const sxCount = {}; symptoms.forEach(s => s.items.forEach(i => { sxCount[i] = (sxCount[i] || 0) + 1; }));
+  const topSx = Object.entries(sxCount).sort((a, b) => b[1] - a[1]).slice(0, 4);
+  const labs = uniq(Object.keys(impact).flatMap(id => LABS[id] || []));
+  const refills = meds.filter(m => m.startDate).map(m => ({ name: m.name, due: m.startDate }));
+  const questions = [];
+  if (findings.some(f => f.sev === "Contraindicated" || f.sev === "Major")) questions.push("Are any of my flagged interactions safe to continue?");
+  if (riskFlags(keys).length) questions.push("Should I be monitored for " + riskFlags(keys).slice(0, 2).map(f => f.label.toLowerCase()).join(" or ") + "?");
+  if (duplicateTherapies(meds).length) questions.push("Do I still need both medicines in the same class?");
+  if (!questions.length) questions.push("Is my current medication list still right for me?");
+  questions.push("Which lab tests are due, and when?");
+  const Stat = ({ label, value, color }) => (<div style={{ ...card, textAlign: "center" }}><div style={{ fontSize: 30, fontWeight: 700, fontFamily: serifH, color: color || C.ink, lineHeight: 1 }}>{value}</div><div style={{ fontSize: 11.5, color: C.inkSoft, marginTop: 4 }}>{label}</div></div>);
+  return (
+    <div style={{ maxWidth: 900 }}>
+      <PageHead title="Health Summary" italic={"\u201cThe whole picture, in one calm view.\u201d"} sub="A personalized overview drawn from your medicines, interactions, and check-ins." />
+
+      <div style={{ borderRadius: 16, border: `1px solid ${C.terra}44`, background: "linear-gradient(180deg,#F8EFE1,#F4ECDB)", padding: 18, marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+          <span style={{ flexShrink: 0, display: "flex", height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 11, background: C.terra + "16", border: `1px solid ${C.terra}33` }}><FileText size={20} color={C.terra} /></span>
+          <div>
+            <h3 style={{ fontFamily: serifH, fontSize: 17, margin: 0, color: C.ink }}>Take this to your pharmacy or provider</h3>
+            <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "4px 0 0", lineHeight: 1.5, maxWidth: 460 }}>A one-page summary of your medicines, interactions, flags, schedule, suggested labs, and questions to ask.</p>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <button onClick={() => printSummary(meds, keys, findings, score, symptoms)} style={primaryBtn} disabled={!meds.length}><Printer size={16} /> Print / Save PDF</button>
+          <button onClick={() => downloadText("medication-summary.txt", summaryToText(meds, keys, findings, score, symptoms))} style={ghostBtn} disabled={!meds.length}><Download size={16} /> Download (.txt)</button>
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px,1fr))", gap: 12 }}>
+        <Stat label="Safety score" value={score} color={band.color} />
+        <Stat label="Adherence (est.)" value={adherence + "%"} color="#2F8F6B" />
+        <Stat label="Medicines" value={meds.length} />
+        <Stat label="Check-ins" value={symptoms.length} />
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px,1fr))", gap: 14, marginTop: 14 }}>
+        <div style={card}>
+          <h3 style={{ fontFamily: serifH, fontSize: 16, margin: "0 0 10px", color: C.ink }}>Organ systems most affected</h3>
+          {organs.length ? organs.map(o => <p key={o.id} style={{ fontSize: 13, color: C.inkSoft, margin: "0 0 5px" }}>• {o.name} <span style={{ color: IMPACT[o.sev].color, fontWeight: 600 }}>· {IMPACT[o.sev].label}</span></p>) : <p style={{ fontSize: 13, color: C.inkFaint, margin: 0 }}>Add medicines to populate.</p>}
+        </div>
+        <div style={card}>
+          <h3 style={{ fontFamily: serifH, fontSize: 16, margin: "0 0 10px", color: C.ink }}>Most reported symptoms</h3>
+          {topSx.length ? topSx.map(([s, n]) => <p key={s} style={{ fontSize: 13, color: C.inkSoft, margin: "0 0 5px" }}>• {s} <span style={{ color: C.inkFaint }}>×{n}</span></p>) : <p style={{ fontSize: 13, color: C.inkFaint, margin: 0 }}>No symptoms logged yet.</p>}
+        </div>
+        <div style={card}>
+          <h3 style={{ fontFamily: serifH, fontSize: 16, margin: "0 0 10px", color: C.ink }}>Recommended lab tests</h3>
+          {labs.length ? <p style={{ fontSize: 13, color: C.inkSoft, margin: 0, lineHeight: 1.6 }}>{labs.join(" · ")}</p> : <p style={{ fontSize: 13, color: C.inkFaint, margin: 0 }}>None flagged.</p>}
+        </div>
+        <div style={card}>
+          <h3 style={{ fontFamily: serifH, fontSize: 16, margin: "0 0 10px", color: C.ink }}>Refills on file</h3>
+          {refills.length ? refills.map((r, i) => <p key={i} style={{ fontSize: 13, color: C.inkSoft, margin: "0 0 5px" }}>• {r.name} <span style={{ color: C.inkFaint }}>started {r.due}</span></p>) : <p style={{ fontSize: 13, color: C.inkFaint, margin: 0 }}>Add start dates on My Medications.</p>}
+        </div>
+      </div>
+      <div style={{ ...card, marginTop: 14 }}>
+        <h3 style={{ fontFamily: serifH, fontSize: 16, margin: "0 0 10px", color: C.ink }}>Questions to ask your provider</h3>
+        {questions.map((q, i) => <p key={i} style={{ fontSize: 13.5, color: "#4F4233", margin: "0 0 6px", lineHeight: 1.5 }}>{i + 1}. {q}</p>)}
+      </div>
+      <p style={{ marginTop: 16, fontSize: 11.5, color: C.inkFaint }}>Adherence and refills are estimates for demonstration. Educational only — not a substitute for professional advice.</p>
+    </div>
+  );
+}
+
+// ---- Drug Safety News (personalized safety intelligence) -------------------
+const NEWS_SEV = {
+  Critical: { rank: 4, color: "#B4332B", chip: "🔴" },
+  High: { rank: 3, color: "#B0591E", chip: "🟠" },
+  Moderate: { rank: 2, color: "#B07A1E", chip: "🟡" },
+  Informational: { rank: 1, color: "#3E7A6E", chip: "🟢" },
+};
+const NEWS_SRC = {
+  FDA: { label: "U.S. FDA — Drug Safety", url: "https://www.fda.gov/drugs/drug-safety-and-availability" },
+  RECALL: { label: "FDA Recalls & Alerts", url: "https://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts" },
+  SHORTAGE: { label: "FDA Drug Shortages", url: "https://www.accessdata.fda.gov/scripts/drugshortages/" },
+  RESEARCH: { label: "Peer-reviewed literature (PubMed)", url: "https://pubmed.ncbi.nlm.nih.gov/" },
+  INTL: { label: "International regulators (EMA · MHRA · WHO)", url: "https://www.ema.europa.eu/en/medicines" },
+  CDC: { label: "CDC", url: "https://www.cdc.gov/" },
+};
+
+function buildNews(meds, keys) {
+  const today = new Date().toLocaleDateString();
+  const nm = k => DRUGS[k]?.name || k;
+  const tag = t => keys.filter(k => has(k, t));
+  const cls = (...c) => keys.filter(k => c.includes(DRUGS[k]?.cls));
+  const items = [];
+  const add = o => items.push(Object.assign({ drugs: [], symptoms: "—", contact: false, alternatives: "Ask your pharmacist whether a lower-risk option fits your situation.", date: today }, o));
+
+  const qt = tag("qt");
+  if (qt.length) add({ id: "qt", sev: qt.length >= 2 ? "High" : "Informational", cat: "Interaction Update", src: "FDA", drugs: qt,
+    title: "Heart-rhythm (QT) monitoring for " + (qt.length >= 2 ? "several of your medicines" : nm(qt[0])),
+    summary: "Medicines that can lengthen the heart's QT interval are in your profile. Guidance is to use care when these are combined, or paired with low potassium or magnesium.",
+    why: "Your profile includes " + qt.map(nm).join(", ") + ", whose QT effects can add together.",
+    symptoms: "Palpitations, dizziness, or fainting — seek care promptly for these.", contact: qt.length >= 2 });
+
+  const bleed = tag("bleeding");
+  if (bleed.length) add({ id: "bleed", sev: bleed.length >= 2 ? "High" : "Moderate", cat: "New Side Effect", src: "FDA", drugs: bleed,
+    title: "Bleeding-risk monitoring", summary: "Blood thinners and anti-inflammatories increase bleeding risk; this is a recurring focus of safety communications.",
+    why: "You take " + bleed.map(nm).join(", ") + ", which affect clotting or platelets.",
+    symptoms: "Black or bloody stools, unusual bruising, or bleeding that won't stop.", contact: bleed.length >= 2 });
+
+  if (keys.some(k => DRUGS[k]?.cls === "Opioid") && keys.some(k => DRUGS[k]?.cls === "Benzodiazepine" || k === "zolpidem"))
+    add({ id: "boxed", sev: "Critical", cat: "FDA Safety Alert", src: "FDA", drugs: keys.filter(k => DRUGS[k]?.cls === "Opioid" || DRUGS[k]?.cls === "Benzodiazepine" || k === "zolpidem"),
+      title: "Boxed warning: opioid combined with a sedative", summary: "The FDA boxed warning highlights serious breathing risk when opioids and benzodiazepines (or similar sedatives) are taken together.",
+      why: "Your profile pairs an opioid with a sedative — the exact combination this warning addresses.",
+      symptoms: "Extreme drowsiness, slow or shallow breathing, unresponsiveness — emergency.", contact: true });
+
+  const stat = keys.filter(k => has(k, "statin"));
+  if (stat.length) add({ id: "statin", sev: "Moderate", cat: "New Side Effect", src: "RESEARCH", drugs: stat,
+    title: "Muscle-injury monitoring with statins", summary: "Long-term safety studies continue to track rare muscle injury (myopathy/rhabdomyolysis) with statins, especially alongside strong interacting medicines.",
+    why: "You take " + stat.map(nm).join(", ") + ".", symptoms: "Unexplained muscle pain, weakness, or dark urine.", contact: false });
+
+  if (keys.includes("grapefruit") || keys.some(k => has(k, "cyp3a4_sub")))
+    add({ id: "food", sev: "Informational", cat: "Food & Lifestyle", src: "RESEARCH", drugs: keys.filter(k => has(k, "cyp3a4_sub")),
+      title: "Grapefruit interaction reminder", summary: "Grapefruit blocks a gut enzyme and can raise levels of certain medicines — a frequently updated lifestyle-interaction topic.",
+      why: keys.some(k => has(k, "cyp3a4_sub")) ? "Some of your medicines are cleared by the enzyme grapefruit blocks." : "Grapefruit is in your list.", symptoms: "—", contact: false });
+
+  if (keys.some(k => has(k, "cns_depress") || has(k, "hepatotoxic")))
+    add({ id: "alcohol", sev: "Informational", cat: "Food & Lifestyle", src: "CDC", drugs: keys.filter(k => has(k, "cns_depress") || has(k, "hepatotoxic")),
+      title: "Alcohol & your medicines", summary: "Alcohol can add sedation and liver strain with several medication classes — a standard lifestyle caution.",
+      why: "Some of your medicines affect the brain or liver, where alcohol overlaps.", symptoms: "Excess drowsiness, confusion, or nausea.", contact: false });
+
+  if (keys.includes("warfarin")) add({ id: "warfarin", sev: "Moderate", cat: "Food & Lifestyle", src: "FDA", drugs: ["warfarin"],
+    title: "Warfarin: vitamin K & interaction watch", summary: "Warfarin remains one of the most interaction-prone medicines; consistent vitamin-K intake and INR monitoring are emphasized.",
+    why: "Warfarin is in your profile.", symptoms: "Bleeding, bruising; tell any prescriber you take warfarin.", contact: false });
+
+  const nti = keys.filter(k => has(k, "narrow_ti"));
+  if (nti.length) add({ id: "nti", sev: "Moderate", cat: "Clinical Research", src: "RESEARCH", drugs: nti,
+    title: "Narrow-safety-margin medicines in your profile", summary: "Medicines with a narrow therapeutic index need careful dosing and monitoring; new research often refines target levels.",
+    why: "You take " + nti.map(nm).join(", ") + ", where small changes matter.", symptoms: "Watch for new or unusual side effects after any change.", contact: false });
+
+  const sero = tag("serotonergic");
+  if (sero.length >= 2) add({ id: "sero", sev: "High", cat: "Clinical Research", src: "RESEARCH", drugs: sero,
+    title: "Serotonin-syndrome awareness", summary: "Combinations that raise serotonin are an active research and safety topic.",
+    why: "Several of your medicines raise serotonin: " + sero.map(nm).join(", ") + ".", symptoms: "Agitation, shivering, sweating, fast heart rate, muscle twitching — urgent if severe.", contact: true });
+
+  const nephro = tag("nephrotoxic");
+  if (nephro.length) add({ id: "kidney", sev: "Moderate", cat: "New Side Effect", src: "FDA", drugs: nephro,
+    title: "Kidney-safety monitoring", summary: "Anti-inflammatory and related medicines can stress the kidneys, particularly during dehydration or illness.",
+    why: "You take " + nephro.map(nm).join(", ") + ".", symptoms: "Reduced urination, swelling, or unusual fatigue.", contact: false });
+
+  // recall / shortage / international / approvals — honest "how to check" items
+  add({ id: "recall", sev: "Informational", cat: "Drug Recall", src: "RECALL", drugs: [],
+    title: "Check whether any of your medicines were recalled", summary: "Recalls happen at the lot level and change often. This tool isn't connected to a live recall feed — verify on the FDA recalls page or ask your pharmacy with your bottle's lot number.",
+    why: "Keeping your " + meds.length + " medicine(s) recall-free means checking the official source periodically.", symptoms: "—", contact: false, alternatives: "Your pharmacy can confirm a lot number in seconds." });
+  add({ id: "shortage", sev: "Informational", cat: "Shortage", src: "SHORTAGE", drugs: [],
+    title: "Check for shortages affecting your medicines", summary: "If a medicine is hard to get, refill early, ask your pharmacy, and ask your physician about alternatives. Live shortage status is on the FDA shortages site.",
+    why: "Planning ahead avoids gaps in your treatment.", symptoms: "—", contact: false, alternatives: "Ask your physician about therapeutic alternatives if a shortage hits." });
+  add({ id: "intl", sev: "Informational", cat: "International", src: "INTL", drugs: [],
+    title: "International safety notices (EMA · MHRA · WHO)", summary: "Other regulators sometimes flag issues before or alongside the FDA. Their portals are linked for cross-checking.",
+    why: "Useful if you travel or fill prescriptions abroad.", symptoms: "—", contact: false });
+  if (meds.length) add({ id: "generic", sev: "Informational", cat: "Approvals & Generics", src: "FDA", drugs: [],
+    title: "Generics & alternative formulations", summary: "Generic versions and new formulations can lower cost or improve convenience without changing the active medicine.",
+    why: "Worth asking about for any brand-name medicines you take.", symptoms: "—", contact: false, alternatives: "Ask your pharmacist which of your medicines have a generic equivalent." });
+
+  return items.sort((a, b) => NEWS_SEV[b.sev].rank - NEWS_SEV[a.sev].rank);
+}
+
+const NEWS_FILTERS = [["all", "All"], ["mine", "My medications"], ["Critical", "Critical"], ["FDA Safety Alert", "FDA"], ["Clinical Research", "Research"], ["Drug Recall", "Recalls"], ["Food & Lifestyle", "Food"]];
+const NEWS_SUBS = [["critical", "Immediate critical alerts"], ["recalls", "Drug recall alerts"], ["shortages", "Medication shortages"], ["fda", "FDA updates"], ["interactions", "Interaction updates"], ["sideeffects", "New side effects"], ["research", "Research news"], ["digest", "Weekly digest"]];
+
+function NewsCard({ it, isNew, saved, onSave, go }) {
+  const [open, setOpen] = useState(false);
+  const [ask, setAsk] = useState(null);
+  const sev = NEWS_SEV[it.sev];
+  const src = NEWS_SRC[it.src];
+  const inList = it.drugs.length > 0;
+  const others = it.drugs.length ? it.drugs.map(d => DRUGS[d]?.name || d).join(", ") : "none of your specific medicines are named in this general item";
+  const ANSWERS = {
+    "Explain this": it.summary,
+    "How does this affect me?": it.why,
+    "Should I contact my doctor?": it.contact ? "This is the kind of item worth raising promptly — contact your prescriber or pharmacist, especially if you notice the symptoms below." : "No urgent action implied. Mention it at your next routine visit if you like.",
+    "Are my other meds affected?": "Medicines in your profile related to this item: " + others + ".",
+    "What symptoms should I watch for?": it.symptoms,
+    "Show safer alternatives": it.alternatives + " Never switch on your own.",
+  };
+  const shareOne = () => downloadText(it.id + "-safety-update.txt",
+    "DRUG SAFETY UPDATE (to share with provider)\nDate: " + it.date + "\n\n" + it.title + "  [" + it.sev + " · " + it.cat + "]\n\nSummary: " + it.summary + "\nWhy it matters: " + it.why + "\nSymptoms to watch: " + it.symptoms + "\nSource: " + src.label + " (" + src.url + ")\n\nEducational summary — confirm with your pharmacist or prescriber.");
+  return (
+    <div style={{ borderRadius: 14, border: `1px solid ${C.line}`, background: C.surface, padding: 16, borderLeft: `3px solid ${sev.color}` }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 5, borderRadius: 999, padding: "3px 9px", fontSize: 11, fontWeight: 700, color: sev.color, background: sev.color + "14", border: `1px solid ${sev.color}44` }}>{sev.chip} {it.sev}</span>
+        <span style={{ fontSize: 11, color: C.inkSoft, fontWeight: 600 }}>{it.cat}</span>
+        {isNew && <span style={{ fontSize: 10, fontWeight: 700, color: "#FBF6EC", background: C.terra, borderRadius: 999, padding: "2px 8px" }}>NEW</span>}
+        {inList && <span style={{ fontSize: 10, fontWeight: 600, color: "#2F8F6B", background: "#2F8F6B15", border: "1px solid #2F8F6B40", borderRadius: 999, padding: "2px 8px" }}>In your list</span>}
+        <span style={{ marginLeft: "auto", fontSize: 11, color: C.inkFaint }}>{it.date}</span>
+      </div>
+      <h3 style={{ fontFamily: serifH, fontSize: 16.5, margin: "10px 0 0", color: C.ink, lineHeight: 1.25 }}>{it.title}</h3>
+      {it.drugs.length > 0 && <div style={{ marginTop: 8, display: "flex", flexWrap: "wrap", gap: 6 }}>{it.drugs.map(d => <span key={d} style={{ borderRadius: 6, background: "#F1EADB", border: `1px solid ${C.line}`, padding: "2px 7px", fontSize: 11, color: C.inkSoft }}>{DRUGS[d]?.name || d}</span>)}</div>}
+      <p style={{ fontSize: 13.5, color: "#4F4233", margin: "10px 0 0", lineHeight: 1.55 }}>{it.summary}</p>
+      <div style={{ marginTop: 10, borderRadius: 9, background: "#F6EFE2", border: `1px solid ${C.line}`, padding: "10px 12px" }}>
+        <p style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: C.inkSoft, margin: "0 0 3px" }}>Why this matters to you</p>
+        <p style={{ fontSize: 12.5, color: "#4F4233", margin: 0, lineHeight: 1.5 }}>{it.why}</p>
+      </div>
+
+      <div style={{ marginTop: 10, display: "flex", flexWrap: "wrap", gap: 6 }}>
+        {Object.keys(ANSWERS).map(q => (
+          <button key={q} onClick={() => setAsk(ask === q ? null : q)} style={{ fontSize: 11.5, fontWeight: 600, borderRadius: 999, border: `1px solid ${ask === q ? C.terra : C.line}`, background: ask === q ? C.terra : C.surface, color: ask === q ? "#FBF6EC" : C.inkSoft, padding: "5px 11px", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 5 }}><Sparkles size={12} />{q}</button>
+        ))}
+      </div>
+      {ask && <p style={{ fontSize: 13, color: "#4F4233", margin: "10px 0 0", lineHeight: 1.55, borderLeft: `2px solid ${C.terra}`, paddingLeft: 12 }}>{ANSWERS[ask]}</p>}
+
+      <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+        <a href={src.url} target="_blank" rel="noopener noreferrer" style={{ ...ghostBtn, padding: "7px 12px", fontSize: 12.5, textDecoration: "none" }}>Read more <ArrowRight size={14} /></a>
+        <button onClick={onSave} style={{ ...ghostBtn, padding: "7px 12px", fontSize: 12.5, color: saved ? C.terra : C.inkSoft, borderColor: saved ? C.terra + "66" : C.line }}><Bookmark size={14} fill={saved ? C.terra : "none"} /> {saved ? "Saved" : "Save"}</button>
+        <button onClick={shareOne} style={{ ...ghostBtn, padding: "7px 12px", fontSize: 12.5 }}><Share2 size={14} /> Share with provider</button>
+        <button onClick={() => go("pharmacist")} style={{ ...ghostBtn, padding: "7px 12px", fontSize: 12.5 }}><MessageCircle size={14} /> Ask AI Pharmacist</button>
+      </div>
+    </div>
+  );
+}
+
+function DrugSafetyNews({ meds, keys, findings, score, go }) {
+  const band = SCOREBAND(score);
+  const [q, setQ] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [saved, setSaved] = useState([]);
+  const [subs, setSubs] = useState({ critical: true, recalls: true, shortages: false, fda: true, interactions: true, sideeffects: true, research: false, digest: true });
+  const [lastRefresh, setLastRefresh] = useState(() => Date.now());
+  const [interval, setIntervalMin] = useState(30);
+  const [, tick] = useState(0);
+
+  const all = useMemo(() => buildNews(meds, keys), [meds, keys]);
+  const newIds = useMemo(() => all.slice(0, 3).map(i => i.id), [all]);
+
+  useEffect(() => { const t = setInterval(() => tick(x => x + 1), 30000); return () => clearInterval(t); }, []);
+  useEffect(() => { const t = setInterval(() => setLastRefresh(Date.now()), interval * 60000); return () => clearInterval(t); }, [interval]);
+
+  const agoMin = Math.floor((Date.now() - lastRefresh) / 60000);
+  const ago = agoMin < 1 ? "just now" : agoMin === 1 ? "1 minute ago" : agoMin + " minutes ago";
+
+  const shown = useMemo(() => {
+    const t = q.trim().toLowerCase();
+    return all.filter(it => {
+      if (filter === "mine" && !it.drugs.length) return false;
+      if (filter === "Critical" && it.sev !== "Critical") return false;
+      if (["FDA Safety Alert", "Clinical Research", "Drug Recall", "Food & Lifestyle"].includes(filter) && it.cat !== filter) return false;
+      if (!t) return true;
+      return (it.title + " " + it.summary + " " + it.cat + " " + it.drugs.map(d => DRUGS[d]?.name || d).join(" ")).toLowerCase().includes(t);
+    });
+  }, [all, q, filter]);
+
+  const catCount = c => all.filter(i => newIds.includes(i.id) && i.cat === c).length;
+  const summaryBits = [];
+  if (catCount("FDA Safety Alert")) summaryBits.push(catCount("FDA Safety Alert") + " FDA safety alert(s)");
+  if (catCount("Interaction Update")) summaryBits.push(catCount("Interaction Update") + " interaction update(s)");
+  if (catCount("Food & Lifestyle")) summaryBits.push(catCount("Food & Lifestyle") + " food/lifestyle update(s)");
+  if (catCount("Clinical Research")) summaryBits.push(catCount("Clinical Research") + " research study/studies");
+  if (catCount("New Side Effect")) summaryBits.push(catCount("New Side Effect") + " side-effect update(s)");
+
+  return (
+    <div style={{ maxWidth: 900 }}>
+      <PageHead title="Drug Safety News" italic={"\u201cYour medicines, watched over \u2014 and explained.\u201d"} sub="Personalized safety intelligence drawn from your medication profile." />
+
+      {/* honesty banner */}
+      <div style={{ display: "flex", gap: 12, alignItems: "flex-start", borderRadius: 14, border: `1px solid ${C.line}`, background: "#F6EFE2", padding: "13px 15px", marginBottom: 16 }}>
+        <Info size={16} color={C.terra} style={{ marginTop: 2, flexShrink: 0 }} />
+        <p style={{ fontSize: 12.5, color: C.inkSoft, margin: 0, lineHeight: 1.55 }}>These updates are generated from your profile using well-established safety knowledge — <strong>not a live regulatory feed</strong>. "Read more" links go to the official sources (FDA, EMA, and others). For real-time bulletins, connect a verified data source or check with your pharmacist.</p>
+      </div>
+
+      {meds.length === 0 ? (
+        <div style={{ ...card, textAlign: "center", padding: "40px 24px" }}>
+          <Newspaper size={26} color={C.inkFaint} style={{ display: "block", margin: "0 auto" }} />
+          <p style={{ fontSize: 14.5, color: C.inkSoft, marginTop: 10 }}>Add your medicines to personalize your safety feed.</p>
+          <button onClick={() => go("meds")} style={{ ...primaryBtn, marginTop: 14 }}>Add medications <ArrowRight size={16} /></button>
+        </div>
+      ) : (
+        <>
+          {/* AI summary + refresh */}
+          <div style={{ ...card, marginBottom: 16, background: "linear-gradient(180deg,#F8EFE1,#F4ECDB)", borderColor: C.terra + "33" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontFamily: serifH, fontSize: 17, color: C.ink }}><Sparkles size={17} color={C.terra} />Today's Medication Safety Summary</span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 10, fontSize: 12, color: C.inkSoft }}>
+                <span><Clock size={12} style={{ verticalAlign: "-2px", marginRight: 3 }} />Updated {ago}</span>
+                <button onClick={() => setLastRefresh(Date.now())} style={{ ...ghostBtn, padding: "5px 10px", fontSize: 12 }}><RefreshCw size={13} /> Refresh</button>
+                <select value={interval} onChange={e => setIntervalMin(+e.target.value)} style={{ borderRadius: 8, border: `1px solid ${C.line}`, background: C.surface, padding: "5px 8px", fontSize: 12, color: C.ink }}>
+                  <option value={15}>every 15 min</option><option value={30}>every 30 min</option>
+                </select>
+              </span>
+            </div>
+            <p style={{ fontSize: 14, color: "#4F4233", margin: "12px 0 0", lineHeight: 1.55 }}>There {newIds.length === 1 ? "is" : "are"} <strong>{newIds.length}</strong> highlighted update{newIds.length === 1 ? "" : "s"} most relevant to your medicines{summaryBits.length ? ": " + summaryBits.join(", ") + "." : "."}</p>
+          </div>
+
+          {/* stat row */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px,1fr))", gap: 12, marginBottom: 16 }}>
+            <div style={{ ...card, textAlign: "center" }}><div style={{ fontSize: 26, fontWeight: 700, fontFamily: serifH, color: band.color }}>{score}</div><div style={{ fontSize: 11, color: C.inkSoft }}>Safety score</div></div>
+            <div style={{ ...card, textAlign: "center" }}><div style={{ fontSize: 26, fontWeight: 700, fontFamily: serifH, color: C.ink }}>{all.length}</div><div style={{ fontSize: 11, color: C.inkSoft }}>Relevant updates</div></div>
+            <div style={{ ...card, textAlign: "center" }}><div style={{ fontSize: 26, fontWeight: 700, fontFamily: serifH, color: C.terra }}>{newIds.length}</div><div style={{ fontSize: 11, color: C.inkSoft }}>New for you</div></div>
+            <div style={{ ...card, textAlign: "center" }}><div style={{ fontSize: 26, fontWeight: 700, fontFamily: serifH, color: C.ink }}>{keys.length}</div><div style={{ fontSize: 11, color: C.inkSoft }}>Medicines watched</div></div>
+          </div>
+
+          {/* search + filters */}
+          <div style={{ position: "relative", marginBottom: 12 }}>
+            <Search size={16} color={C.inkFaint} style={{ position: "absolute", left: 13, top: "50%", transform: "translateY(-50%)" }} />
+            <input className="wst-input" value={q} onChange={e => setQ(e.target.value)} placeholder="Search by medicine, condition, symptom, source…" style={{ width: "100%", boxSizing: "border-box", borderRadius: 11, border: `1px solid ${C.line}`, background: C.surface, padding: "11px 12px 11px 40px", fontSize: 14, color: C.ink, outline: "none" }} />
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 18 }}>
+            {NEWS_FILTERS.map(([v, l]) => (<button key={v} onClick={() => setFilter(v)} style={{ fontSize: 12.5, fontWeight: 600, borderRadius: 999, padding: "6px 13px", cursor: "pointer", border: `1px solid ${filter === v ? C.terra : C.line}`, background: filter === v ? C.terra : C.surface, color: filter === v ? "#FBF6EC" : C.inkSoft }}>{l}</button>))}
+          </div>
+
+          {/* feed */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {shown.length === 0 && <div style={{ ...card, fontSize: 13.5, color: C.inkSoft }}>No updates match this filter.</div>}
+            {shown.map(it => <NewsCard key={it.id} it={it} isNew={newIds.includes(it.id)} saved={saved.includes(it.id)} onSave={() => setSaved(p => p.includes(it.id) ? p.filter(x => x !== it.id) : [...p, it.id])} go={go} />)}
+          </div>
+
+          {/* subscriptions */}
+          <h2 style={{ fontFamily: serifH, fontSize: 18, color: C.ink, margin: "28px 0 12px" }}>Notify me about</h2>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px,1fr))", gap: 10 }}>
+            {NEWS_SUBS.map(([k, label]) => <Toggle key={k} on={subs[k]} onChange={v => setSubs(p => ({ ...p, [k]: v }))} label={label} />)}
+          </div>
+          <p style={{ fontSize: 12, color: C.inkSoft, margin: "10px 0 0" }}>Delivery channels and quiet hours are set on the <button onClick={() => go("notifications")} style={{ background: "none", border: "none", color: C.terra, cursor: "pointer", padding: 0, textDecoration: "underline", fontSize: 12 }}>Notifications</button> page.</p>
+
+          {/* trusted sources */}
+          <h2 style={{ fontFamily: serifH, fontSize: 18, color: C.ink, margin: "28px 0 10px" }}>Trusted sources</h2>
+          <div style={{ ...card }}>
+            <p style={{ fontSize: 13, color: C.inkSoft, margin: 0, lineHeight: 1.7 }}><Globe size={14} color={C.terra} style={{ verticalAlign: "-2px", marginRight: 6 }} />FDA · NIH · CDC · WHO · European Medicines Agency (EMA) · Health Canada · MHRA (UK) · TGA (Australia) · peer-reviewed medical journals and major professional organizations. Only verified, authoritative sources are linked.</p>
+          </div>
+          <p style={{ marginTop: 16, fontSize: 11.5, color: C.inkFaint }}>Educational only. Generated from your profile, not a real-time bulletin — confirm anything important with your pharmacist or prescriber.</p>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ---- Pill Identifier (original design) ------------------------------------
+const PILL_SWATCH = {
+  "Any": "", White: "#FCFBF8", "Off-white": "#F1ECE0", Beige: "#E8DCC2", Tan: "#D7BE93", Yellow: "#F2D24B",
+  Gold: "#D9A93B", Orange: "#E5863A", Peach: "#F2C09A", Pink: "#E59BB2", Red: "#C0392B", Purple: "#8E5BB5",
+  Blue: "#3F6FB5", Green: "#3E9A6B", Turquoise: "#3FB2A6", Brown: "#8A5A3B", Gray: "#9AA0A6", Black: "#2B231C", "Multi": "conic",
+};
+const SHAPE_GLYPH = {
+  Round: <circle cx="12" cy="12" r="8.5" />,
+  Oval: <ellipse cx="12" cy="12" rx="9.5" ry="6" />,
+  Capsule: <rect x="2.5" y="7" width="19" height="10" rx="5" />,
+  Rectangle: <rect x="3.5" y="7" width="17" height="10" rx="2" />,
+  Square: <rect x="4.5" y="4.5" width="15" height="15" rx="2.5" />,
+  Triangle: <path d="M12,3.5 L20.5,19 L3.5,19 Z" />,
+  Diamond: <path d="M12,2.5 L20,12 L12,21.5 L4,12 Z" />,
+  Pentagon: <path d="M12,2.5 L20.5,9 L17.2,19.5 L6.8,19.5 L3.5,9 Z" />,
+  Hexagon: <path d="M7,3.5 L17,3.5 L22,12 L17,20.5 L7,20.5 L2,12 Z" />,
+  Heart: <path d="M12,19 C2.5,12 5.5,4 12,8.2 C18.5,4 21.5,12 12,19 Z" />,
+  Teardrop: <path d="M12,2.5 C17.5,9.5 18.5,13.5 12,20 C5.5,13.5 6.5,9.5 12,2.5 Z" />,
+  Other: <text x="12" y="16" textAnchor="middle" fontSize="14" fontWeight="700" fill="currentColor">?</text>,
+};
+const SHAPE_LIST = ["Round", "Oval", "Capsule", "Rectangle", "Square", "Triangle", "Diamond", "Pentagon", "Hexagon", "Heart", "Teardrop", "Other"];
+
+function PillIdentifier({ go }) {
+  const [imprint, setImprint] = useState("");
+  const [color, setColor] = useState("Any");
+  const [shape, setShape] = useState("");
+  const [searched, setSearched] = useState(false);
+  const localMatch = useMemo(() => {
+    const t = imprint.trim().toLowerCase(); if (t.length < 3) return [];
+    return searchDirectory(t, null).filter(d => d.name.toLowerCase().includes(t)).slice(0, 5);
+  }, [imprint]);
+  const q = encodeURIComponent(imprint.trim());
+  const descr = [imprint.trim() && ("imprint " + imprint.trim()), color !== "Any" && (color.toLowerCase() + " in color"), shape && (shape.toLowerCase() + " shaped")].filter(Boolean).join(", ");
+  const links = [
+    { label: "NIH DailyMed", url: "https://dailymed.nlm.nih.gov/dailymed/search.cfm?query=" + q, note: "U.S. National Library of Medicine" },
+    { label: "Drugs.com identifier", url: "https://www.drugs.com/imprints.php?imprint=" + q, note: "consumer pill finder" },
+    { label: "Open web search", url: "https://www.google.com/search?q=" + encodeURIComponent("pill imprint " + imprint.trim() + " " + (color !== "Any" ? color : "") + " " + (shape || "")), note: "broad lookup" },
+  ];
+  const run = () => { setSearched(true); if (imprint.trim()) window.open(links[0].url, "_blank", "noopener,noreferrer"); };
+  const swatchBg = c => PILL_SWATCH[c] === "conic" ? "conic-gradient(#E59BB2,#F2D24B,#3F6FB5,#3E9A6B,#E59BB2)" : (PILL_SWATCH[c] || "transparent");
+
+  return (
+    <div style={{ maxWidth: 860 }}>
+      <PageHead title="Pill Identifier" italic={"\u201cA loose, unlabeled tablet? Read it like a fingerprint.\u201d"} sub="Work from what's physically on the pill \u2014 its stamped code first, then color and shape \u2014 and we'll hand you to a verified database to confirm it." />
+
+      <div className="pill-grid" style={{ display: "grid", gridTemplateColumns: "1.35fr 1fr", gap: 18, alignItems: "start" }}>
+        <div style={{ ...card }}>
+          {/* step 1 imprint */}
+          <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 10 }}>
+            <span style={{ display: "flex", height: 24, width: 24, alignItems: "center", justifyContent: "center", borderRadius: 999, background: C.terra, color: "#FBF6EC", fontSize: 12.5, fontWeight: 700 }}>1</span>
+            <span style={{ fontFamily: serifH, fontSize: 16, color: C.ink }}>The imprint code</span>
+          </div>
+          <input className="wst-input" value={imprint} onChange={e => { setImprint(e.target.value); setSearched(false); }} onKeyDown={e => { if (e.key === "Enter") run(); }} placeholder="Type the letters & numbers, e.g. TEVA 3109"
+            style={{ width: "100%", boxSizing: "border-box", borderRadius: 11, border: `1px solid ${C.line}`, background: C.surface, padding: "13px 14px", fontSize: 15, color: C.ink, outline: "none" }} />
+          <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "8px 0 0", lineHeight: 1.5 }}>Combine whatever you can read from <em>both</em> faces, separated by a space. The imprint alone usually narrows it down \u2014 add color or shape only if you get too many hits.</p>
+
+          {/* step 2 color */}
+          <div style={{ display: "flex", alignItems: "center", gap: 9, margin: "20px 0 10px" }}>
+            <span style={{ display: "flex", height: 24, width: 24, alignItems: "center", justifyContent: "center", borderRadius: 999, background: "#E3D8C4", color: C.ink, fontSize: 12.5, fontWeight: 700 }}>2</span>
+            <span style={{ fontFamily: serifH, fontSize: 16, color: C.ink }}>Color <span style={{ fontFamily: "inherit", fontSize: 12.5, color: C.inkFaint, fontWeight: 400 }}>(optional)</span></span>
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 9 }}>
+            {Object.keys(PILL_SWATCH).map(c => {
+              const sel = color === c;
+              return (
+                <button key={c} onClick={() => setColor(c)} title={c} style={{ display: "inline-flex", alignItems: "center", gap: 7, borderRadius: 999, border: `1px solid ${sel ? C.terra : C.line}`, background: sel ? "#F4EAD8" : C.surface, padding: "4px 11px 4px 5px", cursor: "pointer" }}>
+                  <span style={{ height: 18, width: 18, borderRadius: 999, background: swatchBg(c), border: c === "Any" ? `1px dashed ${C.inkFaint}` : `1px solid rgba(43,35,28,0.18)`, boxShadow: sel ? `0 0 0 2px ${C.terra}` : "none" }} />
+                  <span style={{ fontSize: 12.5, color: C.inkSoft, fontWeight: sel ? 600 : 400 }}>{c}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* step 3 shape */}
+          <div style={{ display: "flex", alignItems: "center", gap: 9, margin: "20px 0 10px" }}>
+            <span style={{ display: "flex", height: 24, width: 24, alignItems: "center", justifyContent: "center", borderRadius: 999, background: "#E3D8C4", color: C.ink, fontSize: 12.5, fontWeight: 700 }}>3</span>
+            <span style={{ fontFamily: serifH, fontSize: 16, color: C.ink }}>Shape <span style={{ fontFamily: "inherit", fontSize: 12.5, color: C.inkFaint, fontWeight: 400 }}>(optional)</span></span>
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {SHAPE_LIST.map(s => {
+              const sel = shape === s;
+              return (
+                <button key={s} onClick={() => setShape(sel ? "" : s)} style={{ display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 10, border: `1px solid ${sel ? C.terra : C.line}`, background: sel ? C.terra : C.surface, color: sel ? "#FBF6EC" : C.inkSoft, padding: "6px 10px", cursor: "pointer" }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={{ display: "block" }}>{SHAPE_GLYPH[s]}</svg>
+                  <span style={{ fontSize: 12.5, fontWeight: sel ? 600 : 400 }}>{s}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <button onClick={run} disabled={!imprint.trim()} style={{ ...primaryBtn, width: "100%", justifyContent: "center", marginTop: 20, opacity: imprint.trim() ? 1 : 0.5 }}><Search size={16} /> Identify this pill</button>
+        </div>
+
+        {/* original "how to read a pill" diagram */}
+        <div style={{ ...card, background: "#F6EFE2" }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkFaint, margin: "0 0 12px" }}>How to read a tablet</p>
+          <svg viewBox="0 0 240 150" style={{ width: "100%", height: "auto", display: "block" }}>
+            <defs><linearGradient id="tab" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#EAD9BC" /><stop offset="1" stopColor="#DBC49B" /></linearGradient></defs>
+            {/* tablet */}
+            <ellipse cx="120" cy="78" rx="64" ry="40" fill="url(#tab)" stroke="#C9AE82" strokeWidth="1.5" />
+            <line x1="120" y1="42" x2="120" y2="114" stroke="#BD9F70" strokeWidth="2" />
+            <text x="92" y="84" textAnchor="middle" fontSize="19" fontWeight="700" fill="#6E5836" fontFamily="ui-monospace, monospace">93</text>
+            <text x="150" y="84" textAnchor="middle" fontSize="19" fontWeight="700" fill="#6E5836" fontFamily="ui-monospace, monospace">12</text>
+            {/* callouts */}
+            <g stroke="#B5532E" strokeWidth="1.3" fill="none"><path d="M70,60 L36,34" /><path d="M120,40 L120,18" /><path d="M178,84 L214,84" /><path d="M150,116 L150,138" /></g>
+            <g fill="#94401F" fontSize="9.5" fontWeight="600" fontFamily="ui-sans-serif, system-ui">
+              <text x="34" y="30" textAnchor="middle">imprint</text>
+              <text x="120" y="14" textAnchor="middle">score line</text>
+              <text x="216" y="87" textAnchor="start">color</text>
+              <text x="150" y="148" textAnchor="middle">shape</text>
+            </g>
+          </svg>
+          <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "12px 0 0", lineHeight: 1.55 }}>Most tablets and capsules carry a <strong style={{ color: C.ink }}>unique imprint</strong> \u2014 a manufacturer's code pressed into the surface. That code is the most reliable clue; color and shape help break ties.</p>
+        </div>
+      </div>
+
+      {searched && (
+        <div style={{ marginTop: 18 }}>
+          {localMatch.length > 0 && (
+            <div style={{ ...card, marginBottom: 14 }}>
+              <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "0 0 8px" }}>If you actually typed a medicine <em>name</em> (not an imprint), these are in your library:</p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {localMatch.map(d => <button key={d.name} onClick={() => go("meds")} style={{ ...ghostBtn, padding: "6px 12px", fontSize: 12.5 }}>{d.name}{d.cls ? " \u00b7 " + d.cls : ""}</button>)}
+              </div>
+            </div>
+          )}
+          <div style={{ ...card, borderLeft: `3px solid ${C.terra}` }}>
+            <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+              <ShieldAlert size={18} color={C.terra} style={{ flexShrink: 0, marginTop: 2 }} />
+              <div>
+                <h3 style={{ fontFamily: serifH, fontSize: 16.5, margin: 0, color: C.ink }}>Confirm with a verified database</h3>
+                <p style={{ fontSize: 13.5, color: "#4F4233", margin: "6px 0 0", lineHeight: 1.6 }}>We don't keep our own imprint catalog \u2014 a correct match has to come from an authoritative, maintained source. We've opened one for {descr ? <strong>{descr}</strong> : "your pill"}. Others you can check:</p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
+                  {links.map(l => <a key={l.label} href={l.url} target="_blank" rel="noopener noreferrer" style={{ ...ghostBtn, padding: "8px 13px", fontSize: 13, textDecoration: "none", flexDirection: "column", alignItems: "flex-start", gap: 1 }}><span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>{l.label} <ArrowRight size={13} /></span><span style={{ fontSize: 10.5, color: C.inkFaint, fontWeight: 400 }}>{l.note}</span></a>)}
+                </div>
+              </div>
+            </div>
+            <p style={{ fontSize: 12, color: "#B4332B", margin: "14px 0 0", lineHeight: 1.55, fontWeight: 500 }}>Never take a pill you can't positively identify. When a tablet is unlabeled or you're unsure, a pharmacist can identify it in person \u2014 that's the safest check.</p>
+          </div>
+        </div>
+      )}
+      <p style={{ marginTop: 16, fontSize: 11.5, color: C.inkFaint }}>Educational tool. Visual matching isn't performed here; identification comes from external verified databases. In an emergency or suspected poisoning, contact your local emergency number or poison control.</p>
+    </div>
+  );
+}
+
+// ---- Find My Medication (live pharmacy search) -----------------------------
+const FINDER_PHARMACIES = [
+  { name: "Star Market Pharmacy", x: 120, y: 150, dist: "0.4 miles", drive: "4 min drive" },
+  { name: "CVS Pharmacy", x: 210, y: 110, dist: "0.6 miles", drive: "5 min drive" },
+  { name: "Gary Drug Co", x: 168, y: 196, dist: "0.7 miles", drive: "6 min drive" },
+  { name: "Outpatient Pharmacy", x: 250, y: 178, dist: "0.9 miles", drive: "7 min drive" },
+  { name: "Walgreens", x: 92, y: 224, dist: "1.1 miles", drive: "8 min drive" },
+  { name: "MGH Pharmacy", x: 286, y: 132, dist: "1.2 miles", drive: "9 min drive" },
+  { name: "Beacon Hill Pharmacy", x: 150, y: 96, dist: "1.3 miles", drive: "9 min drive" },
+  { name: "South End Apothecary", x: 196, y: 252, dist: "1.5 miles", drive: "11 min drive" },
+  { name: "Charles Street Drug", x: 110, y: 118, dist: "1.6 miles", drive: "12 min drive" },
+  { name: "Back Bay Pharmacy", x: 64, y: 168, dist: "1.8 miles", drive: "13 min drive" },
+  { name: "Cambridge Health Rx", x: 240, y: 84, dist: "2.0 miles", drive: "15 min drive" },
+  { name: "Longwood Pharmacy", x: 300, y: 224, dist: "2.3 miles", drive: "17 min drive" },
+];
+const FINDER = { navy: "#16284A", mint: "#5FD0A8", mintBg: "#E6F7F0", coral: "#FF7A66", teal: "#1FA6A6", water: "#CFE6EE", land: "#EEF2EC", road: "#FFFFFF", roadEdge: "#E2E6DD" };
+
+function MedicationFinder({ meds, go }) {
+  const med = meds && meds.find(m => m.strength);
+  const medLabel = med ? med.name + " \u2013 " + med.strength : (meds && meds[0] ? meds[0].name : "Your Medication \u2013 20mg");
+  const [pct, setPct] = useState(0);
+  const [cards, setCards] = useState([]);
+  const [collapsed, setCollapsed] = useState(false);
+  const [running, setRunning] = useState(true);
+  const [locStatus, setLocStatus] = useState("idle"); // idle|locating|loading|ready|denied|error
+  const [userPos, setUserPos] = useState(null);
+  const [places, setPlaces] = useState([]);
+  const timers = useRef([]);
+
+  const usingReal = locStatus === "ready" && places.length > 0;
+
+  // project real pharmacies onto the local map
+  const placed = useMemo(() => {
+    if (!usingReal || !userPos) return [];
+    const mpLat = 69.0, mpLng = 69.0 * Math.cos(userPos.lat * Math.PI / 180);
+    const pts = places.map(p => ({ ...p, east: (p.lng - userPos.lng) * mpLng, north: (p.lat - userPos.lat) * mpLat }));
+    const maxMi = Math.max(0.3, ...pts.map(p => Math.hypot(p.east, p.north)));
+    const scale = 128 / maxMi;
+    return pts.map(p => ({ ...p, x: 180 + p.east * scale, y: 150 - p.north * scale }));
+  }, [usingReal, userPos, places]);
+
+  const source = usingReal ? places : FINDER_PHARMACIES;
+  const TOTAL = usingReal ? places.length : 20;
+
+  const start = (list) => {
+    timers.current.forEach(clearTimeout); timers.current = [];
+    setPct(0); setCards([]); setRunning(true); setCollapsed(false);
+    for (let i = 1; i <= 100; i++) timers.current.push(setTimeout(() => setPct(i), i * 60));
+    list.slice(0, 6).forEach((p, idx) => {
+      timers.current.push(setTimeout(() => {
+        setCards(c => [{ name: p.name, dist: p.dist, drive: p.drive, status: "calling", id: p.name + idx }, ...c]);
+        if (idx % 2 === 0) timers.current.push(setTimeout(() => setCards(c => c.map(x => x.id === p.name + idx ? { ...x, status: "stock" } : x)), 2200));
+      }, 800 + idx * 1000));
+    });
+    timers.current.push(setTimeout(() => setRunning(false), 6800));
+  };
+  useEffect(() => { start(FINDER_PHARMACIES); return () => timers.current.forEach(clearTimeout); /* eslint-disable-next-line */ }, []);
+  useEffect(() => { if (usingReal) start(places); /* eslint-disable-next-line */ }, [usingReal]);
+
+  async function fetchPharmacies(lat, lng) {
+    const query = '[out:json][timeout:20];(node["amenity"="pharmacy"](around:4000,' + lat + ',' + lng + ');way["amenity"="pharmacy"](around:4000,' + lat + ',' + lng + ');node["shop"="chemist"](around:4000,' + lat + ',' + lng + ');node["healthcare"="pharmacy"](around:4000,' + lat + ',' + lng + '););out center 60;';
+    const ctrl = new AbortController(); const to = setTimeout(() => ctrl.abort(), 12000);
+    const res = await fetch("https://overpass-api.de/api/interpreter", { method: "POST", body: "data=" + encodeURIComponent(query), headers: { "Content-Type": "application/x-www-form-urlencoded" }, signal: ctrl.signal });
+    clearTimeout(to);
+    const data = await res.json();
+    const seen = new Set(); const out = [];
+    for (const el of (data.elements || [])) {
+      const la = el.lat != null ? el.lat : (el.center && el.center.lat);
+      const lo = el.lon != null ? el.lon : (el.center && el.center.lon);
+      if (la == null || lo == null) continue;
+      const name = (el.tags && (el.tags.name || el.tags.brand)) || "Pharmacy";
+      const key = name + "@" + la.toFixed(4) + "," + lo.toFixed(4);
+      if (seen.has(key)) continue; seen.add(key);
+      const dLat = (la - lat) * 69.0, dLng = (lo - lng) * 69.0 * Math.cos(lat * Math.PI / 180);
+      const miles = Math.hypot(dLat, dLng);
+      out.push({ name, lat: la, lng: lo, miles, dist: miles < 0.1 ? "< 0.1 miles" : miles.toFixed(1) + " miles", drive: "~" + Math.max(1, Math.round(miles * 3)) + " min drive" });
+    }
+    out.sort((a, b) => a.miles - b.miles);
+    return out.slice(0, 14);
+  }
+
+  const locate = () => {
+    if (!navigator.geolocation) { setLocStatus("error"); return; }
+    setLocStatus("locating");
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const { latitude: lat, longitude: lng } = pos.coords;
+        setUserPos({ lat, lng }); setLocStatus("loading");
+        fetchPharmacies(lat, lng)
+          .then(list => { if (list.length) { setPlaces(list); setLocStatus("ready"); } else setLocStatus("error"); })
+          .catch(() => setLocStatus("error"));
+      },
+      err => setLocStatus(err.code === 1 ? "denied" : "error"),
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 }
+    );
+  };
+
+  const checked = Math.round((pct / 100) * TOTAL);
+  const locLine = locStatus === "locating" ? "Getting your location\u2026"
+    : locStatus === "loading" ? "Finding pharmacies near you\u2026"
+    : locStatus === "ready" ? "Showing " + places.length + " real pharmacies near you"
+    : locStatus === "denied" ? "Location off \u2014 showing example pharmacies"
+    : locStatus === "error" ? "Couldn't fetch nearby pharmacies \u2014 showing examples"
+    : "";
+
+  return (
+    <div style={{ maxWidth: 880 }}>
+      <PageHead title="Find My Medication" italic={"\u201cWho near you has it in stock, right now?\u201d"} sub="Use your location to check real nearby pharmacies for your medication." />
+
+      <div style={{ display: "flex", justifyContent: "center", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
+        <button onClick={locate} style={{ ...primaryBtn, background: FINDER.teal }}><Navigation size={15} /> {locStatus === "ready" ? "Update my location" : "Use my location"}</button>
+        {locLine && <span style={{ alignSelf: "center", fontSize: 12.5, color: locStatus === "ready" ? "#2E9C78" : C.inkSoft }}>{locLine}</span>}
+      </div>
+
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        <div style={{ width: 390, maxWidth: "100%", height: 760, borderRadius: 38, background: "#000", padding: 9, boxShadow: "0 30px 70px -30px rgba(22,40,74,0.45)", position: "relative" }}>
+          <div style={{ position: "absolute", top: 18, left: "50%", transform: "translateX(-50%)", width: 120, height: 26, background: "#000", borderRadius: 999, zIndex: 30 }} />
+          <div style={{ position: "relative", width: "100%", height: "100%", borderRadius: 30, overflow: "hidden", background: FINDER.land, fontFamily: "'Inter', ui-sans-serif, system-ui, sans-serif" }}>
+
+            {/* ===== MAP ===== */}
+            <svg viewBox="0 0 360 420" style={{ position: "absolute", inset: 0, width: "100%", height: "62%" }}>
+              <rect width="360" height="420" fill={FINDER.land} />
+              {usingReal ? (
+                <g>
+                  {/* local radar map: range rings around the user */}
+                  {[0.5, 1, 2, 3].map(mi => {
+                    const maxMi = Math.max(0.3, ...placed.map(p => p.miles)); const scale = 128 / maxMi; const r = mi * scale;
+                    if (r > 150) return null;
+                    return <g key={mi}><circle cx="180" cy="150" r={r} fill="none" stroke="#D7E0E6" strokeWidth="1" strokeDasharray="3 4" /><text x="180" y={150 - r - 2} textAnchor="middle" fontSize="6" fill="#AEB8C2">{mi} mi</text></g>;
+                  })}
+                  {placed.map((p, i) => (
+                    <g key={p.name + i} transform={`translate(${p.x},${p.y})`}>
+                      <ellipse cx="0" cy="2" rx="6" ry="2.5" fill="rgba(22,40,74,0.16)" />
+                      <path d="M0,-20 C7,-20 11,-13 11,-8 C11,-2 4,3 0,2 C-4,3 -11,-2 -11,-8 C-11,-13 -7,-20 0,-20 Z" fill={FINDER.teal} stroke="#fff" strokeWidth="1.4" />
+                      <circle cx="0" cy="-9" r="3.6" fill="#fff" />
+                      {i < 8 && <g transform="translate(0,11)"><rect x={-(Math.min(p.name.length, 16) * 2.6 + 8) / 2} y="-8" width={Math.min(p.name.length, 16) * 2.6 + 8} height="12" rx="6" fill="#fff" opacity="0.92" /><text x="0" y="1" textAnchor="middle" fontSize="6" fontWeight="600" fill={FINDER.navy}>{p.name.length > 16 ? p.name.slice(0, 15) + "\u2026" : p.name}</text></g>}
+                    </g>
+                  ))}
+                  {/* user location */}
+                  <g transform="translate(180,150)"><circle r="13" fill={FINDER.teal} opacity="0.15"><animate attributeName="r" values="8;15;8" dur="2s" repeatCount="indefinite" /></circle><circle r="6" fill={FINDER.navy} stroke="#fff" strokeWidth="2" /></g>
+                </g>
+              ) : (
+                <g>
+                  <path d="M-20,250 C60,235 110,275 180,262 C250,250 300,285 380,268 L380,420 L-20,420 Z" fill={FINDER.water} opacity="0.85" />
+                  <rect x="300" y="20" width="80" height="120" rx="8" fill={FINDER.water} opacity="0.7" />
+                  <rect x="120" y="120" width="78" height="60" rx="10" fill="#DCEBD6" /><circle cx="70" cy="100" r="26" fill="#DCEBD6" />
+                  <g stroke={FINDER.roadEdge} strokeWidth="9" strokeLinecap="round"><line x1="0" y1="80" x2="360" y2="60" /><line x1="0" y1="150" x2="360" y2="135" /><line x1="0" y1="210" x2="300" y2="200" /><line x1="40" y1="0" x2="70" y2="420" /><line x1="150" y1="0" x2="170" y2="300" /><line x1="250" y1="0" x2="270" y2="290" /></g>
+                  <g stroke={FINDER.road} strokeWidth="5" strokeLinecap="round"><line x1="0" y1="80" x2="360" y2="60" /><line x1="0" y1="150" x2="360" y2="135" /><line x1="0" y1="210" x2="300" y2="200" /><line x1="40" y1="0" x2="70" y2="420" /><line x1="150" y1="0" x2="170" y2="300" /><line x1="250" y1="0" x2="270" y2="290" /></g>
+                  <line x1="-10" y1="300" x2="360" y2="250" stroke="#F4C77B" strokeWidth="7" strokeLinecap="round" />
+                  {FINDER_PHARMACIES.map(p => (
+                    <g key={p.name} transform={`translate(${p.x},${p.y})`}>
+                      <ellipse cx="0" cy="2" rx="7" ry="3" fill="rgba(22,40,74,0.18)" />
+                      <path d="M0,-22 C8,-22 12,-15 12,-9 C12,-2 4,4 0,2 C-4,4 -12,-2 -12,-9 C-12,-15 -8,-22 0,-22 Z" fill={FINDER.teal} stroke="#fff" strokeWidth="1.5" />
+                      <circle cx="0" cy="-10" r="4" fill="#fff" />
+                      <g transform="translate(0,12)"><rect x={-(p.name.length * 2.7 + 8) / 2} y="-8" width={p.name.length * 2.7 + 8} height="13" rx="6.5" fill="#fff" opacity="0.92" /><text x="0" y="1.5" textAnchor="middle" fontSize="6.5" fontWeight="600" fill={FINDER.navy}>{p.name}</text></g>
+                    </g>
+                  ))}
+                </g>
+              )}
+            </svg>
+
+            {/* ===== BOTTOM SHEET ===== */}
+            <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: collapsed ? 132 : 462, background: "#fff", borderTopLeftRadius: 26, borderTopRightRadius: 26, boxShadow: "0 -12px 30px -14px rgba(22,40,74,0.25)", transition: "height 0.35s cubic-bezier(.4,0,.2,1)", display: "flex", flexDirection: "column" }}>
+              <div style={{ padding: "10px 20px 0", position: "relative" }}>
+                <div style={{ width: 38, height: 5, borderRadius: 999, background: "#E2E6EC", margin: "0 auto 12px" }} />
+                <button onClick={() => setCollapsed(c => !c)} aria-label="Toggle panel" style={{ position: "absolute", right: 16, top: 8, height: 30, width: 30, borderRadius: 999, border: "none", background: "#F1F4F8", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                  <ChevronUp size={17} color={FINDER.navy} style={{ transform: collapsed ? "rotate(180deg)" : "none", transition: "transform .3s" }} />
+                </button>
+                <h2 style={{ textAlign: "center", color: FINDER.navy, fontSize: 19, fontWeight: 800, margin: "0 0 4px", letterSpacing: "-0.01em" }}>{medLabel}</h2>
+                <p style={{ textAlign: "center", color: "#8A93A3", fontSize: 12.5, margin: "0 0 14px", lineHeight: 1.45 }}>{running ? "Hang tight! We'll text you as soon as we find your medications." : (usingReal ? "These are the closest pharmacies to your location." : "Done \u2014 turn on location for pharmacies near you.")}</p>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                  <span style={{ fontSize: 11.5, color: "#6B7280", fontWeight: 500 }}>{checked}/{TOTAL} Pharmacies Checked\u2026</span>
+                  <span style={{ fontSize: 15, fontWeight: 800, color: FINDER.navy }}>{pct}%</span>
+                </div>
+                <div style={{ height: 11, borderRadius: 999, background: "#EEF1F5", overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: pct + "%", borderRadius: 999, background: "linear-gradient(90deg, " + FINDER.coral + ", " + FINDER.mint + ")", transition: "width .2s linear" }} />
+                </div>
+              </div>
+              <div style={{ flex: 1, overflowY: "auto", padding: "14px 16px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
+                {cards.length === 0 && <div style={{ textAlign: "center", color: "#A6AEBC", fontSize: 12.5, paddingTop: 18 }}>Contacting nearby pharmacies\u2026</div>}
+                {cards.map(c => {
+                  const inStock = c.status === "stock";
+                  return (
+                    <div key={c.id} style={{ border: "1.5px solid " + (inStock ? "#BEE9D8" : "#FFD8D0"), borderRadius: 16, background: "#fff", padding: "13px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, boxShadow: "0 6px 16px -10px rgba(22,40,74,0.22)" }}>
+                      <div style={{ minWidth: 0 }}>
+                        <p style={{ margin: 0, fontWeight: 700, color: FINDER.navy, fontSize: 14.5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.name}</p>
+                        <p style={{ margin: "4px 0 0", display: "flex", alignItems: "center", gap: 5, color: "#7C8595", fontSize: 12 }}><MapPin size={12} color={FINDER.teal} /> {c.dist} ({c.drive})</p>
+                      </div>
+                      <span style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 999, background: inStock ? FINDER.mint : FINDER.mintBg, color: inStock ? "#fff" : "#2E9C78", fontSize: 12, fontWeight: 700 }}>{inStock ? <Check size={13} /> : <Phone size={12} />}{inStock ? "In stock" : "Calling"}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", justifyContent: "center", gap: 10, marginTop: 16 }}>
+        <button onClick={() => start(source)} style={{ ...primaryBtn }}><RefreshCw size={15} /> Run the search again</button>
+        <button onClick={() => go("meds")} style={{ ...ghostBtn }}>Change medication</button>
+      </div>
+      <p style={{ marginTop: 14, fontSize: 11.5, color: C.inkFaint, textAlign: "center", maxWidth: 540, marginLeft: "auto", marginRight: "auto", lineHeight: 1.55 }}>
+        With location on, pharmacies are real, pulled live from OpenStreetMap; distances are straight-line and drive times are estimates. The "checking / calling" step is a demonstration \u2014 the app doesn't contact pharmacies or send texts. Always confirm stock and price with the pharmacy directly.
+      </p>
+    </div>
+  );
+}
+
+// ---- Treatment Options (educational) + Clinical Trials ---------------------
+// Class-level alternatives a CLINICIAN might weigh — educational, never prescriptive.
+const ALT_BY_CLASS = {
+  "Anticoagulant": "Warfarin and the DOACs (apixaban, rivaroxaban, dabigatran, edoxaban) are all anticoagulants; the right one depends on kidney function, interactions, reversibility, and cost.",
+  "Antiplatelet": "Aspirin, clopidogrel, ticagrelor, and prasugrel are antiplatelet options chosen by indication and bleeding risk.",
+  "Statin": "Statins differ in strength and interactions; non-statin cholesterol options include ezetimibe, PCSK9 inhibitors, and bempedoic acid.",
+  "ACE inhibitor": "ARBs, calcium channel blockers, and thiazide diuretics are common alternatives for blood pressure; an ARB is the usual swap if an ACE inhibitor causes cough.",
+  "ARB": "ACE inhibitors, calcium channel blockers, and thiazide diuretics are alternatives for blood pressure.",
+  "Beta blocker": "Other beta blockers, or different classes, depending on whether the goal is rate control, blood pressure, or heart failure.",
+  "Calcium channel blocker": "Other calcium channel blockers, or ACE/ARB and thiazides, for blood pressure.",
+  "Diuretic": "Different diuretic classes (thiazide, loop, potassium-sparing) depending on the goal.",
+  "Loop diuretic": "Other diuretics depending on kidney function and fluid goals.",
+  "Proton pump inhibitor": "Other PPIs, H2 blockers (e.g., famotidine), and non-drug measures; the lowest effective dose/duration is usually preferred.",
+  "H2 blocker": "Other H2 blockers or PPIs.",
+  "SSRI": "Other SSRIs, SNRIs, bupropion, or mirtazapine; choice is guided by side effects and prior response.",
+  "SNRI": "SSRIs, other SNRIs, bupropion, or mirtazapine.",
+  "Benzodiazepine": "Depending on the indication, non-benzodiazepine options exist (e.g., SSRIs/SNRIs for anxiety, other approaches for sleep). Stopping needs a supervised taper.",
+  "Opioid": "Non-opioid analgesics, adjuvant medicines, and opioid rotation are clinician-guided; never adjust on your own.",
+  "NSAID": "Acetaminophen, topical NSAIDs, and other analgesics; selective vs non-selective NSAIDs differ in GI and heart risk.",
+  "NSAID (COX-2)": "Non-selective NSAIDs, acetaminophen, or topical options, balancing GI vs cardiovascular risk.",
+  "Antidiabetic": "Metformin plus SGLT2 inhibitors, GLP-1 agonists, DPP-4 inhibitors, sulfonylureas, or insulin — chosen by A1c, weight, kidney, and heart factors.",
+  "Sulfonylurea": "Other glucose-lowering classes (SGLT2, GLP-1, DPP-4, metformin) that carry less hypoglycemia risk.",
+  "Aromatase inhibitor": "Other aromatase inhibitors or tamoxifen — an oncology decision based on your specific cancer.",
+};
+function altFor(cls) {
+  if (!cls) return null;
+  if (ALT_BY_CLASS[cls]) return ALT_BY_CLASS[cls];
+  const pre = [["Antibiotic", "Antibiotic choice depends on the infection and culture results; alternatives within or across classes are common — this is prescriber-driven."],
+    ["Antifungal", "Other antifungals may be options depending on the organism and interactions."],
+    ["Targeted therapy", "Alternatives are highly specific to the cancer's molecular profile — a specialist/oncology decision."],
+    ["Chemotherapy", "Regimens are protocol- and stage-specific — an oncology decision, not interchangeable casually."],
+    ["Monoclonal antibody", "Alternatives depend on the target and cancer type — an oncology decision."],
+    ["Immunotherapy", "Checkpoint-inhibitor choice is cancer- and biomarker-specific — an oncology decision."],
+    ["Anticonvulsant", "Many anticonvulsants exist; switching is guided by seizure type, side effects, and levels."],
+    ["Antipsychotic", "Other antipsychotics differ in side-effect profiles; switching is specialist-guided."]];
+  for (const [p, t] of pre) if (cls.indexOf(p) === 0) return t;
+  return "Several agents exist in this category; the best alternative depends on your condition, history, and tolerability — one to discuss with your prescriber.";
+}
+const CROSS_REACT = [
+  ["Penicillins ↔ cephalosporins", "If you're allergic to penicillin, some cephalosporins carry a small cross-reactivity risk. Tell every prescriber."],
+  ["Sulfonamide (\u201csulfa\u201d) antibiotics", "A sulfa-antibiotic allergy is important to flag; reactions to non-antibiotic sulfonamides are usually separate."],
+  ["NSAIDs / aspirin", "An NSAID reaction can extend to other NSAIDs, especially with asthma/nasal polyps (aspirin-exacerbated respiratory disease)."],
+  ["ACE inhibitor angioedema", "Angioedema on an ACE inhibitor can rarely recur with an ARB — prescribers weigh this carefully."],
+  ["Opioids", "True opioid allergy is uncommon (many effects are side effects); the natural vs synthetic distinction matters — describe what happened."],
+];
+
+function buildTreatmentBrief(meds, keys, findings, score, clinical) {
+  const L = [];
+  L.push("TREATMENT DISCUSSION BRIEF");
+  L.push("Generated by What's Safe Together? — educational; bring to your prescriber or pharmacist.");
+  L.push("This is NOT a recommendation to start, stop, or change any medicine.");
+  L.push("Date: " + new Date().toLocaleDateString());
+  L.push("Country/region: " + (clinical.country || "—"));
+  L.push("");
+  L.push("CURRENT MEDICATIONS (" + meds.length + ")");
+  meds.forEach(m => L.push("  • " + m.name + (m.strength ? " " + m.strength : "") + (m.cls ? " — " + m.cls : "") + (m.key ? "" : " [name only]")));
+  if (!meds.length) L.push("  (none entered)");
+  L.push("");
+  L.push("CONDITIONS & SEVERITY (patient-reported)");
+  (clinical.conditions.length ? clinical.conditions : [{ name: "—", severity: "" }]).forEach(c => L.push("  • " + c.name + (c.severity ? " — " + c.severity : "")));
+  L.push("");
+  L.push("ALLERGIES & INTOLERANCES");
+  (clinical.allergies.length ? clinical.allergies : [{ name: "—", reaction: "" }]).forEach(a => L.push("  • " + a.name + (a.reaction ? " — " + a.reaction : "")));
+  L.push("");
+  L.push("PRIOR MEDICATIONS TRIED & WHY STOPPED");
+  (clinical.priorMeds.length ? clinical.priorMeds : [{ name: "—", reason: "" }]).forEach(p => L.push("  • " + p.name + (p.reason ? " — " + p.reason : "") + (p.note ? " (" + p.note + ")" : "")));
+  L.push("");
+  if (clinical.dependence.length) { L.push("DEPENDENCE / HABITUATION HISTORY (sensitive)"); clinical.dependence.forEach(d => L.push("  • " + d)); L.push(""); }
+  L.push("INSURANCE / FORMULARY NOTES");
+  L.push("  " + (clinical.insurance || "—"));
+  L.push("");
+  L.push("CURRENT INTERACTION FINDINGS (educational, safety score " + score + "/100)");
+  if (findings.length) findings.forEach(f => L.push("  • [" + f.sev + "] " + f.title));
+  else L.push("  • None found among analyzed medicines (not a guarantee).");
+  L.push("");
+  L.push("QUESTIONS TO ASK MY PRESCRIBER");
+  const qs = [];
+  clinical.priorMeds.forEach(p => { if (p.reason) qs.push("I stopped " + p.name + " due to " + p.reason.toLowerCase() + " — what alternatives fit me?"); });
+  findings.filter(f => f.sev === "Contraindicated" || f.sev === "Major").forEach(f => qs.push("Is the combination behind \u201c" + f.title + "\u201d right for me, or is there a safer option?"));
+  clinical.allergies.forEach(a => qs.push("Given my allergy to " + a.name + ", are any of my medicines or alternatives a cross-reactivity concern?"));
+  meds.filter(m => m.key && ALT_BY_CLASS[m.cls]).slice(0, 6).forEach(m => qs.push("Are there alternatives to " + m.name + " (" + m.cls + ") that suit my situation and formulary?"));
+  if (clinical.insurance) qs.push("Which of my medicines have lower-cost or formulary-preferred alternatives?");
+  qs.push("Should any of these be reviewed because of my kidney/liver function or other conditions?");
+  (qs.length ? qs : ["What are my options, and what would you change first?"]).forEach((q, i) => L.push("  " + (i + 1) + ". " + q));
+  L.push("");
+  L.push("Educational tool. Not a diagnosis or prescription. Decisions belong to you and your licensed clinician.");
+  return L.join("\n");
+}
+
+function ChipList({ items, onRemove, color }) {
+  if (!items.length) return null;
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
+      {items.map((t, i) => (
+        <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 999, border: `1px solid ${C.line}`, background: "#fff", padding: "5px 6px 5px 12px", fontSize: 13, color: C.ink }}>
+          {t}
+          <button onClick={() => onRemove(i)} style={{ height: 18, width: 18, borderRadius: 999, border: "none", background: "#F1ECE0", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><X size={11} color={C.inkSoft} /></button>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function TreatmentOptions({ meds, keys, findings, score, clinical, setClinical, go }) {
+  const [cond, setCond] = useState(""); const [condSev, setCondSev] = useState("Moderate");
+  const [alg, setAlg] = useState(""); const [algRx, setAlgRx] = useState("");
+  const [pm, setPm] = useState(""); const [pmReason, setPmReason] = useState("Side effect");
+  const set = (k, v) => setClinical(p => ({ ...p, [k]: v }));
+  const analyzed = meds.filter(m => m.key);
+
+  return (
+    <div style={{ maxWidth: 880 }}>
+      <PageHead title="Treatment Options" italic={"\u201cWhat could we discuss with the prescriber \u2014 and what should they decide?\u201d"} sub="Organize your history into a brief for your clinician. This tool never tells you to start, stop, or switch a medicine — it prepares the conversation." />
+
+      <div style={{ ...card, borderLeft: `3px solid ${C.terra}`, marginBottom: 18 }}>
+        <div style={{ display: "flex", gap: 10 }}>
+          <ShieldCheck size={18} color={C.terra} style={{ flexShrink: 0, marginTop: 1 }} />
+          <p style={{ margin: 0, fontSize: 13, color: "#4F4233", lineHeight: 1.6 }}>Choosing or changing medicines is a clinical decision that depends on your full record, labs, and exam. This page gathers what you know and turns it into questions and a printable brief — the prescribing stays with your licensed clinician.</p>
+        </div>
+      </div>
+
+      {/* Conditions */}
+      <section style={{ ...card, marginBottom: 14 }}>
+        <h3 style={{ fontFamily: serifH, fontSize: 16.5, margin: "0 0 4px", color: C.ink }}>Conditions & severity</h3>
+        <p style={{ fontSize: 12, color: C.inkFaint, margin: "0 0 10px" }}>Patient-reported — your prescriber confirms with exams and scales.</p>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <input className="wst-input" value={cond} onChange={e => setCond(e.target.value)} placeholder="e.g. High blood pressure" style={{ flex: "1 1 220px", borderRadius: 10, border: `1px solid ${C.line}`, background: C.surface, padding: "10px 12px", fontSize: 14, color: C.ink, outline: "none" }} />
+          <select className="wst-input" value={condSev} onChange={e => setCondSev(e.target.value)} style={{ borderRadius: 10, border: `1px solid ${C.line}`, background: C.surface, padding: "10px 12px", fontSize: 14, color: C.ink }}>{["Mild", "Moderate", "Severe"].map(s => <option key={s}>{s}</option>)}</select>
+          <button onClick={() => { if (cond.trim()) { set("conditions", [...clinical.conditions, { name: cond.trim(), severity: condSev }]); setCond(""); } }} style={{ ...ghostBtn, padding: "10px 14px" }}><Plus size={14} /> Add</button>
+        </div>
+        <ChipList items={clinical.conditions.map(c => c.name + " · " + c.severity)} onRemove={i => set("conditions", clinical.conditions.filter((_, j) => j !== i))} />
+      </section>
+
+      {/* Allergies */}
+      <section style={{ ...card, marginBottom: 14 }}>
+        <h3 style={{ fontFamily: serifH, fontSize: 16.5, margin: "0 0 10px", color: C.ink }}>Allergies & intolerances</h3>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <input className="wst-input" value={alg} onChange={e => setAlg(e.target.value)} placeholder="Drug or class (e.g. penicillin)" style={{ flex: "1 1 200px", borderRadius: 10, border: `1px solid ${C.line}`, background: C.surface, padding: "10px 12px", fontSize: 14, color: C.ink, outline: "none" }} />
+          <input className="wst-input" value={algRx} onChange={e => setAlgRx(e.target.value)} placeholder="Reaction (e.g. rash, swelling)" style={{ flex: "1 1 200px", borderRadius: 10, border: `1px solid ${C.line}`, background: C.surface, padding: "10px 12px", fontSize: 14, color: C.ink, outline: "none" }} />
+          <button onClick={() => { if (alg.trim()) { set("allergies", [...clinical.allergies, { name: alg.trim(), reaction: algRx.trim() }]); setAlg(""); setAlgRx(""); } }} style={{ ...ghostBtn, padding: "10px 14px" }}><Plus size={14} /> Add</button>
+        </div>
+        <ChipList items={clinical.allergies.map(a => a.name + (a.reaction ? " · " + a.reaction : ""))} onRemove={i => set("allergies", clinical.allergies.filter((_, j) => j !== i))} />
+        <div style={{ marginTop: 14, borderTop: `1px solid ${C.line}`, paddingTop: 12 }}>
+          <p style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: C.inkFaint, margin: "0 0 8px" }}>Cross-reactivity worth flagging to a prescriber</p>
+          <div style={{ display: "grid", gap: 8 }}>
+            {CROSS_REACT.map(([t, d]) => (
+              <div key={t} style={{ fontSize: 12.5, color: C.inkSoft, lineHeight: 1.5 }}><strong style={{ color: C.ink }}>{t}.</strong> {d}</div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Prior meds */}
+      <section style={{ ...card, marginBottom: 14 }}>
+        <h3 style={{ fontFamily: serifH, fontSize: 16.5, margin: "0 0 4px", color: C.ink }}>Medicines tried before — and why they stopped</h3>
+        <p style={{ fontSize: 12, color: C.inkFaint, margin: "0 0 10px" }}>The reason matters: "no effect" and "side effect" lead a prescriber in different directions.</p>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <input className="wst-input" value={pm} onChange={e => setPm(e.target.value)} placeholder="Medicine name" style={{ flex: "1 1 200px", borderRadius: 10, border: `1px solid ${C.line}`, background: C.surface, padding: "10px 12px", fontSize: 14, color: C.ink, outline: "none" }} />
+          <select className="wst-input" value={pmReason} onChange={e => setPmReason(e.target.value)} style={{ borderRadius: 10, border: `1px solid ${C.line}`, background: C.surface, padding: "10px 12px", fontSize: 14, color: C.ink }}>{["No effect", "Side effect", "Allergy", "Cost", "Other"].map(s => <option key={s}>{s}</option>)}</select>
+          <button onClick={() => { if (pm.trim()) { set("priorMeds", [...clinical.priorMeds, { name: pm.trim(), reason: pmReason }]); setPm(""); } }} style={{ ...ghostBtn, padding: "10px 14px" }}><Plus size={14} /> Add</button>
+        </div>
+        <ChipList items={clinical.priorMeds.map(p => p.name + " · " + p.reason)} onRemove={i => set("priorMeds", clinical.priorMeds.filter((_, j) => j !== i))} />
+      </section>
+
+      {/* Dependence + insurance + country */}
+      <section style={{ ...card, marginBottom: 14 }}>
+        <h3 style={{ fontFamily: serifH, fontSize: 16.5, margin: "0 0 10px", color: C.ink }}>Other factors</h3>
+        <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "0 0 6px", fontWeight: 600 }}>Dependence / habituation history <span style={{ fontWeight: 400, color: C.inkFaint }}>(sensitive — included only if you add it)</span></p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {["Opioids", "Benzodiazepines", "Stimulants", "Alcohol", "Nicotine", "Other"].map(d => {
+            const on = clinical.dependence.includes(d);
+            return <button key={d} onClick={() => set("dependence", on ? clinical.dependence.filter(x => x !== d) : [...clinical.dependence, d])} style={{ borderRadius: 999, border: `1px solid ${on ? C.terra : C.line}`, background: on ? C.terra : C.surface, color: on ? "#FBF6EC" : C.inkSoft, padding: "6px 13px", fontSize: 12.5, cursor: "pointer" }}>{d}</button>;
+          })}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginTop: 16 }} className="pill-grid">
+          <label><span style={{ display: "block", fontSize: 12.5, fontWeight: 600, color: C.ink, marginBottom: 6 }}>Insurance / formulary notes</span>
+            <input className="wst-input" value={clinical.insurance} onChange={e => set("insurance", e.target.value)} placeholder="Plan name, tier notes, prior-auth" style={{ width: "100%", boxSizing: "border-box", borderRadius: 10, border: `1px solid ${C.line}`, background: C.surface, padding: "10px 12px", fontSize: 14, color: C.ink, outline: "none" }} /></label>
+          <label><span style={{ display: "block", fontSize: 12.5, fontWeight: 600, color: C.ink, marginBottom: 6 }}>Country / region</span>
+            <select className="wst-input" value={clinical.country} onChange={e => set("country", e.target.value)} style={{ width: "100%", boxSizing: "border-box", borderRadius: 10, border: `1px solid ${C.line}`, background: C.surface, padding: "10px 12px", fontSize: 14, color: C.ink }}>{["United States", "Canada", "United Kingdom", "Ireland", "Australia", "New Zealand", "India", "Other"].map(c => <option key={c}>{c}</option>)}</select></label>
+        </div>
+        <p style={{ fontSize: 11, color: C.inkFaint, margin: "12px 0 0" }}>Availability, approved uses, and names differ by country — your prescriber works to your local guidelines and formulary.</p>
+      </section>
+
+      {/* Per-med class alternatives */}
+      <section style={{ ...card, marginBottom: 14 }}>
+        <h3 style={{ fontFamily: serifH, fontSize: 16.5, margin: "0 0 4px", color: C.ink }}>Classes & alternatives to discuss</h3>
+        <p style={{ fontSize: 12, color: C.inkFaint, margin: "0 0 12px" }}>For your <strong>analyzed</strong> medicines. These are categories a clinician might weigh — not a suggestion to switch.</p>
+        {analyzed.length === 0 ? (
+          <p style={{ fontSize: 13.5, color: C.inkSoft }}>Add analyzed medicines under <button onClick={() => go("meds")} style={{ background: "none", border: "none", color: C.terra, cursor: "pointer", padding: 0, textDecoration: "underline" }}>My Medications</button> to see this.</p>
+        ) : (
+          <div style={{ display: "grid", gap: 10 }}>
+            {analyzed.map(m => (
+              <div key={m.id} style={{ border: `1px solid ${C.line}`, borderRadius: 12, background: "#fff", padding: "12px 14px" }}>
+                <p style={{ margin: 0, fontWeight: 700, color: C.ink, fontSize: 14.5 }}>{m.name} <span style={{ fontWeight: 400, color: C.inkFaint, fontSize: 12.5 }}>· {m.cls}</span></p>
+                <p style={{ margin: "6px 0 0", fontSize: 13, color: C.inkSoft, lineHeight: 1.55 }}>{altFor(m.cls)}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Generate brief */}
+      <section style={{ ...card, background: "#F6EFE2" }}>
+        <h3 style={{ fontFamily: serifH, fontSize: 17, margin: "0 0 4px", color: C.ink }}>Clinician discussion brief</h3>
+        <p style={{ fontSize: 13, color: C.inkSoft, margin: "0 0 14px", lineHeight: 1.55 }}>Turns everything above — meds, conditions, allergies, prior failures, interactions, formulary — into a one-page brief with tailored questions to bring to your appointment.</p>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <button onClick={() => downloadText("treatment-discussion-brief.txt", buildTreatmentBrief(meds, keys, findings, score, clinical))} style={{ ...primaryBtn }}><Download size={15} /> Download brief</button>
+          <button onClick={() => { const w = window.open("", "_blank"); if (w) { w.document.write("<pre style='font:13px/1.5 ui-monospace,monospace;white-space:pre-wrap;padding:24px'>" + buildTreatmentBrief(meds, keys, findings, score, clinical).replace(/[&<]/g, s => s === "&" ? "&amp;" : "&lt;") + "</pre>"); w.document.close(); w.print(); } }} style={{ ...ghostBtn }}><Printer size={15} /> Print</button>
+          <button onClick={() => go("trials")} style={{ ...ghostBtn }}><FlaskConical size={15} /> Find clinical trials</button>
+        </div>
+      </section>
+
+      <p style={{ marginTop: 16, fontSize: 11.5, color: C.inkFaint, lineHeight: 1.55 }}>Educational only. This does not diagnose, recommend, or prescribe. Alternatives shown are general categories; the right choice depends on your full clinical picture and belongs to you and your licensed clinician.</p>
+    </div>
+  );
+}
+
+function ClinicalTrials({ clinical, go }) {
+  const [cond, setCond] = useState(clinical.conditions[0] ? clinical.conditions[0].name : "");
+  const [country, setCountry] = useState(clinical.country || "United States");
+  const [status, setStatus] = useState("idle"); // idle|loading|ready|empty|error
+  const [studies, setStudies] = useState([]);
+
+  async function search() {
+    if (!cond.trim()) return;
+    setStatus("loading"); setStudies([]);
+    try {
+      const params = new URLSearchParams({ "query.cond": cond.trim(), "filter.overallStatus": "RECRUITING", pageSize: "20" });
+      if (country && country !== "Other") params.set("query.locn", country);
+      const res = await fetch("https://clinicaltrials.gov/api/v2/studies?" + params.toString());
+      const data = await res.json();
+      const list = (data.studies || []).map(s => {
+        const p = s.protocolSection || {};
+        const id = p.identificationModule || {}; const st = p.statusModule || {};
+        const loc = (p.contactsLocationsModule && p.contactsLocationsModule.locations) || [];
+        const where = loc.slice(0, 1).map(l => [l.city, l.state, l.country].filter(Boolean).join(", "))[0] || "";
+        return { nct: id.nctId, title: id.briefTitle, status: st.overallStatus, where };
+      }).filter(s => s.nct);
+      setStudies(list); setStatus(list.length ? "ready" : "empty");
+    } catch (e) { setStatus("error"); }
+  }
+
+  return (
+    <div style={{ maxWidth: 820 }}>
+      <PageHead title="Clinical Trials" italic={"\u201cAre there studies recruiting for this, near me?\u201d"} sub="Search recruiting studies from the U.S. National Library of Medicine's ClinicalTrials.gov. Educational — eligibility and enrollment are decided with the study team and your clinician." />
+
+      <div style={{ ...card, marginBottom: 16 }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <input className="wst-input" value={cond} onChange={e => setCond(e.target.value)} onKeyDown={e => { if (e.key === "Enter") search(); }} placeholder="Condition (e.g. breast cancer, epilepsy)" style={{ flex: "1 1 240px", borderRadius: 10, border: `1px solid ${C.line}`, background: C.surface, padding: "11px 13px", fontSize: 14.5, color: C.ink, outline: "none" }} />
+          <select className="wst-input" value={country} onChange={e => setCountry(e.target.value)} style={{ borderRadius: 10, border: `1px solid ${C.line}`, background: C.surface, padding: "11px 13px", fontSize: 14, color: C.ink }}>{["United States", "Canada", "United Kingdom", "Ireland", "Australia", "New Zealand", "India", "Other"].map(c => <option key={c}>{c}</option>)}</select>
+          <button onClick={search} disabled={!cond.trim()} style={{ ...primaryBtn, opacity: cond.trim() ? 1 : 0.5 }}><Search size={15} /> Search</button>
+        </div>
+      </div>
+
+      {status === "loading" && <p style={{ fontSize: 13.5, color: C.inkSoft }}>Searching ClinicalTrials.gov…</p>}
+      {status === "empty" && <p style={{ fontSize: 13.5, color: C.inkSoft }}>No recruiting studies matched. Try a broader condition term or a different country.</p>}
+      {status === "error" && <p style={{ fontSize: 13.5, color: C.inkSoft }}>Couldn't reach ClinicalTrials.gov right now. You can search directly at <a href={"https://clinicaltrials.gov/search?cond=" + encodeURIComponent(cond)} target="_blank" rel="noopener noreferrer" style={{ color: C.terra }}>clinicaltrials.gov</a>.</p>}
+      {status === "ready" && (
+        <div style={{ display: "grid", gap: 10 }}>
+          <p style={{ fontSize: 12.5, color: C.inkFaint, margin: 0 }}>{studies.length} recruiting studies — newest matches:</p>
+          {studies.map(s => (
+            <a key={s.nct} href={"https://clinicaltrials.gov/study/" + s.nct} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", border: `1px solid ${C.line}`, borderRadius: 12, background: "#fff", padding: "13px 15px", display: "block" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "flex-start" }}>
+                <p style={{ margin: 0, fontWeight: 600, color: C.ink, fontSize: 14, lineHeight: 1.4 }}>{s.title}</p>
+                <span style={{ flexShrink: 0, fontSize: 10.5, fontWeight: 700, color: "#2E7D5B", background: "#E6F4EC", borderRadius: 999, padding: "2px 8px" }}>{s.status}</span>
+              </div>
+              <p style={{ margin: "6px 0 0", fontSize: 12, color: C.inkFaint, display: "flex", alignItems: "center", gap: 6 }}><MapPin size={12} />{s.where || "Multiple sites"} · {s.nct}</p>
+            </a>
+          ))}
+        </div>
+      )}
+      <p style={{ marginTop: 16, fontSize: 11.5, color: C.inkFaint, lineHeight: 1.55 }}>Listings come live from ClinicalTrials.gov and may be incomplete. A trial appearing here is not medical advice or an endorsement; eligibility is determined by the study team. Discuss any trial with your own clinician before pursuing it.</p>
+    </div>
+  );
+}
+
+// ---- Pain-reliever safety: acetaminophen + NSAID total-dose aggregator -----
+const APAP_QUICK = [
+  ["Tylenol Regular Strength", 325], ["Tylenol Extra Strength", 500], ["Tylenol 8HR / Arthritis", 650],
+  ["Percocet (oxycodone/acetaminophen)", 325], ["Norco / Vicodin / Lortab (hydrocodone/acetaminophen)", 325],
+  ["Tylenol #3 (codeine/acetaminophen)", 300], ["Ultracet (tramadol/acetaminophen)", 325],
+  ["NyQuil / DayQuil (per dose)", 325], ["Theraflu / Mucinex combo (per dose)", 325],
+  ["Excedrin (per tablet)", 250], ["Other acetaminophen product", 500],
+];
+const APAP_COMBO_BRANDS = { percocet: 325, norco: 325, vicodin: 325, lortab: 325, ultracet: 325, "tylenol #3": 300 };
+function parseMg(s) { const m = String(s || "").match(/(\d{2,4})\s*mg/i); return m ? +m[1] : null; }
+function freqCount(f) { const t = String(f || "").toLowerCase(); if (t.includes("month")) return 1 / 30; if (t.includes("2 week") || t.includes("two week")) return 1 / 14; if (t.includes("week")) return 1 / 7; if (t.includes("other day")) return 0.5; if (t.includes("four")) return 4; if (t.includes("three")) return 3; if (t.includes("twice") || t.includes("two")) return 2; if (t.includes("once") || t.includes("one")) return 1; return 1; }
+
+function PainSafety({ meds, go }) {
+  const detected = useMemo(() => {
+    const rows = [];
+    meds.forEach(m => {
+      if (m.key === "acetaminophen") rows.push({ label: m.name + (m.strength ? " " + m.strength : ""), mg: parseMg(m.strength) || 500, doses: freqCount(m.freq), from: "your list" });
+      const hay = (m.name + " " + (m.cls || "")).toLowerCase();
+      Object.keys(APAP_COMBO_BRANDS).forEach(b => { if (hay.includes(b)) rows.push({ label: m.name + " — contains acetaminophen", mg: APAP_COMBO_BRANDS[b], doses: freqCount(m.freq), from: "your list" }); });
+    });
+    return rows;
+  }, [meds]);
+  const [rows, setRows] = useState(detected);
+  const [lowCeiling, setLowCeiling] = useState(false);
+  useEffect(() => { setRows(detected); }, [detected]);
+
+  const total = rows.reduce((s, r) => s + (Number(r.mg) || 0) * (Number(r.doses) || 0), 0);
+  const REC = lowCeiling ? 2000 : 3000;
+  const MAX = lowCeiling ? 2000 : 4000;
+  const pct = Math.min(100, Math.round(total / 4000 * 100));
+  const zone = total === 0 ? "none" : total <= REC ? "ok" : total <= MAX ? "caution" : "danger";
+  const zoneColor = zone === "danger" ? "#B4332B" : zone === "caution" ? "#B45309" : "#2E7D5B";
+
+  const nsaids = meds.filter(m => m.key && (DRUGS[m.key].cls.includes("NSAID")));
+  const aspirinTaken = meds.some(m => m.key === "aspirin");
+  const bloodThinner = meds.some(m => m.key && (has(m.key, "anticoagulant") || has(m.key, "antiplatelet")));
+
+  const upd = (i, k, v) => setRows(rs => rs.map((r, j) => j === i ? { ...r, [k]: v } : r));
+  const add = (label, mg) => setRows(rs => [...rs, { label, mg, doses: 1, from: "added" }]);
+
+  return (
+    <div style={{ maxWidth: 820 }}>
+      <PageHead title="Pain-Reliever Safety" italic={"\u201cAm I getting more acetaminophen than I think?\u201d"} sub="Acetaminophen (Tylenol) hides inside many cold, flu, and prescription pain products. Taken together they can quietly add up to a liver-damaging amount. Total yours here." />
+
+      {/* APAP aggregator */}
+      <section style={{ ...card, marginBottom: 16 }}>
+        <h3 style={{ fontFamily: serifH, fontSize: 17, margin: "0 0 4px", color: C.ink }}>Acetaminophen — daily total</h3>
+        <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "0 0 14px" }}>Add every product that contains acetaminophen, with its strength and how many times a day you take it.</p>
+
+        {/* gauge */}
+        <div style={{ borderRadius: 14, border: `1px solid ${C.line}`, background: "#FBF6EC", padding: "16px 16px 14px", marginBottom: 16 }}>
+          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
+            <span style={{ fontSize: 12.5, color: C.inkSoft }}>Your estimated daily total</span>
+            <span style={{ fontFamily: serifH, fontSize: 30, fontWeight: 700, color: zoneColor }}>{total.toLocaleString()} <span style={{ fontSize: 15 }}>mg</span></span>
+          </div>
+          <div style={{ marginTop: 10, height: 12, borderRadius: 999, background: "#EADFC9", overflow: "hidden", position: "relative" }}>
+            <div style={{ width: pct + "%", height: "100%", background: zoneColor, borderRadius: 999, transition: "width .3s" }} />
+            <div style={{ position: "absolute", top: -3, left: (REC / 4000 * 100) + "%", height: 18, width: 2, background: C.ink, opacity: 0.5 }} />
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, fontSize: 10.5, color: C.inkFaint }}>
+            <span>0</span><span>recommended max {REC.toLocaleString()} mg</span><span>4,000 mg</span>
+          </div>
+          {zone === "danger" && <p style={{ margin: "12px 0 0", fontSize: 13, color: "#B4332B", fontWeight: 600, lineHeight: 1.5 }}>This is above the maximum safe daily amount. Too much acetaminophen can seriously harm the liver. Please contact a pharmacist or Poison Control now, and don't take any more today.</p>}
+          {zone === "caution" && <p style={{ margin: "12px 0 0", fontSize: 13, color: "#8A4309", lineHeight: 1.5 }}>You're above the everyday recommended limit and approaching the maximum. Check with a pharmacist before adding any more acetaminophen products.</p>}
+          {zone === "ok" && total > 0 && <p style={{ margin: "12px 0 0", fontSize: 13, color: "#2E7D5B", lineHeight: 1.5 }}>Within the usual daily limit — but remember any extra cold/flu or pain product may also contain acetaminophen.</p>}
+          <label style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12, fontSize: 12.5, color: C.inkSoft, cursor: "pointer" }}>
+            <input type="checkbox" checked={lowCeiling} onChange={e => setLowCeiling(e.target.checked)} />
+            I have liver disease or drink 3+ alcoholic drinks most days (lowers the safe limit)
+          </label>
+        </div>
+
+        {/* rows */}
+        {rows.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
+            {rows.map((r, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", border: `1px solid ${C.line}`, borderRadius: 11, padding: "9px 11px", background: "#fff" }}>
+                <span style={{ flex: "1 1 180px", fontSize: 13, color: C.ink }}>{r.label} {r.from === "your list" && <span style={{ fontSize: 10, color: "#2F8F6B", background: "#2F8F6B15", borderRadius: 999, padding: "1px 6px" }}>from your list</span>}</span>
+                <input type="number" value={r.mg} onChange={e => upd(i, "mg", e.target.value)} style={{ width: 78, borderRadius: 8, border: `1px solid ${C.line}`, padding: "6px 8px", fontSize: 13, color: C.ink }} /> <span style={{ fontSize: 12, color: C.inkFaint }}>mg ×</span>
+                <input type="number" value={r.doses} onChange={e => upd(i, "doses", e.target.value)} style={{ width: 56, borderRadius: 8, border: `1px solid ${C.line}`, padding: "6px 8px", fontSize: 13, color: C.ink }} /> <span style={{ fontSize: 12, color: C.inkFaint }}>/day</span>
+                <button onClick={() => setRows(rs => rs.filter((_, j) => j !== i))} style={{ height: 24, width: 24, borderRadius: 999, border: "none", background: "#F1ECE0", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><X size={12} color={C.inkSoft} /></button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <p style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: C.inkFaint, margin: "0 0 8px" }}>Quick-add a common product</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+          {APAP_QUICK.map(([label, mg]) => (
+            <button key={label} onClick={() => add(label, mg)} style={{ ...ghostBtn, padding: "6px 11px", fontSize: 12 }}><Plus size={12} /> {label.split(" (")[0]}</button>
+          ))}
+        </div>
+      </section>
+
+      {/* NSAID panel */}
+      <section style={{ ...card, marginBottom: 16 }}>
+        <h3 style={{ fontFamily: serifH, fontSize: 17, margin: "0 0 4px", color: C.ink }}>Anti-inflammatories (NSAIDs)</h3>
+        <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "0 0 12px" }}>Ibuprofen, naproxen, and similar shouldn't be doubled up, and they add bleeding and kidney risk.</p>
+        {nsaids.length + (aspirinTaken ? 1 : 0) === 0 ? (
+          <p style={{ fontSize: 13.5, color: C.inkSoft }}>No NSAIDs detected in your analyzed list.</p>
+        ) : (
+          <>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 12 }}>
+              {nsaids.map(m => <span key={m.id} style={{ borderRadius: 999, border: `1px solid ${C.line}`, background: "#fff", padding: "5px 12px", fontSize: 12.5, color: C.ink }}>{m.name}</span>)}
+              {aspirinTaken && <span style={{ borderRadius: 999, border: `1px solid ${C.line}`, background: "#fff", padding: "5px 12px", fontSize: 12.5, color: C.ink }}>Aspirin</span>}
+            </div>
+            {nsaids.length >= 2 && <div style={{ borderRadius: 11, background: "#FBEFE6", border: "1px solid #F0D6C2", padding: "11px 13px", fontSize: 13, color: "#8A4309", marginBottom: 10 }}><strong>You have more than one NSAID.</strong> Taking two at once raises the risk of stomach bleeding and kidney strain without added benefit — ask your pharmacist which one to keep.</div>}
+            {bloodThinner && <div style={{ borderRadius: 11, background: "#FBE8E6", border: "1px solid #EFC6C1", padding: "11px 13px", fontSize: 13, color: "#8A2A22" }}><strong>NSAID + a blood thinner.</strong> This combination meaningfully increases bleeding risk. <button onClick={() => go("interactions")} style={{ background: "none", border: "none", color: C.terra, cursor: "pointer", padding: 0, textDecoration: "underline" }}>See your interaction check</button> and confirm with a pharmacist.</div>}
+            <p style={{ fontSize: 12, color: C.inkFaint, margin: "10px 0 0", lineHeight: 1.55 }}>Typical over-the-counter daily maximums (confirm with the label/pharmacist): ibuprofen ~1,200 mg, naproxen ~660 mg, aspirin (for pain) ~4,000 mg. Prescription limits differ.</p>
+          </>
+        )}
+      </section>
+
+      <div style={{ ...card, background: "#F6EFE2" }}>
+        <p style={{ fontSize: 12.5, color: "#4F4233", margin: 0, lineHeight: 1.6 }}>
+          <strong>If you think you've taken too much acetaminophen,</strong> don't wait for symptoms — liver damage can begin before you feel sick. In the U.S., Poison Control is free and confidential at <strong>1-800-222-1222</strong>; elsewhere, call your local poison or emergency number.
+        </p>
+      </div>
+      <p style={{ marginTop: 14, fontSize: 11.5, color: C.inkFaint, lineHeight: 1.55 }}>Educational estimate based on what you enter; it can't see every product or your liver health. Always read labels and confirm safe limits with your pharmacist or prescriber.</p>
+    </div>
+  );
+}
+
+// ---- Emergency ------------------------------------------------------------
+const SERVICE_CATS = [
+  { id: "hospital", label: "Hospital / ER", color: "#B4332B", match: t => t.amenity === "hospital", q: ['node["amenity"="hospital"]', 'way["amenity"="hospital"]'] },
+  { id: "urgent", label: "Urgent care / clinic", color: "#1F7A6D", match: t => t.amenity === "clinic" || t.healthcare === "clinic" || t.amenity === "doctors", q: ['node["amenity"="clinic"]', 'way["amenity"="clinic"]', 'node["healthcare"="clinic"]', 'node["amenity"="doctors"]'] },
+  { id: "police", label: "Police", color: "#3F6E8C", match: t => t.amenity === "police", q: ['node["amenity"="police"]', 'way["amenity"="police"]'] },
+  { id: "fire", label: "Fire station", color: "#B5560A", match: t => t.amenity === "fire_station", q: ['node["amenity"="fire_station"]', 'way["amenity"="fire_station"]'] },
+];
+
+function EmergencyServices() {
+  const [sel, setSel] = useState(["hospital", "urgent"]);
+  const [status, setStatus] = useState("idle"); // idle|locating|loading|ready|empty|denied|error
+  const [results, setResults] = useState([]);
+  const toggle = id => setSel(s => s.includes(id) ? (s.length > 1 ? s.filter(x => x !== id) : s) : [...s, id]);
+
+  async function fetchServices(lat, lng) {
+    const cats = SERVICE_CATS.filter(c => sel.includes(c.id));
+    const body = cats.flatMap(c => c.q.map(q => q + "(around:12000," + lat + "," + lng + ");")).join("");
+    const query = "[out:json][timeout:25];(" + body + ");out center 80;";
+    const ctrl = new AbortController(); const to = setTimeout(() => ctrl.abort(), 13000);
+    const res = await fetch("https://overpass-api.de/api/interpreter", { method: "POST", body: "data=" + encodeURIComponent(query), headers: { "Content-Type": "application/x-www-form-urlencoded" }, signal: ctrl.signal });
+    clearTimeout(to);
+    const data = await res.json();
+    const seen = new Set(); const out = [];
+    for (const el of (data.elements || [])) {
+      const t = el.tags || {};
+      const la = el.lat != null ? el.lat : (el.center && el.center.lat);
+      const lo = el.lon != null ? el.lon : (el.center && el.center.lon);
+      if (la == null || lo == null) continue;
+      const cat = SERVICE_CATS.find(c => sel.includes(c.id) && c.match(t)); if (!cat) continue;
+      const name = t.name || cat.label;
+      const k = name + "@" + la.toFixed(4) + "," + lo.toFixed(4); if (seen.has(k)) continue; seen.add(k);
+      const dLat = (la - lat) * 69.0, dLng = (lo - lng) * 69.0 * Math.cos(lat * Math.PI / 180);
+      const miles = Math.hypot(dLat, dLng);
+      out.push({ name, cat, lat: la, lng: lo, miles, phone: t.phone || t["contact:phone"] || "" });
+    }
+    out.sort((a, b) => a.miles - b.miles);
+    return out.slice(0, 20);
+  }
+
+  const locate = () => {
+    if (!navigator.geolocation) { setStatus("error"); return; }
+    setStatus("locating");
+    navigator.geolocation.getCurrentPosition(
+      pos => { setStatus("loading"); fetchServices(pos.coords.latitude, pos.coords.longitude).then(r => { setResults(r); setStatus(r.length ? "ready" : "empty"); }).catch(() => setStatus("error")); },
+      err => setStatus(err.code === 1 ? "denied" : "error"),
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+    );
+  };
+
+  return (
+    <div style={{ ...card, marginBottom: 18 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 4 }}>
+        <Navigation size={18} color={C.terra} />
+        <h3 style={{ fontFamily: serifH, fontSize: 17, margin: 0, color: C.ink }}>Find help near me</h3>
+      </div>
+      <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "0 0 12px" }}>Locate the nearest hospital, urgent care, police, or fire station. For a life-threatening emergency, call your local emergency number first.</p>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 12 }}>
+        {SERVICE_CATS.map(c => { const on = sel.includes(c.id); return (
+          <button key={c.id} onClick={() => toggle(c.id)} style={{ borderRadius: 999, border: `1px solid ${on ? c.color : C.line}`, background: on ? c.color : C.surface, color: on ? "#fff" : C.inkSoft, padding: "6px 13px", fontSize: 12.5, fontWeight: on ? 600 : 400, cursor: "pointer" }}>{c.label}</button>
+        ); })}
+      </div>
+      <button onClick={locate} style={{ ...primaryBtn, background: C.terra }}><Navigation size={15} /> {status === "ready" ? "Update results" : "Use my location"}</button>
+
+      {status === "locating" && <p style={{ fontSize: 13, color: C.inkSoft, marginTop: 12 }}>Getting your location…</p>}
+      {status === "loading" && <p style={{ fontSize: 13, color: C.inkSoft, marginTop: 12 }}>Finding the nearest services…</p>}
+      {status === "denied" && <p style={{ fontSize: 13, color: C.inkSoft, marginTop: 12 }}>Location is off. Turn it on, or open <a href="https://www.google.com/maps/search/hospital+near+me" target="_blank" rel="noopener noreferrer" style={{ color: C.terra }}>maps for "hospital near me"</a>.</p>}
+      {status === "empty" && <p style={{ fontSize: 13, color: C.inkSoft, marginTop: 12 }}>Nothing found nearby for those categories — try selecting more, or open <a href="https://www.google.com/maps/search/emergency+room+near+me" target="_blank" rel="noopener noreferrer" style={{ color: C.terra }}>maps</a>.</p>}
+      {status === "error" && <p style={{ fontSize: 13, color: C.inkSoft, marginTop: 12 }}>Couldn't fetch nearby services. Open <a href="https://www.google.com/maps/search/hospital+near+me" target="_blank" rel="noopener noreferrer" style={{ color: C.terra }}>maps for "hospital near me"</a>.</p>}
+
+      {status === "ready" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 9, marginTop: 14 }}>
+          {results.map((r, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, border: `1px solid ${C.line}`, borderRadius: 12, background: "#fff", padding: "11px 13px" }}>
+              <div style={{ minWidth: 0 }}>
+                <p style={{ margin: 0, fontWeight: 600, color: C.ink, fontSize: 14, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.name}</p>
+                <p style={{ margin: "3px 0 0", fontSize: 11.5, color: C.inkFaint, display: "flex", alignItems: "center", gap: 6 }}>
+                  <span style={{ height: 8, width: 8, borderRadius: 999, background: r.cat.color }} />{r.cat.label} · {r.miles < 0.1 ? "< 0.1" : r.miles.toFixed(1)} mi
+                </p>
+              </div>
+              <div style={{ display: "flex", gap: 7, flexShrink: 0 }}>
+                {r.phone && <a href={"tel:" + r.phone.replace(/[^+\d]/g, "")} style={{ ...ghostBtn, padding: "7px 11px", fontSize: 12, textDecoration: "none" }}><Phone size={13} /> Call</a>}
+                <a href={"https://www.google.com/maps/dir/?api=1&destination=" + r.lat + "," + r.lng} target="_blank" rel="noopener noreferrer" style={{ ...primaryBtn, padding: "7px 11px", fontSize: 12, textDecoration: "none" }}><MapPin size={13} /> Directions</a>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      <p style={{ fontSize: 11, color: C.inkFaint, marginTop: 12, lineHeight: 1.5 }}>Locations come live from OpenStreetMap and may be incomplete or out of date — distances are straight-line. Always confirm a hospital has an open emergency room, and in a true emergency call your local emergency number rather than driving yourself when unsafe.</p>
+    </div>
+  );
+}
+
+const EMERGENCY_SIGNS = [
+  ["Trouble breathing or shortness of breath", "may signal combined respiratory depressants or a severe reaction"],
+  ["Severe bleeding — including vomiting blood, coughing up blood, or black/tarry stools, or bleeding that won't stop", "blood thinners, antiplatelets, and NSAIDs stacked together"],
+  ["Sudden severe headache, or new nervous-system problems — weakness, numbness, slurred speech, vision loss, or face drooping", "stroke-like; can follow bleeding or blood-pressure extremes"],
+  ["Chest pain or severe palpitations", "heart strain or a dangerous rhythm"],
+  ["Abnormal involuntary muscle contractions, stiffness, or jerking — especially with fever, sweating, or confusion", "serotonin syndrome or neuroleptic malignant syndrome"],
+  ["Convulsions or a seizure", "can come from severe low blood sugar with diabetes medicines, or other drug effects"],
+  ["Profound muscle weakness or inability to move or hold your head up", "a severe reaction involving muscle relaxants or neuromuscular agents"],
+  ["Painful, blistering, or peeling skin — or sores in the mouth, eyes, or genitals", "Stevens-Johnson syndrome / a severe drug reaction"],
+  ["Swelling of the lips, tongue, or throat, or widespread hives", "anaphylaxis — a severe allergic reaction"],
+  ["Difficulty staying awake, fainting, or loss of consciousness", "too much combined sedation, a dangerous heart rhythm, or blood pressure dropping too low"],
+  ["Little or no urine output", "acute kidney failure, which some drug combinations can trigger"],
+];
+
+function PoisonControlPanel() {
+  const [what, setWhat] = useState("");
+  const triageUrl = "https://triage.webpoisoncontrol.org/";
+  return (
+    <div style={{ borderRadius: 16, border: "1px solid #C9B7D6", background: "#F4EFF8", padding: "16px 17px", marginBottom: 18 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
+        <span style={{ display: "flex", height: 44, width: 44, borderRadius: 12, background: "#6B4E8E", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><FlaskConical size={22} color="#fff" /></span>
+        <div>
+          <p style={{ margin: 0, fontFamily: serifH, fontSize: 17, color: "#3E2C55" }}>Poison Control — get help now</p>
+          <p style={{ margin: "2px 0 0", fontSize: 12, color: "#5B4A6E" }}>Suspected poisoning, overdose, wrong dose, or chemical exposure. Free &amp; 24/7 in the U.S.</p>
+        </div>
+      </div>
+
+      <label style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", color: "#6B4E8E", display: "block", marginBottom: 5 }}>What was swallowed or exposed? (optional — to have ready)</label>
+      <input value={what} onChange={e => setWhat(e.target.value)} placeholder="e.g., 'child ate 3 ibuprofen', 'bleach + ammonia fumes'"
+        style={{ width: "100%", boxSizing: "border-box", borderRadius: 10, border: "1px solid #C9B7D6", background: "#fff", padding: "10px 12px", fontSize: 13.5, color: C.ink, outline: "none", marginBottom: 11 }} />
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 9 }} className="pc-grid">
+        <a href="tel:18002221222" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, textDecoration: "none", borderRadius: 11, background: "#6B4E8E", color: "#fff", padding: "12px 14px", fontSize: 13.5, fontWeight: 600 }}>
+          <Phone size={16} /> Call 1-800-222-1222
+        </a>
+        <a href={triageUrl} target="_blank" rel="noopener noreferrer" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, textDecoration: "none", borderRadius: 11, background: "#fff", border: "1px solid #6B4E8E", color: "#4A3568", padding: "12px 14px", fontSize: 13.5, fontWeight: 600 }}>
+          <ArrowRight size={16} /> Open online triage
+        </a>
+      </div>
+
+      <p style={{ margin: "11px 0 0", fontSize: 11, color: "#7A6A8E", lineHeight: 1.5 }}>
+        "Open online triage" takes you to <strong>webPOISONCONTROL</strong> (triage.webpoisoncontrol.org), the official Poison Control web tool — it will ask its own questions and give guidance. This app doesn't provide poison triage itself. If the person is collapsed, seizing, or not breathing, call your local emergency number instead.
+      </p>
+    </div>
+  );
+}
+
+function EmergencyPage({ go }) {
+  return (
+    <div style={{ maxWidth: 760 }}>
+      <PageHead title="Emergency" italic={"\u201cWhen it can't wait \u2014 especially if it came on suddenly.\u201d"} sub="Warning signs worth acting on fast. Sudden onset after a dose or a new medicine is the part to take most seriously." />
+
+      <div style={{ borderRadius: 16, background: "#7A1410", color: "#FFF4F2", padding: "18px 20px", marginBottom: 18, boxShadow: "0 14px 34px -16px rgba(122,20,16,0.5)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <Siren size={22} color="#fff" />
+          <span style={{ fontFamily: serifH, fontSize: 19, fontWeight: 700 }}>Call your local emergency number now</span>
+        </div>
+        <p style={{ margin: "8px 0 0", fontSize: 13.5, lineHeight: 1.6, color: "#FBE2DE" }}>for any of the signs below — <strong style={{ color: "#fff" }}>especially when they start suddenly</strong>. This tool is educational and can't call for help. Don't wait to see if it passes.</p>
+      </div>
+
+      <EmergencyServices />
+
+      {/* Poison Control */}
+      <PoisonControlPanel />
+
+      <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+        {EMERGENCY_SIGNS.map(([sign, why], i) => (
+          <div key={i} style={{ display: "flex", gap: 11, alignItems: "flex-start", border: "1px solid #EFC6C1", background: "#FCF3F1", borderRadius: 13, padding: "12px 14px" }}>
+            <AlertTriangle size={16} color="#B4332B" style={{ flexShrink: 0, marginTop: 2 }} />
+            <div>
+              <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#5A1410", lineHeight: 1.5 }}>{sign}</p>
+              <p style={{ margin: "3px 0 0", fontSize: 12, color: "#9A6258", lineHeight: 1.45 }}>{why}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* mental-health crisis */}
+      <div style={{ marginTop: 14, border: "1px solid #C9B7D6", background: "#F4EFF8", borderRadius: 13, padding: "14px 16px" }}>
+        <div style={{ display: "flex", gap: 11, alignItems: "flex-start" }}>
+          <Heart size={17} color="#6B4E8E" style={{ flexShrink: 0, marginTop: 2 }} />
+          <div>
+            <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#3E2C55", lineHeight: 1.5 }}>Thoughts of suicide or self-harm — or making a plan</p>
+            <p style={{ margin: "4px 0 0", fontSize: 12.5, color: "#5B4A6E", lineHeight: 1.55 }}>This can be a side effect or interaction of some antidepressants, anti-anxiety medicines, and antipsychotics — it's worth taking seriously, not brushing off. You don't have to handle it alone. In the U.S., call or text <strong>988</strong> (Suicide &amp; Crisis Lifeline), any time. Elsewhere, contact your local emergency number or crisis line. If you might act on these thoughts right now, treat it as an emergency.</p>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ marginTop: 16, ...card }}>
+        <p style={{ fontSize: 13, color: "#4F4233", margin: 0, lineHeight: 1.6 }}>Many of these can come from medicines interacting. Once you're safe, reviewing your combinations with a pharmacist can help prevent a repeat.</p>
+        <button onClick={() => go("interactions")} style={{ ...primaryBtn, marginTop: 14 }}>Review serious interactions <ArrowRight size={16} /></button>
+      </div>
+      <p style={{ marginTop: 14, fontSize: 11.5, color: C.inkFaint, lineHeight: 1.55 }}>Educational only and not a complete list. When in doubt about a sudden or severe symptom, call your local emergency number — it's always better to be checked.</p>
+    </div>
+  );
+}
+
+// ---- Policies, Terms & Privacy ---------------------------------------------
+function MissionPage({ go }) {
+  const P = ({ children, style }) => <p style={{ fontSize: 14.5, color: "#4F4233", lineHeight: 1.7, margin: "0 0 14px", ...style }}>{children}</p>;
+  return (
+    <div style={{ maxWidth: 760 }}>
+      <PageHead title="Mission & Vision" italic={"\u201cSafer healthcare happens when we work as one team.\u201d"} sub="Why RxSafeCheck exists, and the belief behind What's Safe Together?" />
+
+      <div style={{ ...card, marginBottom: 16 }}>
+        <h2 style={{ fontFamily: serifH, fontSize: 19, color: C.terraDeep, margin: "0 0 10px" }}>Our mission</h2>
+        <P>Our mission is to help patients, caregivers, and families better understand medication safety, treatment complexity, and the questions they should ask their healthcare teams.</P>
+        <P>Through <strong>RxSafeCheck\u2122</strong>, we provide clear, accessible information that supports safer conversations between patients, physicians, pharmacists, specialists, and caregivers. We do not replace medical advice, diagnose conditions, or recommend treatments. Instead, we help people become better prepared, better informed, and better equipped to participate in meaningful discussions about their care.</P>
+      </div>
+
+      <div style={{ ...card, marginBottom: 16 }}>
+        <h2 style={{ fontFamily: serifH, fontSize: 19, color: C.terraDeep, margin: "0 0 10px" }}>Our vision</h2>
+        <P style={{ margin: 0 }}>A healthcare world where every patient has the knowledge, confidence, and support needed to ask the right questions about medications, diagnoses, treatment changes, side effects, drug interactions, and risks.</P>
+      </div>
+
+      <div style={{ borderRadius: 16, border: "1px solid #C9B7D6", background: "#F4EFF8", padding: "20px 22px", marginBottom: 16 }}>
+        <h2 style={{ fontFamily: serifH, fontSize: 19, color: "#3E2C55", margin: "0 0 10px" }}>What's Safe Together?</h2>
+        <P style={{ color: "#3E2C55" }}>Safe Together is the belief that safer healthcare happens when patients, caregivers, and medical teams communicate openly and work as one team.</P>
+        <P style={{ color: "#3E2C55", margin: 0 }}>Because safety is not something patients should have to figure out alone. Safety happens when patients, caregivers, and medical teams are informed, prepared, and <strong>safe together</strong>.</P>
+      </div>
+
+      <div style={{ ...card, marginBottom: 16 }}>
+        <h2 style={{ fontFamily: serifH, fontSize: 19, color: C.terraDeep, margin: "0 0 10px" }}>Why we built this</h2>
+        <P>RxSafeCheck was built by a physician and a biomedical scientist whose personal experience shaped this mission. After losing his father to prostate cancer following more than nine years of changing diagnoses, new medications, new treatments, emergency room visits, and complex medication interactions, he saw firsthand how difficult it can be for families to navigate modern healthcare.</P>
+        <P>His father was fortunate to have a son with experience in public health, physiology, and access to a large network of healthcare providers and world experts. Most patients and families do not have that same support.</P>
+        <P style={{ fontFamily: serifH, fontStyle: "italic", color: C.terraDeep, fontSize: 15.5 }}>That is why RxSafeCheck\u2122 was created.</P>
+        <P>This platform is not designed to tell patients what treatment to choose. It is designed to help patients and caregivers understand <strong>what questions to ask</strong> their doctors, pharmacists, nurses, specialists, and other healthcare providers.</P>
+        <P style={{ margin: 0 }}>RxSafeCheck\u2122 is a <strong>conversation tool \u2014 not a diagnosis or treatment tool</strong>. It helps identify important topics worth discussing, including medication interactions, side effects, treatment changes, chronic drug exposure, acute reactions, and risks that may require closer attention.</P>
+      </div>
+
+      <div style={{ ...card, display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+        <span style={{ fontSize: 13.5, color: C.inkSoft, flex: 1, minWidth: 200 }}>Ready to prepare for your next conversation with your care team?</span>
+        <button onClick={() => go("meds")} style={{ ...primaryBtn, padding: "9px 15px", fontSize: 13 }}>Add my medications <ArrowRight size={15} /></button>
+      </div>
+
+      <p style={{ marginTop: 16, fontSize: 11.5, color: C.inkFaint, lineHeight: 1.55 }}>RxSafeCheck\u2122 and What's Safe Together?\u2122 are trademarks of Morning Mind LLC, Cedar Park, Texas. Educational only \u2014 not medical advice, diagnosis, or treatment.</p>
+    </div>
+  );
+}
+
+function PoliciesPage() {
+  const Sec = ({ title, id, children }) => (
+    <section id={id} style={{ ...card, marginBottom: 14, scrollMarginTop: 16 }}>
+      <h3 style={{ fontFamily: serifH, fontSize: 17, margin: "0 0 8px", color: C.ink }}>{title}</h3>
+      <div style={{ fontSize: 13, color: "#4F4233", lineHeight: 1.65 }}>{children}</div>
+    </section>
+  );
+  const jump = id => { const el = document.getElementById(id); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); };
+  const links = [["About", "about"], ["Trademarks", "trademarks"], ["Editorial policy", "editorial"], ["Citation guidelines", "citations"], ["Advertising enquiries", "advertising"], ["Contact us", "contact"], ["Privacy", "privacy"], ["No ads / no tracking", "nodata"]];
+  return (
+    <div style={{ maxWidth: 780 }}>
+      <PageHead title="Policies, Terms & Privacy" italic={"\u201cThe plain version of who we are and how this works.\u201d"} sub={"What's Safe Together? is owned and operated by Morning Mind LLC (themorningmind.com), Cedar Park, Texas. Effective " + new Date().toLocaleDateString() + "."} />
+
+      <div style={{ ...card, marginBottom: 14 }}>
+        <p style={{ fontSize: 11.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: C.inkFaint, margin: "0 0 10px" }}>Support &amp; privacy</p>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {links.map(([label, id]) => (
+            <button key={id} onClick={() => jump(id)} style={{ ...ghostBtn, padding: "7px 13px", fontSize: 12.5 }}>{label}</button>
+          ))}
+        </div>
+      </div>
+
+      <Sec title="About Us" id="about">
+        <p style={{ margin: "0 0 6px", fontStyle: "italic", color: C.terraDeep, fontFamily: serifH, fontSize: 15, lineHeight: 1.5 }}>{"\u201cEvery medicine a person takes joins a conversation already happening in their body. Morning Mind exists to help patients and caregivers hear it clearly \u2014 turning a scattered list of prescriptions, supplements, and everyday remedies into one honest picture, raising a loud, plain warning for the few combinations that can truly cause harm, and putting the right questions in people's hands before they reach the pharmacy counter. Every search should leave someone a little safer than it found them.\u201d"}</p>
+        <p style={{ margin: "10px 0 0" }}>What's Safe Together?™ (rxsafecheck.com) is an <strong>independent, educational</strong> medication-safety tool from <strong>Morning Mind LLC</strong> (themorningmind.com), based in <strong>Cedar Park, Texas</strong>. It helps people and their caregivers see how their medicines, supplements, food, and other substances interact, organized by the part of the body they affect, and prepares clear questions to bring to a prescriber or pharmacist. It organizes information; it does not diagnose, prescribe, or replace professional care.</p>
+        <p style={{ margin: "10px 0 0" }}><strong>How our information is built.</strong> The interaction logic, drug classes, and body-system effects are a <strong>curated, conservatively-built knowledge base</strong> authored and maintained for this app, covering well-established, widely-recognized pharmacology. It is a deliberately focused <strong>educational subset</strong>, not an exhaustive clinical database. It is <strong>not peer-reviewed</strong>, is not powered by a licensed clinical drug-information service, and is not a validated medical device. "No interactions found" is never a guarantee of safety.</p>
+        <p style={{ margin: "10px 0 0" }}><strong>Data sources.</strong> For naming and look-ups, the app draws on public resources from the U.S. National Library of Medicine — <strong>RxNorm</strong> (drug names) and the <strong>Dietary Supplement Label Database</strong> (supplements) — along with <strong>ClinicalTrials.gov</strong> for study listings and <strong>OpenStreetMap</strong> for finding nearby pharmacies and emergency services. These are maintained by others and should be verified with the original source.</p>
+        <p style={{ margin: "10px 0 0" }}><strong>News.</strong> The Drug Safety News feature highlights general safety themes relevant to the medicines in your profile and links you to official pages (such as the FDA, EMA, and DailyMed). It is <strong>not a live newswire</strong> and does not publish original reporting or specific recall claims.</p>
+        <p style={{ margin: "10px 0 0" }}><strong>Independence.</strong> What's Safe Together? is currently ad-free, and no one can pay to influence the safety information it shows.</p>
+      </Sec>
+
+      <Sec title="Ownership & copyright">
+        This application, its name "What's Safe Together?", the <strong>rxsafecheck.com</strong> website, and its content, design, text, graphics, and code are owned by <strong>Morning Mind LLC</strong> (themorningmind.com), Cedar Park, Texas ("we," "us," "the Company") and are protected by copyright and other intellectual-property laws. <strong>© {new Date().getFullYear()} Morning Mind LLC. All rights reserved.</strong> You may use the app for your own personal, non-commercial, educational purposes; you may not copy, reproduce, resell, scrape, or redistribute it, in whole or in part, without our prior written permission.
+      </Sec>
+
+      <Sec title="Trademarks" id="trademarks">
+        <strong>What's Safe Together?™</strong> and <strong>RxSafeCheck™</strong>, together with the Company's logos and the look and feel of the app, are trademarks and trade dress of Morning Mind LLC. You may not use these marks without our prior written permission, and you may not use them in any way that suggests our sponsorship or endorsement. All other product names, brand names, drug names, and logos that appear in the app (for example, medication brand names, or the names of data providers such as RxNorm, DSLD, ClinicalTrials.gov, and OpenStreetMap) are the property of their respective owners and are used here only for identification and educational reference; their use does not imply any affiliation with or endorsement by those owners.
+      </Sec>
+
+      <Sec title="Medical disclaimer — educational only">
+        This app is provided for <strong>general education and information only. It is not medical advice, diagnosis, or treatment, and it does not create a doctor–patient or pharmacist–patient relationship.</strong> It does not — and cannot — see your full health history, lab results, or examination. Nothing here should be used to start, stop, or change any medication. Always consult a qualified, licensed healthcare professional (such as your prescriber or pharmacist) about your medicines and health, and never disregard or delay professional advice because of something you read here. A result of "no interactions found" is never a guarantee that a combination is safe.
+      </Sec>
+
+      <Sec title="Not for emergencies">
+        Do not use this app for medical emergencies. If you think you are having an emergency, call your local emergency number immediately. In the U.S., Poison Control is available at 1-800-222-1222, and the Suicide &amp; Crisis Lifeline at 988. Location-based "find help near me" features are convenience tools only and may be incomplete or inaccurate.
+      </Sec>
+
+      <Sec title="Privacy & your data" id="privacy">
+        We designed this app to be private by default. The medicines, conditions, and notes you enter are held in your browser <strong>only for your current session</strong> — there is no account required, and we do not transmit or store your medication list or health information on Morning Mind LLC servers. Refreshing or closing the app clears that information from memory. Signing in is <strong>optional</strong>: if you choose to sign in with Google, we receive only your basic Google profile (name, email address, and photo) to identify you for notifications — your medicines and health entries are <strong>never</strong> sent to Google.
+        <br /><br />
+        To provide search and location features, the app sends limited queries to independent third-party services (see below). For example, a drug or supplement search sends the text you typed; a "near me" feature uses your device's approximate location to look up nearby places. Those requests are handled by the third parties under their own privacy policies, and your device's geolocation is used only to perform the lookup you requested — it is not collected or stored by us. The app is hosted on a third-party platform that, like most web hosts, may log standard technical request data (such as IP address) for security and operation.
+      </Sec>
+
+      <Sec title="No ads, no trackers, no sale of your data" id="nodata">
+        We want to be unambiguous, because the health-app industry has a poor track record here: <strong>we do not sell, rent, or share your personal or health information for advertising, and we never will.</strong> This app contains <strong>no third-party advertising, no advertising pixels or tags (for example, no Facebook/Meta or Google advertising trackers), and no analytics SDKs that profile you.</strong> We do not build advertising or marketing profiles about you, and because we don't collect your health information on our servers, there is nothing for us to monetize or disclose to advertisers. If this ever changes, we would update this policy, clearly disclose it, obtain any legally required consent before any new data use, and provide any breach notifications required by law (such as the FTC's Health Breach Notification Rule).
+      </Sec>
+
+      <Sec title="HIPAA & regulatory status">
+        Morning Mind LLC is <strong>not a HIPAA-covered entity</strong> (we are not a healthcare provider, health plan, or clearinghouse), and we do <strong>not</strong> display any HIPAA-compliance seal or claim. This app is an educational tool, not a medical device or a personal health record service that we operate on your behalf. Because we don't collect your entries on our servers, that information isn't held by us as a health record. Nothing here should be read as a representation of HIPAA compliance.
+      </Sec>
+
+      <Sec title="Third-party data sources">
+        The app draws on publicly available data and APIs, including the U.S. National Library of Medicine's <strong>RxNorm</strong> and <strong>Dietary Supplement Label Database (DSLD)</strong>, <strong>ClinicalTrials.gov</strong>, and <strong>OpenStreetMap</strong> (via the Overpass API) for places. These sources are maintained by others, may be incomplete or out of date, and are used here for educational purposes. Their appearance in the app is not an endorsement, and we are not responsible for their content or availability. Trademarks and brand names belong to their respective owners and are used only for identification.
+      </Sec>
+
+      <Sec title="Acceptable use">
+        Use the app lawfully and for your own informational purposes. Do not rely on it as a substitute for professional care, attempt to misuse it to obtain or combine substances unsafely, or use it to harm yourself or others. The information about prescription, over-the-counter, supplement, and other substances is provided for awareness and harm-reduction, not to encourage use.
+      </Sec>
+
+      <Sec title="No warranty">
+        The app is provided "as is" and "as available," without warranties of any kind, express or implied, including accuracy, completeness, fitness for a particular purpose, or non-infringement. Drug data, interaction logic, and location results are a curated, simplified subset and may contain errors or omissions. We do not warrant that the app is error-free or continuously available.
+      </Sec>
+
+      <Sec title="Limitation of liability">
+        To the fullest extent permitted by law, Morning Mind LLC and its members, officers, and contributors will not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss arising from your use of — or inability to use — the app, or from reliance on any information it provides. Your use of the app is at your own risk.
+      </Sec>
+
+      <Sec title="Changes & contact">
+        We may update the app and these policies from time to time; the "effective" date above reflects the latest version. Continued use after changes means you accept them. Questions about these terms or our practices can be directed to Morning Mind LLC via <strong>themorningmind.com</strong>. These terms are governed by the laws of the <strong>State of Texas, United States</strong>, without regard to conflict-of-laws rules.
+      </Sec>
+
+      <Sec title="Editorial policy" id="editorial">
+        Content is written for a general audience and reviewed for plain-language clarity and safety framing. Interaction logic, drug classes, and body-system effects reflect <strong>well-established, widely-recognized pharmacology</strong>, captured as a deliberately conservative, curated subset rather than an exhaustive clinical database — we would rather under-claim than overstate. We prioritize flagging the small number of potentially life-threatening combinations clearly while keeping lower-risk findings calm, to avoid alert fatigue. The app is <strong>not peer-reviewed</strong>, is not a validated clinical decision-support device, and is not a substitute for a clinician's judgment. We correct errors when found; if you spot one, please contact us.
+      </Sec>
+
+      <Sec title="Citation guidelines" id="citations">
+        To cite this tool: <em>What's Safe Together? Morning Mind LLC, themorningmind.com (accessed {new Date().toLocaleDateString()}).</em> Please cite it only as an educational resource, not as a clinical or primary medical source. Where the app surfaces data from external providers — the U.S. National Library of Medicine's RxNorm and DSLD, ClinicalTrials.gov, and OpenStreetMap — those sources should be credited to and verified with the original provider.
+      </Sec>
+
+      <Sec title="Advertising enquiries" id="advertising">
+        What's Safe Together? is currently <strong>ad-free</strong>: we do not display third-party advertising, and no one can pay to influence the safety information shown. For partnership, sponsorship, or advertising enquiries, contact Morning Mind LLC via <strong>themorningmind.com</strong>. Any future advertising would be clearly labeled and kept separate from medical content.
+      </Sec>
+
+      <Sec title="Contact us" id="contact">
+        Morning Mind LLC welcomes questions, corrections, and feedback. Reach us through <strong>themorningmind.com</strong> (Morning Mind LLC, Cedar Park, Texas){"\u00a0"}— or, for product feedback inside the app, use the thumbs-down/feedback options where available. For anything urgent or medical, contact your pharmacist, prescriber, or local emergency services rather than us — we can't provide medical advice or emergency help.
+      </Sec>
+
+      <p style={{ marginTop: 4, fontSize: 11.5, color: C.inkFaint, lineHeight: 1.55 }}>This statement is a plain-language template provided for convenience and is not legal advice. Morning Mind LLC should have it reviewed and finalized by a qualified attorney, and complete the bracketed items, before relying on it.</p>
+    </div>
+  );
+}
+
+// ---- Parkinson's Medication Guide ------------------------------------------
+const PARK_GUIDE = [
+  { group: "Dopaminergic therapy (levodopa-based) — the cornerstone", rows: [
+    ["Carbidopa/levodopa", "Sinemet, Rytary (ER), Duopa (gel)", "Dopamine precursor + DDC inhibitor", "Levodopa becomes dopamine in the brain; carbidopa blocks breakdown before it gets there", "Most effective drug; all stages, especially moderate–advanced motor symptoms", "Nausea, orthostatic drops, dyskinesia, wearing-off, hallucinations", "High-protein meals and iron/calcium reduce absorption; nonselective MAOIs; dopamine-blocking antipsychotics/metoclopramide blunt it", "FDA-approved"],
+    ["Carbidopa/levodopa/entacapone", "Stalevo", "Precursor + DDC + COMT inhibitor", "Adds COMT block to extend each levodopa dose", "Wearing-off / motor fluctuations", "As levodopa, plus diarrhea, urine discoloration", "As levodopa, plus COMT cautions", "FDA-approved"],
+    ["Foslevodopa/foscarbidopa", "Vyalev (SC infusion)", "Levodopa prodrug, continuous subcutaneous", "24-hour steady levodopa delivery", "Advanced PD with motor fluctuations", "Infusion-site reactions, hallucinations, dyskinesia", "As levodopa", "FDA-approved (2024, new)"],
+    ["Inhaled levodopa", "Inbrija", "Inhaled levodopa", "Rapid, on-demand levodopa", "Rescue for 'off' episodes", "Cough, airway irritation", "As levodopa; caution in asthma/COPD", "FDA-approved"],
+  ]},
+  { group: "Dopamine agonists", rows: [
+    ["Pramipexole", "Mirapex, Mirapex ER", "D2/D3 agonist", "Directly stimulates dopamine receptors", "Early monotherapy; adjunct; restless legs", "Impulse-control disorders, sleep attacks, hallucinations, orthostasis, edema", "Dopamine antagonists reduce effect; caution in psychosis/elderly", "FDA-approved"],
+    ["Ropinirole", "Requip, Requip XL", "D2/D3 agonist", "Directly stimulates dopamine receptors", "Early PD; adjunct; restless legs", "Same class effects", "Ciprofloxacin/fluvoxamine raise levels (CYP1A2); smoking lowers", "FDA-approved"],
+    ["Rotigotine", "Neupro (patch)", "D1/D2/D3 agonist, transdermal", "Steady transdermal dopamine stimulation", "Early and advanced PD", "Patch-site reactions + class effects", "Class effects; sulfite allergy caution", "FDA-approved"],
+    ["Apomorphine", "Apokyn (SC), Kynmobi (SL)", "Broad dopamine agonist", "Fast, potent dopamine stimulation", "Rescue for sudden 'off' periods", "Severe nausea (needs antiemetic), QT prolongation, hypotension", "Avoid ondansetron/5-HT3 antagonists (severe hypotension); QT drugs", "FDA-approved"],
+    ["Bromocriptine (ergot)", "Parlodel", "Ergot D2 agonist", "Older dopamine agonist", "Rarely used in PD now", "Cardiac/pulmonary fibrosis, class effects", "Ergot interactions", "FDA-approved (largely off-label for PD)"],
+  ]},
+  { group: "MAO-B inhibitors", rows: [
+    ["Selegiline", "Eldepryl, Zelapar (ODT)", "Irreversible MAO-B inhibitor", "Slows dopamine breakdown in the brain", "Early monotherapy; adjunct", "Insomnia, amphetamine-like metabolites", "Serotonergic drugs → serotonin syndrome; avoid meperidine/tramadol; tyramine at high dose", "FDA-approved"],
+    ["Rasagiline", "Azilect", "Irreversible MAO-B inhibitor", "Slows dopamine breakdown", "Early; adjunct for wearing-off", "Generally well tolerated", "Same serotonergic/opioid cautions", "FDA-approved"],
+    ["Safinamide", "Xadago", "Reversible MAO-B + glutamate modulation", "MAO-B block plus glutamate effect", "Adjunct to levodopa for 'off' time", "Dyskinesia, insomnia", "Serotonergic drugs; dextromethorphan; severe liver disease", "FDA-approved"],
+  ]},
+  { group: "COMT inhibitors", rows: [
+    ["Entacapone", "Comtan", "Peripheral COMT inhibitor", "Extends each levodopa dose", "Wearing-off", "Diarrhea, urine discoloration, more dyskinesia", "Used with levodopa", "FDA-approved"],
+    ["Opicapone", "Ongentys", "Once-daily peripheral COMT inhibitor", "Extends levodopa, once daily", "Adjunct for 'off' episodes", "Dyskinesia, insomnia", "Used with levodopa", "FDA-approved"],
+    ["Tolcapone", "Tasmar", "Central + peripheral COMT inhibitor", "Stronger COMT block", "Reserved; needs liver monitoring", "Hepatotoxicity (boxed warning), diarrhea", "Avoid in liver disease", "FDA-approved (restricted)"],
+  ]},
+  { group: "Anticholinergics, amantadine, adenosine A2A", rows: [
+    ["Trihexyphenidyl", "Artane", "Anticholinergic", "Rebalances dopamine/acetylcholine", "Tremor, especially younger patients", "Dry mouth, constipation, confusion, urinary retention", "Avoid in elderly, glaucoma, BPH, dementia", "FDA-approved"],
+    ["Benztropine", "Cogentin", "Anticholinergic", "Rebalances dopamine/acetylcholine", "Tremor; drug-induced parkinsonism", "Anticholinergic burden", "Same cautions", "FDA-approved"],
+    ["Amantadine", "Symmetrel, Gocovri (ER), Osmolex ER", "NMDA antagonist + dopaminergic", "Multiple actions incl. glutamate block", "Dyskinesia reduction (Gocovri); mild PD; fatigue", "Livedo reticularis, edema, hallucinations, insomnia", "Dose-adjust in kidney impairment", "FDA-approved"],
+    ["Istradefylline", "Nourianz", "Adenosine A2A antagonist", "Non-dopamine pathway to reduce 'off' time", "Adjunct to levodopa for 'off' episodes", "Dyskinesia, hallucination, impulse issues", "CYP3A4 interactions", "FDA-approved (2019)"],
+  ]},
+  { group: "Parkinson's psychosis & non-motor symptoms", rows: [
+    ["Pimavanserin", "Nuplazid", "5-HT2A inverse agonist", "Treats hallucinations/delusions without worsening movement", "PD psychosis", "QT prolongation; dementia-psychosis boxed warning", "QT drugs", "FDA-approved (only drug specifically for PD psychosis)"],
+    ["Quetiapine", "Seroquel", "Atypical antipsychotic", "Low tendency to worsen motor symptoms", "PD psychosis", "Sedation, orthostasis", "CNS depressants, QT", "Off-label (commonly used)"],
+    ["Clozapine", "Clozaril", "Atypical antipsychotic", "Effective for refractory PD psychosis", "PD psychosis (refractory)", "Requires blood-count monitoring", "CNS depressants, QT", "Off-label"],
+    ["Rivastigmine", "Exelon", "Cholinesterase inhibitor", "Boosts acetylcholine", "PD dementia", "Nausea, bradycardia", "Anticholinergics oppose it", "FDA-approved for PD dementia"],
+    ["Droxidopa", "Northera", "Norepinephrine precursor", "Raises standing blood pressure", "Neurogenic orthostatic hypotension", "Supine hypertension, headache", "BP agents", "FDA-approved"],
+    ["Midodrine / fludrocortisone / pyridostigmine", "—", "Pressor / mineralocorticoid / cholinergic", "Support blood pressure on standing", "Orthostatic hypotension in PD", "Supine hypertension (midodrine)", "BP agents", "Off-label in PD"],
+  ]},
+];
+
+function ParkinsonGuide({ go }) {
+  return (
+    <div style={{ maxWidth: 1000 }}>
+      <PageHead title="Parkinson's Medication Guide" italic={"\u201cThe whole toolbox, in one honest table.\u201d"} sub="A reference to the medicines used in Parkinson's disease — by class, how they work, when they're used, and what to watch for. Educational only; regimens are highly individual and belong with a neurologist." />
+
+      <div style={{ ...card, marginBottom: 16, background: "#F4EFF8", border: "1px solid #C9B7D6" }}>
+        <p style={{ fontSize: 13, color: "#3E2C55", margin: 0, lineHeight: 1.6 }}><strong>Cross-cutting safety themes</strong> (the app flags these automatically when relevant): an <strong>MAO-B inhibitor + another serotonin drug</strong> can cause serotonin syndrome; <strong>dopamine-blocking drugs</strong> (most antipsychotics, metoclopramide, prochlorperazine) worsen Parkinson's and are generally avoided; <strong>dopamine agonists</strong> can trigger impulse-control disorders; several PD drugs <strong>drop blood pressure on standing</strong>; and <strong>protein, iron, and calcium timing</strong> affects levodopa.</p>
+      </div>
+
+      {PARK_GUIDE.map((sec, i) => (
+        <section key={i} style={{ marginBottom: 18 }}>
+          <h2 style={{ fontFamily: serifH, fontSize: 18, color: C.terraDeep, margin: "0 0 10px" }}>{sec.group}</h2>
+          <div style={{ ...card, padding: 0, overflow: "hidden" }}>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ borderCollapse: "collapse", width: "100%", minWidth: 820, fontSize: 12.5 }}>
+                <thead>
+                  <tr style={{ background: "#EFE6D5", textAlign: "left" }}>
+                    {["Generic", "Common brands", "Class / mechanism", "Typical use", "Major side effects", "Key interactions / cautions", "Status"].map(h => (
+                      <th key={h} style={{ padding: "9px 11px", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.04em", color: C.inkSoft, fontWeight: 700, borderBottom: `1px solid ${C.line}`, verticalAlign: "top" }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {sec.rows.map((r, j) => {
+                    const off = /Off-label/i.test(r[7]);
+                    return (
+                      <tr key={j} style={{ background: j % 2 ? "#FBF7EF" : "#fff", verticalAlign: "top" }}>
+                        <td style={{ padding: "9px 11px", fontWeight: 600, color: C.ink, borderBottom: `1px solid ${C.line}` }}>{r[0]}</td>
+                        <td style={{ padding: "9px 11px", color: C.inkSoft, borderBottom: `1px solid ${C.line}` }}>{r[1]}</td>
+                        <td style={{ padding: "9px 11px", color: C.inkSoft, borderBottom: `1px solid ${C.line}` }}><span style={{ fontWeight: 600, color: C.ink }}>{r[2]}</span><br />{r[3]}</td>
+                        <td style={{ padding: "9px 11px", color: C.inkSoft, borderBottom: `1px solid ${C.line}` }}>{r[4]}</td>
+                        <td style={{ padding: "9px 11px", color: C.inkSoft, borderBottom: `1px solid ${C.line}` }}>{r[5]}</td>
+                        <td style={{ padding: "9px 11px", color: C.inkSoft, borderBottom: `1px solid ${C.line}` }}>{r[6]}</td>
+                        <td style={{ padding: "9px 11px", borderBottom: `1px solid ${C.line}` }}><span style={{ fontSize: 10.5, fontWeight: 700, borderRadius: 999, padding: "2px 8px", background: off ? "#F1ECE0" : "#E6F4EC", color: off ? C.inkSoft : "#2E7D5B" }}>{off ? "OFF-LABEL" : "FDA-APPROVED"}</span><div style={{ fontSize: 10.5, color: C.inkFaint, marginTop: 4 }}>{r[7].replace(/^(FDA-approved|Off-label)\s*/i, "")}</div></td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      ))}
+
+      <div style={{ ...card, marginTop: 4 }}>
+        <p style={{ fontSize: 13, color: "#4F4233", margin: 0, lineHeight: 1.6 }}>Add any of these to your list to check them against the rest of your medicines and see them on the Body Impact Map.</p>
+        <button onClick={() => go("meds")} style={{ ...primaryBtn, marginTop: 14 }}>Add my medications <ArrowRight size={16} /></button>
+      </div>
+      <p style={{ marginTop: 14, fontSize: 11.5, color: C.inkFaint, lineHeight: 1.55 }}>Educational reference only, not medical advice or a complete list. "Off-label" reflects common U.S. practice and can change. Parkinson's treatment is highly individualized — decisions belong with your neurologist and pharmacist.</p>
+    </div>
+  );
+}
+
+const CONDITIONS = {
+  diabetes: {"name": "Type 2 Diabetes", "icon": "Droplets", "accent": "#B5560A", "what": "Type 2 diabetes means your body has trouble using insulin, so sugar (glucose) builds up in your blood instead of fueling your cells. Over time, high blood sugar can harm your eyes, kidneys, nerves, and heart. The good news: day-to-day choices and medicines can keep it well controlled.", "symptoms": ["Feeling very thirsty or hungry", "Peeing a lot, especially at night", "Blurry vision", "Tiredness", "Cuts or sores that heal slowly", "Tingling or numbness in hands or feet"], "numbers": [["A1C (3-month average)", "Often under 7% (ask your doctor for your goal)"], ["Fasting blood sugar", "Commonly 80–130 mg/dL"], ["After-meal sugar", "Usually under 180 mg/dL 2 hours after eating"], ["Blood pressure", "Often under 130/80"], ["Feet", "Check daily for cuts or sores"]], "meds": [["Metformin", "Usually the first pill; lowers sugar your liver makes. Take with food to ease your stomach."], ["SGLT2 inhibitors (e.g., -flozin)", "Help kidneys remove sugar; also protect heart and kidneys. Drink enough water."], ["GLP-1 agonists (e.g., -tide)", "Injections or pills that lower sugar and appetite. Start low to avoid nausea."], ["Sulfonylureas / insulin", "Can lower sugar strongly — know the signs of low sugar (shaky, sweaty, confused)."]], "adherence": ["Take medicines at the same times daily", "Never skip insulin doses without asking first", "Keep fast-acting sugar (juice, tablets) nearby for lows", "Don't stop a medicine because you 'feel fine'"], "lifestyle": ["Fill half your plate with vegetables", "Choose water over sugary drinks", "Move for 30 minutes most days (even walking)", "Aim for steady, modest weight loss if advised", "Get enough sleep — poor sleep raises sugar"], "trackers": ["Morning fasting blood sugar", "Any low-sugar episodes", "Steps or minutes active", "Foot check (any sores?)", "Medication taken?"], "redflags": ["Blood sugar over 300 or very high with vomiting", "Signs of very low sugar that won't come up with juice", "Confusion, trouble staying awake", "Chest pain or trouble breathing", "A foot sore that's red, swollen, or won't heal"], "prep": ["Bring your glucose log or meter", "List all medicines and doses", "Note any low-sugar episodes", "Write down your questions", "Bring your blood pressure readings"], "questions": ["What's my A1C goal?", "Which medicine is best for my heart and kidneys?", "How do I treat a low?", "Should I check my sugar more often?", "Do I need to see an eye doctor or foot specialist?"], "caregiver": ["Learn the signs of high and low sugar", "Know where fast sugar and glucagon are kept", "Help keep a simple medicine and sugar log", "Encourage movement together — a daily walk counts"]},
+  hypertension: {"name": "High Blood Pressure", "icon": "Activity", "accent": "#B4332B", "what": "Blood pressure is the force of blood pushing on your artery walls. When it stays high, it quietly strains your heart, brain, and kidneys — which is why it's called a 'silent' condition. Most people feel fine, so tracking the numbers is how you stay ahead of it.", "symptoms": ["Usually none — that's why it's silent", "Sometimes headaches or dizziness when very high", "Rarely, nosebleeds or vision changes"], "numbers": [["Blood pressure goal", "Often under 130/80 (ask your doctor)"], ["Top number (systolic)", "The pressure when the heart beats"], ["Bottom number (diastolic)", "The pressure between beats"], ["Home readings", "Take at the same time, seated, arm supported"]], "meds": [["ACE inhibitors / ARBs (-pril, -sartan)", "Relax blood vessels; also protect kidneys. A dry cough can happen with -prils."], ["Calcium channel blockers (-dipine)", "Relax vessels; may cause ankle swelling."], ["Diuretics ('water pills')", "Remove extra fluid and salt. Take in the morning to avoid night bathroom trips."], ["Beta blockers (-olol)", "Slow the heart; don't stop suddenly."]], "adherence": ["Take at the same time every day", "Don't stop when readings look good — that's the medicine working", "Use a pill organizer or phone reminder", "Refill before you run out"], "lifestyle": ["Cut back on salt (watch canned and packaged foods)", "Move most days — even brisk walking helps", "Limit alcohol", "Manage stress with rest and breathing", "Lose a little weight if advised"], "trackers": ["Morning blood pressure", "Evening blood pressure", "Salt/sodium awareness", "Medication taken?", "Any dizziness?"], "redflags": ["Reading of 180/120 or higher", "Chest pain or trouble breathing", "Sudden weakness, slurred speech, face droop (stroke signs)", "Severe headache with vision changes", "Fainting"], "prep": ["Bring your home blood pressure log", "List medicines and doses", "Note any side effects", "Write your questions down"], "questions": ["What's my blood pressure goal?", "Which readings should worry me?", "Are my medicines causing side effects?", "How much salt is okay?", "Should I check at home more often?"], "caregiver": ["Help take and record home readings", "Watch for stroke signs (F.A.S.T.)", "Support low-salt cooking", "Remind about refills and doses"]},
+  heart: {"name": "Heart Disease / Heart Failure", "icon": "Heart", "accent": "#B4332B", "what": "Heart disease covers problems with the heart's blood vessels or pumping. In heart failure, the heart doesn't pump as well as it should, so fluid can back up into the lungs and legs. Careful daily habits — especially watching weight and salt — keep you steadier and out of the hospital.", "symptoms": ["Shortness of breath, especially lying flat", "Swelling in legs, ankles, or belly", "Sudden weight gain from fluid", "Tiredness or weakness", "Fast or fluttering heartbeat"], "numbers": [["Daily weight", "Same time each morning — sudden gain means fluid"], ["Blood pressure", "Follow your doctor's target"], ["Heart rate", "Note if unusually fast or irregular"], ["Salt intake", "Often limited — ask for your number"], ["Swelling", "Check ankles and belly daily"]], "meds": [["ACE inhibitors / ARBs / ARNI", "Ease the heart's workload."], ["Beta blockers", "Slow and protect the heart; don't stop suddenly."], ["Diuretics ('water pills')", "Remove extra fluid; weigh yourself to see them working."], ["SGLT2 inhibitors", "Now used to protect the heart even without diabetes."]], "adherence": ["Take water pills early so you're not up at night", "Never stop heart medicines on your own", "Keep a current medicine list with you", "Ask before using NSAIDs (ibuprofen) — they hold fluid"], "lifestyle": ["Weigh yourself every morning and log it", "Limit salt and watch fluid if told to", "Stay gently active as advised", "Rest when tired, but keep moving daily", "Quit smoking — support is available"], "trackers": ["Morning weight", "Swelling (legs/belly)", "Breathing (harder than usual?)", "Medication taken?", "Salt awareness"], "redflags": ["Weight gain of 3+ lbs in a day or 5 in a week", "Severe shortness of breath", "Chest pain", "Fainting or a racing, irregular heartbeat", "Coughing pink, frothy fluid"], "prep": ["Bring your daily weight log", "List all medicines", "Note swelling or breathing changes", "Bring your questions"], "questions": ["What weight gain should I report?", "How much salt and fluid is safe?", "Which activities are okay?", "Do any of my other medicines affect my heart?", "When should I call versus go to the ER?"], "caregiver": ["Help with the daily weigh-in and log", "Learn the fluid warning signs", "Support low-salt meals", "Keep the medicine list updated for emergencies"]},
+  copd: {"name": "COPD / Chronic Asthma", "icon": "Wind", "accent": "#1F7A6D", "what": "COPD and asthma make it harder to move air in and out of your lungs, so you may feel short of breath or wheezy. Triggers like smoke, cold air, or infections can cause flare-ups. Using inhalers correctly and avoiding triggers keeps your breathing steadier.", "symptoms": ["Shortness of breath", "Wheezing or a whistling sound", "Ongoing cough, sometimes with mucus", "Chest tightness", "Getting winded easily"], "numbers": [["Peak flow (if used)", "How fast you can blow air out"], ["Oxygen level (if you have a monitor)", "Often 92%+ — ask your doctor"], ["Rescue inhaler use", "Needing it often means poor control"], ["Flare-ups", "Count per year"]], "meds": [["Rescue inhaler (albuterol)", "Quick relief for sudden symptoms. Carry it always."], ["Daily controller inhalers (steroid/LABA/LAMA)", "Prevent symptoms — use every day even when fine."], ["Rinse your mouth", "After steroid inhalers, to avoid thrush."], ["Nebulizer or oxygen", "If prescribed, use exactly as directed."]], "adherence": ["Learn correct inhaler technique — ask for a demo", "Use a spacer if provided", "Take controllers daily, not just when short of breath", "Keep a rescue inhaler with you and one that isn't expired"], "lifestyle": ["Avoid smoke and known triggers", "Get flu and pneumonia vaccines", "Stay active within comfort — pulmonary rehab helps", "Practice pursed-lip breathing", "Wash hands to avoid infections"], "trackers": ["Breathing (better/same/worse)", "Rescue inhaler puffs used", "Peak flow or oxygen (if measured)", "Controller inhaler taken?", "Any new mucus color?"], "redflags": ["Rescue inhaler isn't helping", "Lips or fingertips look blue or gray", "Struggling to speak in full sentences", "Confusion or extreme sleepiness", "Mucus turns green/bloody with fever"], "prep": ["Bring all inhalers so technique can be checked", "Note flare-ups and triggers", "List rescue inhaler use", "Bring your questions"], "questions": ["Is my inhaler technique correct?", "Which inhaler is rescue vs. daily?", "Do I have an action plan for flare-ups?", "Should I have oxygen or a nebulizer?", "Which vaccines do I need?"], "caregiver": ["Learn to spot a flare-up early", "Help check inhaler technique", "Keep the home smoke- and trigger-free", "Know when breathing is an emergency"]},
+  arthritis: {"name": "Arthritis / Chronic Pain", "icon": "Bone", "accent": "#94401F", "what": "Arthritis is joint pain and stiffness from wear, inflammation, or both. Chronic pain can wear on mood and sleep too. Gentle movement, pacing, and the right medicines can lower pain and keep you doing what you love.", "symptoms": ["Joint pain or aching", "Stiffness, especially in the morning", "Swelling or warmth in joints", "Less range of motion", "Tiredness with inflammatory types"], "numbers": [["Pain level (0–10)", "Track to see patterns"], ["Morning stiffness", "How long it lasts"], ["Function", "What you can/can't do that day"], ["Flare days", "Count per week"]], "meds": [["Acetaminophen (Tylenol)", "Often first for pain; watch total daily dose for your liver."], ["NSAIDs (ibuprofen, naproxen)", "Ease pain and swelling; can affect stomach, kidneys, blood pressure."], ["DMARDs / biologics", "For inflammatory arthritis; need monitoring and infection awareness."], ["Topical creams", "Rubbed on joints with fewer whole-body effects."]], "adherence": ["Don't exceed acetaminophen limits (check combo products)", "Take NSAIDs with food", "Keep up DMARDs even when you feel good", "Report infections if on biologics"], "lifestyle": ["Keep moving — gentle activity eases stiffness", "Try heat for stiffness, cold for swelling", "Protect joints; pace your tasks", "Maintain a healthy weight to ease joint load", "Prioritize good sleep"], "trackers": ["Pain level (0–10)", "Morning stiffness time", "Activity done", "Medication taken?", "Flare today?"], "redflags": ["A hot, red, very swollen joint (possible infection)", "Fever with joint pain", "Sudden severe pain or inability to move a joint", "Black stools or stomach pain on NSAIDs", "New infection while on a biologic"], "prep": ["Bring a pain and flare log", "List all pain relievers (including OTC)", "Note what helps and what doesn't", "Bring your questions"], "questions": ["What's a safe daily acetaminophen limit for me?", "Are NSAIDs okay with my other medicines?", "Should I see a rheumatologist?", "What exercises are safe?", "How do I handle a flare?"], "caregiver": ["Help with pacing and joint-friendly tasks", "Track pain patterns together", "Watch for medicine side effects", "Encourage gentle daily movement"]},
+  ckd: {"name": "Chronic Kidney Disease", "icon": "Droplets", "accent": "#1F7A6D", "what": "Your kidneys filter waste and extra fluid from your blood. In chronic kidney disease they work less well over time. Protecting them means controlling blood pressure and sugar, and being careful with certain medicines and salt.", "symptoms": ["Often none early on", "Swelling in legs or around eyes", "Tiredness", "Foamy urine or changes in how much you pee", "Poor appetite or nausea (later)"], "numbers": [["eGFR", "Shows kidney function — higher is better"], ["Urine albumin (ACR)", "Protein leaking is a warning sign"], ["Blood pressure", "Often under 130/80"], ["Potassium", "Can rise dangerously — watch salt substitutes"], ["Blood sugar (if diabetic)", "Keep in your target range"]], "meds": [["ACE inhibitors / ARBs", "Protect kidneys and lower blood pressure."], ["SGLT2 inhibitors", "Now used to slow kidney decline."], ["Diuretics", "Manage fluid and blood pressure."], ["Avoid or adjust", "NSAIDs, some contrast dyes, and certain antibiotics need caution."]], "adherence": ["Ask before any new medicine or supplement", "Avoid NSAIDs (ibuprofen, naproxen) unless cleared", "Watch potassium (salt substitutes are high in it)", "Keep blood pressure and sugar controlled"], "lifestyle": ["Limit salt", "Follow any protein or potassium guidance", "Stay hydrated as advised", "Control blood pressure and sugar", "Don't smoke"], "trackers": ["Blood pressure", "Swelling", "Weight", "Medication taken?", "Salt/potassium awareness"], "redflags": ["Very little or no urine", "Severe swelling or sudden shortness of breath", "Confusion or extreme fatigue", "Muscle weakness or irregular heartbeat (high potassium)", "Chest pain"], "prep": ["Bring recent lab results if you have them", "List all medicines and supplements", "Note blood pressure readings", "Bring your questions"], "questions": ["What's my eGFR and what does it mean?", "Which medicines should I avoid?", "How much salt, potassium, and protein is right?", "Do I need to see a kidney specialist?", "How often should labs be checked?"], "caregiver": ["Help track blood pressure and weight", "Learn which medicines to avoid", "Support low-salt meals", "Keep an updated medicine and supplement list"]},
+  mental: {"name": "Depression / Anxiety", "icon": "Brain", "accent": "#5B5BD6", "what": "Depression and anxiety are common, real medical conditions — not a weakness. Depression brings low mood and loss of interest; anxiety brings ongoing worry or fear. Both are very treatable with support, healthy routines, and often medicine or therapy.", "symptoms": ["Feeling down, empty, or hopeless", "Losing interest in things you enjoyed", "Trouble sleeping or sleeping too much", "Constant worry, restlessness, or dread", "Trouble concentrating", "Changes in appetite or energy"], "numbers": [["Mood check (0–10)", "Track daily to see patterns"], ["Sleep", "Hours and quality"], ["Anxiety level", "Note triggers"], ["Therapy/med routine", "Kept up?"]], "meds": [["SSRIs / SNRIs", "Common first choices; can take 4–6 weeks to fully help."], ["Give it time", "Don't stop early if it feels slow — talk to your prescriber."], ["Don't stop suddenly", "Stopping abruptly can cause withdrawal; taper with guidance."], ["Watch interactions", "Tell your doctor about all medicines and supplements (including St. John's Wort)."]], "adherence": ["Take at the same time daily", "Expect a few weeks before full effect", "Report side effects rather than quitting", "Never stop abruptly — ask about tapering"], "lifestyle": ["Keep a regular sleep schedule", "Move your body — even a short walk lifts mood", "Stay connected to people you trust", "Limit alcohol", "Consider talk therapy alongside medicine"], "trackers": ["Mood (0–10)", "Sleep hours", "Anxiety level", "Medication taken?", "Did I connect with someone?"], "redflags": ["Thoughts of harming yourself or that life isn't worth living", "Feeling unable to keep yourself safe", "Not eating, drinking, or getting out of bed", "Severe panic that won't settle", "Hearing or seeing things others don't"], "prep": ["Note your mood and sleep patterns", "List medicines and any side effects", "Write down what's been hardest", "Bring your questions"], "questions": ["How long until this medicine helps?", "What side effects should I expect?", "Would therapy help too?", "How do I stop safely if needed?", "What should I do on a very bad day?"], "caregiver": ["Listen without judging or fixing", "Take any talk of suicide seriously — get help right away", "Help keep routines and appointments", "Encourage treatment and connection"], "crisis": true},
+  obesity: {"name": "Obesity / Metabolic Syndrome", "icon": "Activity", "accent": "#B5560A", "what": "Metabolic syndrome is a cluster — extra belly weight, higher blood sugar, blood pressure, and cholesterol — that together raise the risk of heart disease and diabetes. Small, steady changes and, for some, medicine can meaningfully lower that risk.", "symptoms": ["Often no obvious symptoms", "Extra weight around the middle", "Higher blood pressure or sugar readings", "Feeling tired or short of breath with effort"], "numbers": [["Waist size", "A key marker of belly fat"], ["Blood pressure", "Often under 130/80"], ["Fasting blood sugar / A1C", "Watch for prediabetes"], ["Cholesterol", "Know your LDL and triglycerides"], ["Weight trend", "Slow, steady change beats crash diets"]], "meds": [["GLP-1 / GIP medicines (-tide)", "Lower appetite and weight; start low to ease nausea."], ["Blood pressure and cholesterol medicines", "Treat the other parts of the cluster."], ["Metformin", "Sometimes used for blood sugar and weight."], ["Take as directed", "These work best alongside food and activity changes."]], "adherence": ["Pair medicines with realistic food and movement goals", "Start weight medicines slowly to reduce nausea", "Keep blood pressure and cholesterol medicines going", "Track progress by habits, not just the scale"], "lifestyle": ["Build meals around vegetables, protein, and fiber", "Cut sugary drinks", "Aim for 150 minutes of activity a week", "Prioritize sleep and stress control", "Set small, steady goals"], "trackers": ["Weight (weekly)", "Activity minutes", "Sugary drinks avoided", "Blood pressure", "Medication taken?"], "redflags": ["Chest pain or shortness of breath with activity", "Very high blood pressure or sugar readings", "Severe or persistent vomiting on weight medicine", "Signs of gallbladder trouble (upper-right belly pain)", "Fainting"], "prep": ["Bring weight, blood pressure, and any lab numbers", "List all medicines", "Note your eating and activity patterns", "Bring your questions"], "questions": ["Is a weight medicine right for me?", "What are healthy targets for me?", "How do I manage side effects?", "Should my cholesterol or sugar be treated too?", "What realistic goal should I start with?"], "caregiver": ["Support healthy meals for the whole household", "Be an activity partner", "Encourage progress by habits, not just weight", "Help track the numbers"]},
+  dementia: {"name": "Dementia / Alzheimer's", "icon": "Brain", "accent": "#5B5BD6", "what": "Dementia is a gradual decline in memory and thinking that affects daily life; Alzheimer's is the most common cause. It affects the whole family. Routines, safety steps, and steady support help the person live as well as possible for as long as possible.", "symptoms": ["Memory loss that disrupts daily life", "Trouble with words, names, or following steps", "Getting confused about time or place", "Misplacing things or getting lost", "Changes in mood, judgment, or personality"], "numbers": [["Function", "What they can still do safely"], ["Weight", "Watch for unintended loss"], ["Sleep", "Note day/night reversal"], ["Behavior changes", "Track triggers and timing"]], "meds": [["Cholinesterase inhibitors (donepezil, rivastigmine)", "May help symptoms for a time."], ["Memantine", "Sometimes added in moderate–severe stages."], ["Newer infusions", "Some newer treatments exist — ask a specialist if appropriate."], ["Simplify the routine", "Use a pill organizer and set reminders; a caregiver often manages doses."]], "adherence": ["Use a locked pill organizer or blister pack", "Set alarms and supervise doses", "Keep a simple, current medicine list", "Watch for medicines that worsen confusion (some 'anticholinergics')"], "lifestyle": ["Keep steady daily routines", "Make the home safe (lighting, remove trip hazards, secure exits)", "Stay socially and mentally engaged", "Support good sleep, food, and hydration", "Plan ahead for care and legal decisions"], "trackers": ["Mood / behavior", "Sleep", "Eating and drinking", "Medication given?", "Any new confusion?"], "redflags": ["Sudden, sharp change in confusion (could be infection or medicine)", "Wandering or getting lost", "Not eating or drinking", "Aggression that risks safety", "Falls or injuries"], "prep": ["Bring a symptom and behavior log", "List all medicines (including OTC and supplements)", "Note what's changed since last visit", "Bring questions and a support person"], "questions": ["Could any medicine be worsening confusion?", "What stage are we in and what's next?", "How do we keep the home safe?", "What support and respite exists for caregivers?", "Should we plan care and legal decisions now?"], "caregiver": ["Keep routines calm and consistent", "Simplify choices and use short, kind reminders", "Take breaks — respite care is not failing", "Watch for sudden confusion (often infection)", "Join a caregiver support group"], "caregiverFirst": true},
+  parkinsons: {"name": "Parkinson's Disease", "icon": "PersonStanding", "accent": "#1F7A6D", "what": "Parkinson's affects the brain cells that control movement, causing tremor, stiffness, and slowness. It can also bring non-movement symptoms like sleep or mood changes. Medicine timing and daily movement make a real difference in how you feel.", "symptoms": ["Tremor, often in a hand at rest", "Stiffness or rigidity", "Slowness of movement", "Balance problems or shuffling walk", "Smaller handwriting, softer voice", "Sleep, mood, or constipation changes"], "numbers": [["'On/off' time", "When medicine is working vs. wearing off"], ["Falls", "Count and note causes"], ["Movement", "Note stiffness and slowness patterns"], ["Blood pressure", "Watch for drops when standing"]], "meds": [["Carbidopa/levodopa", "The main medicine — timing is everything. Take on schedule."], ["Take before protein meals", "Protein can blunt levodopa; ask about spacing."], ["Dopamine agonists", "Can cause sleepiness or impulse-control issues — report these."], ["MAO-B / COMT inhibitors", "Extend levodopa; watch for interactions (tell every doctor)."]], "adherence": ["Take levodopa exactly on time — set alarms", "Separate doses from high-protein meals", "Don't stop Parkinson's medicines suddenly", "Tell every prescriber (some drugs badly interact)"], "lifestyle": ["Move daily — walking, stretching, balance work", "Consider physical, occupational, or speech therapy", "Make the home fall-safe", "Eat fiber and fluids for constipation", "Watch for dizziness when standing up"], "trackers": ["'On/off' times", "Tremor/stiffness level", "Falls or near-falls", "Medication taken on time?", "Mood/sleep"], "redflags": ["A fall with injury or hitting the head", "Sudden confusion or hallucinations", "New compulsive behaviors (gambling, spending)", "Dizziness or fainting on standing", "High fever with stiffness (rare but urgent)"], "prep": ["Bring an 'on/off' and medicine-timing log", "List all medicines and exact times", "Note falls and non-movement symptoms", "Bring your questions"], "questions": ["Is my medicine timing right?", "How do I handle 'off' periods?", "Could any drug interact with my Parkinson's medicines?", "Would therapy (PT/OT/speech) help?", "How do I lower my fall risk?"], "caregiver": ["Help keep medicines exactly on schedule", "Make the home fall-safe", "Watch for new compulsive behaviors and report them", "Support movement and therapy routines"]},
+  asthma: {"name": "Asthma", "icon": "Wind", "accent": "#1F7A6D", "what": "Asthma makes the airways in your lungs tighten and swell, so breathing gets harder during a flare. Triggers like allergens, cold air, smoke, or exercise set it off. With the right daily inhaler and trigger control, most people breathe well and stay active.", "symptoms": ["Wheezing or a whistling sound", "Coughing, often at night or early morning", "Chest tightness", "Shortness of breath", "Getting winded with exercise"], "numbers": [["Peak flow (if used)", "How fast you can blow air out — track your personal best"], ["Rescue inhaler use", "Needing it more than twice a week means poor control"], ["Nighttime symptoms", "Waking from asthma is a warning sign"], ["Flare-ups", "Note triggers and how often"]], "meds": [["Rescue inhaler (albuterol)", "Fast relief for symptoms. Carry it everywhere."], ["Daily controller (inhaled steroid)", "Prevents flares — use every day even when you feel fine."], ["Combination inhalers", "Steroid plus a long-acting opener for tougher asthma."], ["Rinse your mouth", "After steroid inhalers, to avoid thrush."]], "adherence": ["Use your controller daily, not just during flares", "Learn correct inhaler technique — ask for a demo", "Use a spacer if provided", "Keep an unexpired rescue inhaler on hand"], "lifestyle": ["Identify and avoid your triggers", "Get the flu vaccine yearly", "Keep an asthma action plan from your doctor", "Warm up before exercise if it triggers you", "Don't smoke and avoid secondhand smoke"], "trackers": ["Breathing (better/same/worse)", "Rescue inhaler puffs used", "Nighttime waking?", "Controller taken?", "Peak flow (if measured)"], "redflags": ["Rescue inhaler isn't helping or wears off fast", "Lips or fingertips look blue", "Too breathless to speak in full sentences", "Peak flow in your red zone", "Symptoms after a known severe allergen"], "prep": ["Bring all inhalers to check technique", "Note triggers and flare frequency", "List rescue inhaler use", "Bring your questions"], "questions": ["Is my inhaler technique right?", "Do I have an action plan for flares?", "Which is my controller vs. rescue inhaler?", "Should I see an allergist?", "What should I do during a bad attack?"], "caregiver": ["Learn to spot a flare early", "Help check inhaler technique", "Keep the home free of triggers and smoke", "Know when breathing is an emergency"]},
+  cholesterol: {"name": "High Cholesterol", "icon": "Droplet", "accent": "#B5560A", "what": "Cholesterol is a fatty substance in your blood. Too much of the 'bad' kind (LDL) can build up in arteries and raise the risk of heart attack and stroke. It usually has no symptoms, so numbers and daily habits are how you manage it.", "symptoms": ["Usually none — it's silent", "Found through a blood test", "Very high levels can rarely cause fatty skin bumps"], "numbers": [["LDL ('bad')", "Lower is better — ask your doctor for your target"], ["HDL ('good')", "Higher is protective"], ["Triglycerides", "Another blood fat to watch"], ["Total cholesterol", "The overall number"]], "meds": [["Statins", "The main medicine; lowers LDL and heart risk. Report muscle pain."], ["Ezetimibe", "Often added to statins for extra LDL lowering."], ["PCSK9 inhibitors", "Injections for high-risk people or when statins aren't enough."], ["Take consistently", "These work best taken every day as directed."]], "adherence": ["Take statins daily — some work best in the evening", "Don't stop for mild aches without asking", "Report muscle pain or weakness", "Check new medicines against your statin (some interact)"], "lifestyle": ["Eat more fiber, vegetables, and whole grains", "Cut saturated and trans fats", "Move most days", "Lose a little weight if advised", "Don't smoke"], "trackers": ["Medication taken?", "Activity minutes", "Saturated-fat awareness", "Weight (weekly)", "Any muscle aches?"], "redflags": ["Severe muscle pain or weakness on a statin", "Dark, cola-colored urine", "Chest pain or pressure", "Sudden weakness or slurred speech (stroke signs)", "Yellowing of skin or eyes"], "prep": ["Bring recent cholesterol labs", "List all medicines and supplements", "Note any muscle symptoms", "Bring your questions"], "questions": ["What's my LDL target?", "Is my statin dose right?", "Are muscle aches from my medicine?", "Do I need my cholesterol rechecked?", "What foods help most?"], "caregiver": ["Support heart-healthy meals", "Encourage daily movement together", "Watch for muscle side effects", "Help remember daily doses"]},
+  gerd: {"name": "GERD / Acid Reflux", "icon": "Flame", "accent": "#B45309", "what": "GERD is when stomach acid flows back up into the food pipe, causing heartburn and irritation. Occasional reflux is normal; frequent reflux can damage the esophagus over time. Diet, timing, and medicines usually control it well.", "symptoms": ["Burning in the chest (heartburn)", "Sour or bitter taste in the mouth", "Regurgitating food or liquid", "Trouble swallowing", "Chronic cough or hoarseness"], "numbers": [["Symptom frequency", "How many days a week you get heartburn"], ["Trigger foods", "Note which foods set it off"], ["Nighttime symptoms", "Reflux lying down is worth flagging"], ["Weight", "Extra weight worsens reflux"]], "meds": [["Antacids (Tums)", "Fast, short relief for occasional heartburn."], ["H2 blockers (famotidine)", "Reduce acid for several hours."], ["Proton pump inhibitors (PPIs)", "Stronger acid reducers for frequent reflux; use the lowest effective dose."], ["Don't overuse", "Long-term daily acid reducers should be reviewed with your doctor."]], "adherence": ["Take PPIs 30–60 minutes before a meal", "Use the lowest dose that controls symptoms", "Don't stop a PPI abruptly if you've used it long-term", "Tell your doctor if you need it daily for weeks"], "lifestyle": ["Eat smaller meals; don't lie down for 3 hours after", "Raise the head of your bed", "Avoid trigger foods (spicy, fatty, caffeine, alcohol, chocolate)", "Lose a little weight if advised", "Don't smoke"], "trackers": ["Heartburn today?", "Trigger foods eaten", "Nighttime symptoms?", "Medication taken?", "Late meals?"], "redflags": ["Trouble or pain swallowing", "Vomiting blood or black stools", "Unintended weight loss", "Chest pain (rule out the heart first)", "Choking or food sticking"], "prep": ["Note symptom frequency and triggers", "List all medicines (including OTC antacids)", "Mention any swallowing trouble", "Bring your questions"], "questions": ["Do I need an endoscopy?", "How long should I stay on a PPI?", "Which foods should I avoid?", "Could my other medicines worsen reflux?", "When is chest pain an emergency?"], "caregiver": ["Help plan smaller, earlier meals", "Support trigger-food awareness", "Watch for swallowing trouble or weight loss", "Keep the medicine list current"]},
+  hypothyroid: {"name": "Hypothyroidism", "icon": "Activity", "accent": "#5B5BD6", "what": "Your thyroid gland makes hormones that set your body's pace. In hypothyroidism it makes too little, so things slow down — energy, weight, mood, and temperature. A daily hormone pill usually restores normal levels, with periodic blood tests to fine-tune.", "symptoms": ["Tiredness and sluggishness", "Weight gain", "Feeling cold", "Dry skin and hair", "Constipation", "Low mood or foggy thinking"], "numbers": [["TSH", "The main blood test to guide your dose"], ["Free T4", "Sometimes checked alongside TSH"], ["Weight", "Track trends"], ["Energy/mood", "Note patterns between tests"]], "meds": [["Levothyroxine", "The standard hormone replacement. Timing matters — take consistently."], ["Empty stomach", "Usually 30–60 minutes before breakfast, separate from coffee."], ["Separate from minerals", "Calcium and iron block absorption — space by 4 hours."], ["Same brand", "Try to stay on one product; tell your doctor if it changes."]], "adherence": ["Take it the same way every day", "Separate from calcium, iron, and antacids", "Don't switch brand/generic without telling your doctor", "Get TSH rechecked as advised"], "lifestyle": ["Keep a consistent routine for your pill", "Eat a balanced diet", "Stay active to support energy and mood", "Don't take extra iodine without advice", "Manage other conditions that affect thyroid"], "trackers": ["Medication taken (empty stomach)?", "Energy level", "Weight", "Mood", "Constipation?"], "redflags": ["Racing heart, sweating, tremor (dose too high)", "Extreme fatigue, cold, confusion (dose too low)", "Chest pain or palpitations", "Swelling in the neck", "Severe depression"], "prep": ["Bring recent thyroid labs", "Note how you take your pill and when", "List all medicines and supplements", "Bring your questions"], "questions": ["What's my TSH and target?", "Is my dose right?", "How should I time my pill?", "Which supplements interfere?", "How often should I be retested?"], "caregiver": ["Help keep a consistent pill routine", "Support timing away from coffee and minerals", "Watch for over- or under-treatment signs", "Track energy and mood between tests"]},
+  osteoporosis: {"name": "Osteoporosis", "icon": "Bone", "accent": "#94401F", "what": "Osteoporosis means bones become thinner and more fragile, raising the risk of fractures — often in the hip, spine, or wrist. It's usually silent until a break happens. Bone-strengthening habits, the right nutrients, and sometimes medicine lower that risk.", "symptoms": ["Usually none until a fracture", "Loss of height over time", "Stooped posture", "Back pain from a spine fracture"], "numbers": [["Bone density (DEXA T-score)", "Measures bone strength"], ["Calcium and vitamin D", "Key nutrients for bone"], ["Fall risk", "Fewer falls means fewer fractures"], ["Height", "Track for loss over time"]], "meds": [["Bisphosphonates", "Common bone-strengthening pills or infusions. Follow the special dosing instructions."], ["Take upright", "Oral bisphosphonates: take with water, stay upright 30–60 minutes."], ["Denosumab", "An injection option; don't skip or delay doses."], ["Calcium + vitamin D", "Often recommended alongside; ask about your amounts."]], "adherence": ["Follow the exact dosing steps for bisphosphonates", "Don't lie down after taking oral ones", "Don't miss denosumab injections", "Keep up calcium and vitamin D as advised"], "lifestyle": ["Do weight-bearing and balance exercises", "Get enough calcium and vitamin D", "Fall-proof your home (lighting, rugs, grab bars)", "Don't smoke; limit alcohol", "Get vision checked to prevent falls"], "trackers": ["Medication taken (correct steps)?", "Calcium/vitamin D taken?", "Weight-bearing exercise done?", "Any falls or near-falls?", "Balance practice?"], "redflags": ["Sudden back pain (possible spine fracture)", "A fall with pain or inability to bear weight", "Loss of height with pain", "Jaw pain or dental problems on bone medicine", "New difficulty walking"], "prep": ["Bring your DEXA results if you have them", "List all medicines and supplements", "Note any falls", "Bring your questions"], "questions": ["What's my T-score and fracture risk?", "How long should I take this medicine?", "How much calcium and vitamin D do I need?", "What exercises are safe?", "How do I lower my fall risk?"], "caregiver": ["Help fall-proof the home", "Support balance and strength exercises", "Ensure correct bisphosphonate dosing steps", "Encourage calcium, vitamin D, and eye checks"]},
+  migraine: {"name": "Migraine", "icon": "Brain", "accent": "#5B5BD6", "what": "Migraine is more than a bad headache — it's a neurological condition with throbbing pain, often with nausea and sensitivity to light and sound. Attacks can be disabling. Identifying triggers, treating early, and sometimes daily prevention can reduce how often and how badly they hit.", "symptoms": ["Throbbing or pulsing head pain, often one-sided", "Nausea or vomiting", "Sensitivity to light and sound", "Aura (visual changes) before some attacks", "Tiredness and foggy thinking after"], "numbers": [["Attack frequency", "Days per month with migraine"], ["Triggers", "Note patterns — sleep, food, stress, hormones"], ["Rescue medicine use", "Using it too often can cause rebound headaches"], ["Disability", "How much attacks limit your day"]], "meds": [["Triptans", "Stop attacks when taken early. Watch limits to avoid rebound."], ["NSAIDs / acetaminophen", "Can help mild attacks; don't overuse."], ["Anti-nausea medicines", "Ease the sick feeling."], ["Preventives", "Daily options (including CGRP medicines) if attacks are frequent."]], "adherence": ["Treat attacks early — don't wait", "Don't overuse rescue medicines (limit days per week)", "Take preventives daily as prescribed", "Track use to spot rebound headaches"], "lifestyle": ["Keep regular sleep and meals", "Stay hydrated", "Identify and manage triggers", "Manage stress and screen breaks", "Limit alcohol and caffeine swings"], "trackers": ["Migraine today? Severity", "Likely triggers", "Rescue medicine used", "Preventive taken?", "Sleep hours"], "redflags": ["The 'worst headache of your life' (sudden, severe)", "Headache with fever, stiff neck, or confusion", "Weakness, numbness, or trouble speaking", "A new headache pattern after age 50", "Headache after a head injury"], "prep": ["Bring a headache diary", "List all medicines and how often you use them", "Note triggers and disability", "Bring your questions"], "questions": ["Am I overusing rescue medicine?", "Would daily prevention help me?", "What are my likely triggers?", "When is a headache an emergency?", "Should I see a neurologist?"], "caregiver": ["Help track attacks and triggers", "Support a calm, dark space during attacks", "Watch for rescue-medicine overuse", "Know the emergency headache signs"]},
+  afib: {"name": "Atrial Fibrillation (AFib)", "icon": "Heart", "accent": "#B4332B", "what": "AFib is an irregular, often fast heartbeat from the top chambers of the heart. It can cause palpitations and raises the risk of stroke because blood can pool and clot. Managing the rhythm or rate, and often a blood thinner, keeps you safer.", "symptoms": ["Fluttering or racing heartbeat", "Palpitations", "Shortness of breath", "Tiredness or weakness", "Dizziness", "Sometimes no symptoms at all"], "numbers": [["Heart rate", "Note if fast or very irregular"], ["Blood pressure", "Follow your target"], ["Stroke risk score", "Guides whether you need a blood thinner"], ["Symptoms", "Track episodes and how long they last"]], "meds": [["Blood thinners (anticoagulants)", "Lower stroke risk — take exactly as prescribed."], ["Rate-control (beta blockers, etc.)", "Slow the heart rate."], ["Rhythm-control", "Help keep a normal rhythm in some people."], ["Don't skip doses", "Missing a blood thinner raises stroke risk quickly."]], "adherence": ["Never skip blood thinner doses", "Take rate/rhythm medicines consistently", "Tell every provider you're on a blood thinner", "Ask before adding NSAIDs or supplements that affect bleeding"], "lifestyle": ["Limit alcohol and caffeine if they trigger episodes", "Manage blood pressure and weight", "Treat sleep apnea if present", "Stay active as advised", "Manage stress"], "trackers": ["Heart rate / rhythm", "Palpitation episodes", "Medication taken?", "Any dizziness or breathlessness?", "Alcohol/caffeine?"], "redflags": ["Chest pain", "Fainting or severe dizziness", "Sudden weakness, slurred speech, face droop (stroke)", "Severe shortness of breath", "Signs of bleeding on a blood thinner"], "prep": ["Note episode frequency and length", "List all medicines", "Bring blood pressure and any heart-rate readings", "Bring your questions"], "questions": ["Do I need a blood thinner?", "What's my stroke risk?", "Should we control rate or rhythm?", "Which symptoms mean call 911?", "Do my other medicines interact?"], "caregiver": ["Learn stroke signs (F.A.S.T.)", "Ensure blood thinner doses aren't missed", "Help track episodes", "Watch for bleeding signs"]},
+  gout: {"name": "Gout", "icon": "Bone", "accent": "#94401F", "what": "Gout is a form of arthritis caused by uric acid crystals building up in a joint — often the big toe — causing sudden, intense pain and swelling. Between attacks you may feel fine. Lowering uric acid and managing triggers prevents future flares.", "symptoms": ["Sudden, severe joint pain (often the big toe)", "Redness, warmth, and swelling", "Tenderness — even a sheet hurts", "Attacks often start at night", "Symptom-free between flares"], "numbers": [["Uric acid level", "Often a target below 6 mg/dL"], ["Flare frequency", "How often attacks happen"], ["Trigger foods/drinks", "Note patterns"], ["Kidney function", "Gout and kidneys are linked"]], "meds": [["Flare treatment", "NSAIDs, colchicine, or steroids ease an attack — start early."], ["Urate-lowering (allopurinol, febuxostat)", "Taken daily long-term to prevent flares."], ["Keep taking during a flare", "Don't stop your daily urate-lowering medicine mid-attack."], ["Colchicine cautions", "Interacts with some medicines — check before combining."]], "adherence": ["Take urate-lowering medicine daily, even when you feel fine", "Start flare treatment at the first sign", "Don't stop allopurinol during an attack", "Check colchicine against your other medicines"], "lifestyle": ["Limit red meat, organ meats, and shellfish", "Cut back on alcohol, especially beer", "Avoid sugary drinks", "Stay well hydrated", "Lose a little weight if advised"], "trackers": ["Flare today? Which joint", "Trigger foods/drinks", "Medication taken?", "Water intake", "Pain level (0–10)"], "redflags": ["A hot, red, very swollen joint with fever (rule out infection)", "A first-ever attack (confirm the diagnosis)", "Attacks despite treatment", "Kidney stones or flank pain", "Severe pain not improving"], "prep": ["Note flare frequency and triggers", "Bring recent uric acid and kidney labs", "List all medicines", "Bring your questions"], "questions": ["What's my uric acid target?", "Should I be on daily preventive medicine?", "Which foods and drinks trigger me?", "Does colchicine interact with my medicines?", "Is my kidney function okay?"], "caregiver": ["Support low-purine meals and hydration", "Help keep daily preventive medicine going", "Encourage early flare treatment", "Track triggers and flares"]},
+  ibs: {"name": "Irritable Bowel Syndrome (IBS)", "icon": "Flame", "accent": "#B45309", "what": "IBS is a common gut condition causing belly pain with changes in bowel habits — diarrhea, constipation, or both. It's real and can be uncomfortable, but it doesn't damage the bowel. Managing triggers, stress, and sometimes medicines helps most people feel better.", "symptoms": ["Belly pain or cramping", "Bloating and gas", "Diarrhea, constipation, or alternating", "Relief after a bowel movement", "Mucus in the stool"], "numbers": [["Symptom pattern", "Note diarrhea vs. constipation days"], ["Trigger foods", "Track what worsens symptoms"], ["Stress levels", "Stress strongly affects IBS"], ["Fiber intake", "Adjust based on your type"]], "meds": [["Fiber / laxatives", "For constipation-type; add fiber slowly."], ["Anti-diarrheals", "For diarrhea-type flares."], ["Antispasmodics", "Ease cramping."], ["Prescription options", "Specific medicines exist for each IBS type — ask your doctor."]], "adherence": ["Add fiber gradually to avoid gas", "Use anti-diarrheals as directed, not constantly", "Give dietary changes a few weeks", "Take prescribed IBS medicines consistently"], "lifestyle": ["Try a structured plan like low-FODMAP (with guidance)", "Eat regular meals; don't skip", "Manage stress (exercise, relaxation, therapy)", "Stay hydrated and active", "Keep a food-symptom diary"], "trackers": ["Pain/bloating today?", "Bowel pattern", "Trigger foods", "Stress level", "Medication taken?"], "redflags": ["Blood in the stool", "Unintended weight loss", "Symptoms that wake you at night", "New symptoms after age 50", "A family history of bowel disease with new changes"], "prep": ["Bring a food and symptom diary", "Note your main pattern (diarrhea/constipation)", "List all medicines and supplements", "Bring your questions"], "questions": ["Which IBS type do I have?", "Would a low-FODMAP diet help?", "Are my symptoms IBS or something else?", "Which medicine fits my type?", "Could stress management help?"], "caregiver": ["Support trigger-food awareness and meal routines", "Encourage stress management", "Help keep a symptom diary", "Watch for alarm signs like bleeding or weight loss"]},
+  backpain: {"name": "Chronic Low Back Pain", "icon": "PersonStanding", "accent": "#94401F", "what": "Chronic low back pain lasts more than a few months and can wear on daily life and mood. Most back pain isn't from a dangerous cause, and staying gently active usually helps more than rest. Movement, strengthening, and pacing are the foundation.", "symptoms": ["Aching or stiffness in the lower back", "Pain that worsens with certain movements", "Stiffness after sitting or waking", "Sometimes pain into the buttock or leg", "Muscle tightness"], "numbers": [["Pain level (0–10)", "Track patterns and what helps"], ["Function", "What you can/can't do that day"], ["Activity", "Aim to keep moving within comfort"], ["Flare days", "Note frequency and triggers"]], "meds": [["Acetaminophen", "Often tried first; mind the daily liver limit."], ["NSAIDs", "Ease pain and inflammation; watch stomach and kidneys."], ["Topical creams", "Fewer whole-body effects."], ["Avoid long-term opioids", "Generally not recommended for chronic back pain — ask about safer options."]], "adherence": ["Don't exceed acetaminophen limits (check combo products)", "Take NSAIDs with food", "Use medicines as part of a movement plan, not instead of it", "Be cautious with opioids and muscle relaxants"], "lifestyle": ["Keep moving — gentle activity beats bed rest", "Do core and back-strengthening exercises", "Improve posture and lifting technique", "Maintain a healthy weight", "Manage stress and sleep (both affect pain)"], "trackers": ["Pain level (0–10)", "Activity/exercise done", "What helped today", "Medication taken?", "Flare today?"], "redflags": ["Loss of bladder or bowel control", "Numbness in the groin/inner thighs", "Leg weakness that's getting worse", "Pain with fever or unexplained weight loss", "Pain after a significant injury"], "prep": ["Bring a pain and activity log", "List all pain relievers (including OTC)", "Note what helps and worsens it", "Bring your questions"], "questions": ["Do I need imaging, or is it not necessary?", "What exercises are safe and helpful?", "Would physical therapy help?", "How do I manage flares?", "Are there non-drug options?"], "caregiver": ["Encourage gentle daily movement, not bed rest", "Help with pacing and safe lifting", "Watch for the emergency red flags", "Support exercise and good sleep"]},
+  sleepapnea: {"name": "Sleep Apnea", "icon": "Wind", "accent": "#5B5BD6", "what": "In sleep apnea, breathing repeatedly pauses during sleep, lowering oxygen and disrupting rest. It causes loud snoring, daytime sleepiness, and — untreated — raises blood pressure and heart risks. Treatment (often CPAP) can dramatically improve energy and health.", "symptoms": ["Loud snoring", "Gasping or choking during sleep", "Pauses in breathing (noticed by others)", "Daytime sleepiness and fatigue", "Morning headaches", "Trouble concentrating"], "numbers": [["AHI (apnea-hypopnea index)", "From a sleep study — measures severity"], ["CPAP use hours", "More nightly hours means better results"], ["Blood pressure", "Often improves with treatment"], ["Daytime sleepiness", "Track how rested you feel"]], "meds": [["Usually not pill-based", "The main treatment is CPAP or an oral device, not medicine."], ["Treat related conditions", "Blood pressure and other issues may need medicines."], ["Avoid sedatives", "Sleep aids and alcohol can worsen apnea — ask first."], ["Weight and nasal care", "Support treatments your doctor recommends."]], "adherence": ["Use CPAP every night, all night", "Clean the mask and equipment regularly", "Ask for help if the mask is uncomfortable — fit matters", "Avoid alcohol and sedatives near bedtime"], "lifestyle": ["Lose a little weight if advised (can greatly help)", "Sleep on your side if back-sleeping worsens it", "Avoid alcohol before bed", "Keep a regular sleep schedule", "Treat nasal congestion"], "trackers": ["CPAP used all night?", "How rested this morning", "Snoring/gasping noted?", "Alcohol before bed?", "Daytime sleepiness"], "redflags": ["Falling asleep while driving", "Severe morning headaches", "Chest pain or irregular heartbeat at night", "Worsening daytime function", "Depression or memory problems"], "prep": ["Bring your sleep study results and CPAP data if you have them", "List all medicines (including sleep aids)", "Note daytime sleepiness", "Bring your questions"], "questions": ["How severe is my apnea?", "Is my CPAP working well?", "Would a different mask or device help?", "Could weight loss reduce it?", "Are my sedatives safe with apnea?"], "caregiver": ["Notice snoring, gasping, or breathing pauses", "Support nightly CPAP use", "Encourage side-sleeping and no alcohol before bed", "Watch for dangerous daytime sleepiness"]},
+  anemia: {"name": "Iron-Deficiency Anemia", "icon": "Droplet", "accent": "#9A1F4B", "what": "Anemia means too few healthy red blood cells to carry oxygen, often from low iron. It leaves you tired and pale and can cause shortness of breath. Finding the cause of the iron loss matters as much as replacing the iron.", "symptoms": ["Tiredness and weakness", "Pale skin", "Shortness of breath with activity", "Dizziness or lightheadedness", "Cold hands and feet", "Craving ice or unusual items"], "numbers": [["Hemoglobin", "The main anemia number"], ["Ferritin", "Reflects iron stores"], ["Energy level", "Track improvement over weeks"], ["Cause", "Finding the source of iron loss is key"]], "meds": [["Iron supplements", "Replace iron; take as directed — effects take weeks."], ["Take with vitamin C", "Helps absorption; take on an empty stomach if tolerated."], ["Separate from some things", "Calcium, coffee, tea, and antacids reduce iron absorption."], ["IV iron or other", "For those who can't absorb or tolerate pills."]], "adherence": ["Take iron consistently — improvement is gradual", "Pair with vitamin C, separate from calcium/coffee/tea", "Expect dark stools (normal) and manage constipation", "Finish the full course and recheck labs"], "lifestyle": ["Eat iron-rich foods (lean meat, beans, leafy greens)", "Add vitamin C foods to meals", "Limit tea/coffee with iron-rich meals", "Address the underlying cause with your doctor", "Manage any heavy menstrual bleeding"], "trackers": ["Iron taken (with vitamin C)?", "Energy level", "Any constipation?", "Iron-rich foods eaten", "Symptoms improving?"], "redflags": ["Black or bloody stools (possible bleeding source)", "Chest pain or severe shortness of breath", "Fainting", "Very heavy menstrual bleeding", "Rapid heartbeat"], "prep": ["Bring recent blood counts and ferritin", "List all medicines and supplements", "Note any bleeding (stool, periods)", "Bring your questions"], "questions": ["What's causing my iron loss?", "How should I take my iron?", "How long until I feel better?", "Do I need tests for a bleeding source?", "When should labs be rechecked?"], "caregiver": ["Support iron-rich meals and correct supplement timing", "Watch for bleeding signs", "Encourage finishing the course and rechecks", "Help track energy improvement"]},
+  prediabetes: {"name": "Prediabetes", "icon": "Droplets", "accent": "#B5560A", "what": "Prediabetes means blood sugar is higher than normal but not yet diabetes. It's a warning — and an opportunity. With steady lifestyle changes, many people bring their numbers back to normal and prevent or delay type 2 diabetes.", "symptoms": ["Usually none — found by a blood test", "Sometimes increased thirst or tiredness", "Often silent until it progresses"], "numbers": [["A1C", "Prediabetes is roughly 5.7–6.4%"], ["Fasting blood sugar", "Often 100–125 mg/dL in prediabetes"], ["Weight", "Even modest loss helps a lot"], ["Waist size", "A marker of risk"]], "meds": [["Often lifestyle first", "Many people manage prediabetes without medicine."], ["Metformin", "Sometimes offered for higher-risk people."], ["Take as directed", "If prescribed, pair it with food and activity changes."], ["Manage related risks", "Blood pressure and cholesterol may also be treated."]], "adherence": ["Focus on consistent lifestyle changes", "If prescribed metformin, take with food", "Keep blood pressure and cholesterol medicines going", "Track progress by habits, not just the scale"], "lifestyle": ["Aim for modest weight loss (even 5–7% helps a lot)", "Move at least 150 minutes a week", "Cut sugary drinks and refined carbs", "Fill half your plate with vegetables", "Prioritize sleep and stress control"], "trackers": ["Activity minutes", "Sugary drinks avoided", "Weight (weekly)", "Vegetables at meals", "Sleep hours"], "redflags": ["Symptoms of diabetes (thirst, frequent urination, blurry vision)", "Blood sugar readings in the diabetes range", "Numbness or tingling in feet", "Slow-healing sores", "Rapid, unexplained weight change"], "prep": ["Bring recent A1C or glucose results", "List all medicines", "Note your activity and eating patterns", "Bring your questions"], "questions": ["What's my A1C and risk level?", "What weight goal should I aim for?", "Would metformin help me?", "How often should I be retested?", "What lifestyle change matters most?"], "caregiver": ["Support healthy meals for the household", "Be an activity partner", "Encourage progress by habits", "Help track the numbers over time"]},
+  menopause: {"name": "Menopause", "icon": "Activity", "accent": "#9A1F4B", "what": "Menopause is the natural end of menstrual periods, usually in the late 40s to 50s. Shifting hormones can bring hot flashes, sleep and mood changes, and long-term effects on bones and heart. Many symptoms are manageable, and it's a good time to focus on bone and heart health.", "symptoms": ["Hot flashes and night sweats", "Irregular then absent periods", "Sleep problems", "Mood changes or irritability", "Vaginal dryness", "Brain fog"], "numbers": [["Symptom pattern", "Track hot flashes and sleep"], ["Bone health", "Menopause raises osteoporosis risk"], ["Blood pressure & cholesterol", "Heart risk rises after menopause"], ["Weight", "Metabolism often shifts"]], "meds": [["Hormone therapy (HT)", "Effective for many symptoms; benefits and risks depend on you — discuss with your doctor."], ["Non-hormonal options", "Certain antidepressants and other medicines ease hot flashes."], ["Vaginal estrogen", "Low-dose, local option for dryness."], ["Bone and heart care", "Calcium, vitamin D, and risk-factor management matter now."]], "adherence": ["Take hormone or non-hormonal medicines as prescribed", "Don't start or stop HT without discussing risks/benefits", "Keep up bone-supporting nutrients", "Manage blood pressure and cholesterol"], "lifestyle": ["Dress in layers; note hot-flash triggers", "Keep a cool bedroom for better sleep", "Do weight-bearing exercise for bones", "Eat for heart and bone health", "Limit alcohol and caffeine if they worsen symptoms"], "trackers": ["Hot flashes today", "Sleep quality", "Mood", "Exercise done", "Medication taken?"], "redflags": ["Any bleeding after periods have stopped for a year", "Severe mood changes or depression", "Chest pain or new heart symptoms", "A fragility fracture", "Severe, disabling symptoms"], "prep": ["Note your main symptoms and their impact", "List all medicines and supplements", "Bring blood pressure and any bone/cholesterol results", "Bring your questions"], "questions": ["Is hormone therapy right for me?", "What non-hormonal options exist?", "How do I protect my bones and heart now?", "What helps hot flashes and sleep?", "Is any bleeding normal?"], "caregiver": ["Be understanding about symptoms and mood", "Support good sleep and a cool environment", "Encourage bone and heart-healthy habits", "Note any post-menopausal bleeding to report"]},
+  bph: {"name": "Enlarged Prostate (BPH)", "icon": "Droplet", "accent": "#475569", "what": "BPH is a common, non-cancerous enlargement of the prostate as men age. It can squeeze the urinary tube and make urinating harder — weak stream, frequency, and night-time trips. It's manageable, and treatment ranges from watchful waiting to medicines or procedures.", "symptoms": ["Weak or interrupted urine stream", "Trouble starting urination", "Frequent urination, especially at night", "Feeling the bladder isn't empty", "Urgency", "Dribbling after urinating"], "numbers": [["Symptom score", "Track how much it bothers you"], ["Night-time trips", "How often you wake to urinate"], ["PSA", "A prostate blood test (discuss meaning with your doctor)"], ["Stream/emptying", "Note changes over time"]], "meds": [["Alpha blockers (-osin)", "Relax the prostate/bladder neck for easier flow; can cause dizziness."], ["5-alpha reductase inhibitors", "Shrink the prostate over months."], ["Combination therapy", "Sometimes both are used."], ["Watch other medicines", "Some decongestants and antihistamines can worsen symptoms."]], "adherence": ["Take alpha blockers at the time advised (often bedtime) to limit dizziness", "Give prostate-shrinking medicines months to work", "Don't stop without asking", "Check cold/allergy medicines — some worsen symptoms"], "lifestyle": ["Limit fluids in the evening", "Cut back on caffeine and alcohol", "Don't rush — take time to empty the bladder", "Stay active and maintain a healthy weight", "Avoid decongestants that worsen symptoms"], "trackers": ["Night-time urination trips", "Stream strength", "Urgency episodes", "Medication taken?", "Evening fluids/caffeine?"], "redflags": ["Unable to urinate at all (medical emergency)", "Blood in the urine", "Painful urination or fever (possible infection)", "Severe, sudden worsening", "Bladder pain with inability to empty"], "prep": ["Note your urinary symptoms and night trips", "List all medicines (including cold/allergy)", "Bring any PSA results", "Bring your questions"], "questions": ["How bothersome is my BPH and what are my options?", "Which medicine fits me?", "Do any of my medicines worsen symptoms?", "What does my PSA mean?", "When would a procedure be considered?"], "caregiver": ["Support evening fluid and caffeine limits", "Help track night-time trips and symptoms", "Watch for inability to urinate (an emergency)", "Review cold/allergy medicines together"]},
+  eczema: {"name": "Eczema (Atopic Dermatitis)", "icon": "Sparkles", "accent": "#B45309", "what": "Eczema is a chronic condition where skin becomes dry, itchy, and inflamed, often in flares. It's linked to a sensitive skin barrier and triggers. Gentle skin care, moisturizing, and treating flares early keep it under control.", "symptoms": ["Dry, itchy skin", "Red or discolored patches", "Rough, scaly, or thickened skin", "Itching that worsens at night", "Flares triggered by irritants or stress"], "numbers": [["Flare frequency", "How often and where"], ["Triggers", "Note soaps, fabrics, weather, stress"], ["Itch level", "Track severity"], ["Skin barrier", "Moisturizing consistency matters"]], "meds": [["Moisturizers", "The foundation — apply liberally and often, especially after bathing."], ["Topical steroids", "Calm flares; use as directed on the right areas."], ["Non-steroid creams", "Options for sensitive areas or long-term control."], ["Antihistamines", "May ease itch and help sleep."]], "adherence": ["Moisturize daily, not just during flares", "Use topical steroids correctly — right strength, right area, right duration", "Don't overuse strong steroids on the face", "Follow flare plans early"], "lifestyle": ["Take short, lukewarm showers; moisturize right after", "Use gentle, fragrance-free products", "Identify and avoid triggers", "Wear soft, breathable fabrics", "Manage stress and keep nails short to limit scratching"], "trackers": ["Itch/flare level", "Moisturized today?", "Likely triggers", "Medication applied?", "Sleep affected?"], "redflags": ["Signs of skin infection (oozing, crusting, warmth, fever)", "Widespread painful rash", "Rash with blisters or spreading fast", "Eczema not responding to usual care", "Eye area involvement affecting vision"], "prep": ["Note flare frequency and triggers", "List all creams and medicines used", "Bring photos of flares if helpful", "Bring your questions"], "questions": ["What's my daily skin-care routine?", "Which steroid strength for which area?", "What are my main triggers?", "When is it infected?", "Are there newer treatment options?"], "caregiver": ["Help keep a consistent moisturizing routine", "Support trigger avoidance", "Watch for signs of skin infection", "Keep nails short to reduce scratching damage (especially children)"]},
+  psoriasis: {"name": "Psoriasis", "icon": "Sparkles", "accent": "#9A1F4B", "what": "Psoriasis is an immune-driven skin condition that speeds up skin cell growth, causing thick, scaly patches. It can also affect joints (psoriatic arthritis). It's chronic but very treatable, and managing triggers and stress helps.", "symptoms": ["Raised, scaly patches (often elbows, knees, scalp)", "Itching or burning", "Dry, cracked skin that may bleed", "Thickened or pitted nails", "Joint pain or stiffness (psoriatic arthritis)"], "numbers": [["Body area affected", "Track how much skin is involved"], ["Flare triggers", "Note stress, infections, skin injury"], ["Joint symptoms", "Watch for psoriatic arthritis"], ["Itch/discomfort", "Track severity"]], "meds": [["Topical treatments", "Steroids and vitamin-D creams for patches."], ["Phototherapy", "Light treatment for wider involvement."], ["Systemic / biologics", "For moderate-severe disease or joint involvement; need monitoring."], ["Infection awareness", "Biologics lower infection defenses — report infections."]], "adherence": ["Apply topicals as directed", "Keep up systemic medicines and monitoring", "Report infections if on biologics", "Don't stop abruptly without asking"], "lifestyle": ["Moisturize to reduce scaling and itch", "Identify and manage triggers (stress, smoking, alcohol)", "Avoid skin injury where possible", "Maintain a healthy weight", "Manage stress"], "trackers": ["Skin flare level", "Joint pain/stiffness?", "Moisturized/treated today?", "Likely triggers", "Medication taken?"], "redflags": ["New or worsening joint pain and swelling", "Widespread, painful, or pustular flares", "Signs of infection on biologics", "Fever with a spreading rash", "Rapid worsening"], "prep": ["Note affected areas and triggers", "Mention any joint symptoms", "List all medicines", "Bring your questions"], "questions": ["Which treatment fits my severity?", "Do I have psoriatic arthritis?", "What are my triggers?", "What monitoring do biologics need?", "How do I handle flares?"], "caregiver": ["Support a moisturizing and treatment routine", "Watch for joint symptoms to report", "Encourage trigger management and stress relief", "Watch for infection signs on biologics"]},
+  crohns: {"name": "Crohn's Disease", "icon": "Flame", "accent": "#B45309", "what": "Crohn's disease is a chronic inflammatory bowel disease that can inflame any part of the digestive tract. It runs in flares and remissions, causing belly pain, diarrhea, and fatigue. Staying on maintenance treatment even when you feel well is key to preventing flares and complications.", "symptoms": ["Belly pain and cramping", "Frequent or urgent diarrhea", "Fatigue", "Unintended weight loss", "Blood in the stool", "Reduced appetite", "Mouth sores or joint aches"], "numbers": [["Flare frequency", "Track symptoms and remission periods"], ["Weight", "Watch for unintended loss"], ["Inflammation markers", "Labs like CRP or fecal calprotectin (your team tracks these)"], ["Nutrition", "Crohn's can affect absorption"]], "meds": [["Maintenance therapy", "Keeps inflammation down — take it even when you feel well."], ["Biologics / immunomodulators", "Common maintenance options; need monitoring and infection awareness."], ["Steroids", "For flares, short-term — not for long-term control."], ["Don't stop on your own", "Stopping maintenance treatment is a common cause of flares."]], "adherence": ["Stay on maintenance treatment during remission", "Don't rely on steroids long-term", "Report infections if on biologics or immunomodulators", "Keep up monitoring labs and appointments"], "lifestyle": ["Learn your personal trigger foods (they vary)", "Eat smaller, frequent meals during flares", "Stay hydrated, especially with diarrhea", "Don't smoke — it worsens Crohn's", "Address fatigue, stress, and nutrition"], "trackers": ["Belly pain/diarrhea today?", "Blood in stool?", "Weight", "Medication taken?", "Energy level"], "redflags": ["Severe belly pain or a hard, swollen abdomen", "Heavy rectal bleeding", "High fever with belly pain", "Persistent vomiting or inability to keep fluids down", "Signs of a blockage (severe cramping, no gas/stool)"], "prep": ["Bring a symptom and flare diary", "List all medicines (including biologics)", "Note weight changes and bleeding", "Bring your questions and recent labs"], "questions": ["Am I in remission, and how do we keep it?", "Is my maintenance treatment working?", "What monitoring do my medicines need?", "Which foods should I focus on?", "When should I call versus go to the ER?"], "caregiver": ["Support staying on maintenance treatment in remission", "Help track symptoms, weight, and bleeding", "Watch for infection signs on biologics", "Know the emergency signs (blockage, heavy bleeding, high fever)"]},
+  uc: {"name": "Ulcerative Colitis", "icon": "Flame", "accent": "#9A1F4B", "what": "Ulcerative colitis is a chronic inflammatory bowel disease affecting the colon and rectum, causing inflammation and ulcers. It runs in flares and remissions with diarrhea (often bloody) and urgency. Ongoing maintenance treatment keeps it calm and lowers long-term risks.", "symptoms": ["Diarrhea, often with blood or mucus", "Urgent need to have a bowel movement", "Belly cramping", "Fatigue", "Unintended weight loss", "Feeling of incomplete emptying"], "numbers": [["Flare frequency", "Track symptoms and remission"], ["Bleeding", "Note blood in the stool"], ["Inflammation markers", "Labs your team follows"], ["Colon-cancer surveillance", "Long-standing UC needs periodic checks"]], "meds": [["Maintenance therapy (e.g., mesalamine)", "Keeps inflammation down — take it even in remission."], ["Biologics / immunomodulators", "For moderate-severe disease; need monitoring."], ["Steroids", "For flares, short-term only."], ["Don't stop on your own", "Stopping maintenance is a common flare trigger."]], "adherence": ["Stay on maintenance treatment during remission", "Use steroids only short-term for flares", "Report infections if on biologics", "Keep colonoscopy surveillance appointments"], "lifestyle": ["Note personal trigger foods during flares", "Stay hydrated, especially with diarrhea", "Manage stress (it can worsen symptoms)", "Don't skip appointments and labs", "Address fatigue and nutrition"], "trackers": ["Diarrhea/urgency today?", "Blood in stool?", "Belly cramping", "Medication taken?", "Energy level"], "redflags": ["Heavy or persistent rectal bleeding", "Severe belly pain with a swollen abdomen", "High fever with many bloody stools", "Signs of dehydration (dizziness, little urine)", "Rapid worsening"], "prep": ["Bring a symptom and flare diary", "List all medicines (including biologics)", "Note bleeding and weight changes", "Bring recent labs and your questions"], "questions": ["Are we keeping me in remission?", "Is my maintenance treatment enough?", "When is my next surveillance colonoscopy?", "What monitoring do my medicines need?", "When should I go to the ER?"], "caregiver": ["Support staying on maintenance treatment", "Help track bleeding, urgency, and weight", "Watch for dehydration and severe flares", "Keep surveillance appointments on the calendar"]},
+  fibromyalgia: {"name": "Fibromyalgia", "icon": "Brain", "accent": "#5B5BD6", "what": "Fibromyalgia causes widespread body pain, fatigue, and sleep and memory problems. The pain is real and comes from how the nervous system processes pain signals. There's no single cure, but a combination of movement, sleep, stress care, and sometimes medicine helps most people function better.", "symptoms": ["Widespread aching pain", "Deep fatigue", "Poor, unrefreshing sleep", "Trouble concentrating ('fibro fog')", "Sensitivity to touch, light, or sound", "Stiffness"], "numbers": [["Pain level (0–10)", "Track patterns and flares"], ["Sleep quality", "Poor sleep worsens symptoms"], ["Activity/pacing", "Balance is key — not too much or too little"], ["Mood/stress", "Strongly linked to symptoms"]], "meds": [["Certain antidepressants", "Can reduce pain and improve sleep (used for pain, not just mood)."], ["Nerve-pain medicines", "Options like gabapentin/pregabalin for some people."], ["Limited role for opioids", "Generally not recommended for fibromyalgia."], ["Give it time", "Medicines are one part of a broader plan."]], "adherence": ["Take prescribed medicines consistently — effects build over weeks", "Don't expect medicine alone to fix it", "Avoid relying on opioids", "Report side effects rather than stopping abruptly"], "lifestyle": ["Start gentle, gradual exercise (walking, water, stretching)", "Pace activities — avoid boom-and-bust", "Prioritize sleep routines", "Use stress management and relaxation", "Consider cognitive behavioral therapy"], "trackers": ["Pain level (0–10)", "Sleep quality", "Activity (paced?)", "Mood/stress", "Medication taken?"], "redflags": ["New symptoms unlike your usual (don't assume it's fibro)", "Signs of another condition (swollen joints, fever, weakness)", "Severe depression or thoughts of self-harm", "Sudden severe pain", "Unexplained weight loss"], "prep": ["Bring a symptom, sleep, and activity log", "List all medicines tried", "Note what helps and worsens it", "Bring your questions"], "questions": ["What's the best mix of treatments for me?", "Which exercise is safe to start?", "Would therapy or a pain program help?", "How do I improve sleep?", "Could another condition be adding to this?"], "caregiver": ["Understand the pain and fatigue are real", "Support gentle, paced activity and good sleep", "Encourage stress management and therapy", "Watch for depression and new, different symptoms"]},
+  chronicpain: {"name": "Chronic Pain (General)", "icon": "Activity", "accent": "#94401F", "what": "Chronic pain is pain lasting beyond normal healing, often months or more. It's influenced by the body, sleep, mood, and stress together. Management focuses on improving function and quality of life through a mix of movement, coping skills, and careful use of medicines.", "symptoms": ["Ongoing pain in one or more areas", "Fatigue and poor sleep", "Reduced activity and mood changes", "Stiffness or tension", "Pain that varies with stress and sleep"], "numbers": [["Pain level (0–10)", "Track patterns and triggers"], ["Function", "What you can do that day"], ["Sleep", "Poor sleep amplifies pain"], ["Mood/stress", "Both strongly affect pain"]], "meds": [["Non-opioid options first", "Acetaminophen, NSAIDs, topical, and nerve-pain medicines depending on the cause."], ["Careful with opioids", "Long-term opioids have limited benefit and real risks — discuss carefully."], ["Treat contributors", "Sleep and mood medicines sometimes help the whole picture."], ["Combine with non-drug care", "Medicine works best alongside movement and coping skills."]], "adherence": ["Use medicines as part of a broader plan", "Don't exceed acetaminophen limits", "Be cautious and honest about opioids", "Report side effects and what's working"], "lifestyle": ["Keep moving with gentle, paced activity", "Prioritize sleep", "Use relaxation, mindfulness, or therapy for coping", "Maintain social connection and enjoyable activity", "Set realistic function goals"], "trackers": ["Pain level (0–10)", "Function/activity", "Sleep quality", "Mood/stress", "Medication taken?"], "redflags": ["New or sudden severe pain unlike your usual", "Pain with fever, weakness, or weight loss", "Loss of bladder/bowel control (with back pain)", "Thoughts of self-harm", "Signs of a new medical problem"], "prep": ["Bring a pain, sleep, and activity log", "List all pain medicines (including OTC)", "Note what helps and worsens it", "Bring your questions"], "questions": ["What's driving my pain and how do we treat it?", "What non-drug options help?", "Would a pain program or therapy help?", "How do I improve sleep?", "Are my medicines the safest choice?"], "caregiver": ["Support gentle activity and pacing", "Encourage sleep and coping skills", "Watch for mood changes and self-harm signs", "Help track patterns and triggers"]},
+  anxiety: {"name": "Anxiety Disorders", "icon": "Brain", "accent": "#5B5BD6", "what": "Anxiety disorders involve excessive worry or fear that interferes with daily life. They're common and very treatable. Therapy, healthy routines, and sometimes medicine help most people regain calm and control.", "symptoms": ["Constant worry or dread", "Restlessness or feeling on edge", "Racing heart, sweating, or shortness of breath", "Trouble concentrating or sleeping", "Muscle tension", "Avoiding feared situations"], "numbers": [["Anxiety level (0–10)", "Track daily patterns and triggers"], ["Sleep", "Poor sleep worsens anxiety"], ["Avoidance", "Note what you're avoiding"], ["Therapy/med routine", "Kept up?"]], "meds": [["SSRIs / SNRIs", "Common first-choice; can take 4–6 weeks to fully help."], ["Give it time", "Don't stop early if it feels slow — talk to your prescriber."], ["Caution with benzodiazepines", "Fast-acting but habit-forming; usually short-term only."], ["Don't stop suddenly", "Taper with guidance to avoid withdrawal."]], "adherence": ["Take daily medicines consistently", "Expect a few weeks before full effect", "Use fast-acting medicines only as directed", "Never stop abruptly — ask about tapering"], "lifestyle": ["Practice relaxation and breathing skills", "Keep regular sleep and movement", "Limit caffeine and alcohol", "Consider cognitive behavioral therapy (very effective)", "Stay connected to supportive people"], "trackers": ["Anxiety level (0–10)", "Sleep hours", "Caffeine/alcohol?", "Medication taken?", "Used a coping skill?"], "redflags": ["Panic that feels like a heart attack (get chest pain checked)", "Thoughts of self-harm", "Unable to work or function", "Severe, constant dread", "New physical symptoms that worry you"], "prep": ["Note your triggers and patterns", "List medicines and any side effects", "Write down what's been hardest", "Bring your questions"], "questions": ["Would therapy help alongside medicine?", "How long until medicine works?", "What coping skills should I start?", "How do I stop safely if needed?", "Is my racing heart anxiety or something else?"], "caregiver": ["Listen without judging or minimizing", "Take any talk of self-harm seriously — get help", "Support routines, therapy, and coping skills", "Encourage professional help for severe symptoms"], "crisis": true}
+};
+
+
+// ---- Self-Management Guide (interactive) -----------------------------------
+const GUIDE_ICON = { Droplets, Activity, Heart, Wind, Bone, Brain, PersonStanding, Droplet, Flame, Sparkles };
+const NEEDS = [
+  ["understand", "Understand my condition", BookOpen],
+  ["meds", "Manage my medications", Pill],
+  ["track", "Track symptoms & key numbers", Activity],
+  ["visit", "Prepare for a doctor visit", ClipboardList],
+  ["redflags", "Warning signs & red flags", AlertTriangle],
+  ["lifestyle", "Build a lifestyle plan", Sparkles],
+  ["caregiver", "Get caregiver support", HeartPulse],
+];
+
+function GuideTracker({ items, accent }) {
+  const [checks, setChecks] = useState({});
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      {items.map((it, i) => {
+        const on = checks[i];
+        return (
+          <button key={i} onClick={() => setChecks(c => ({ ...c, [i]: !c[i] }))}
+            style={{ display: "flex", alignItems: "center", gap: 11, textAlign: "left", cursor: "pointer", border: `1px solid ${on ? accent : C.line}`, background: on ? accent + "12" : "#fff", borderRadius: 11, padding: "11px 13px" }}>
+            <span style={{ height: 20, width: 20, borderRadius: 6, border: `2px solid ${on ? accent : C.inkFaint}`, background: on ? accent : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{on && <Check size={13} color="#fff" />}</span>
+            <span style={{ fontSize: 13.5, color: C.ink }}>{it}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function printGuide(c) {
+  const w = window.open("", "_blank"); if (!w) return;
+  const li = a => a.map(x => "<li>" + (Array.isArray(x) ? "<strong>" + x[0] + ":</strong> " + x[1] : x) + "</li>").join("");
+  w.document.write(
+    "<html><head><title>" + c.name + " — One-Page Guide</title><style>body{font-family:Georgia,serif;max-width:760px;margin:32px auto;color:#2B231C;line-height:1.5}h1{color:#0E3A36}h2{border-bottom:1px solid #ccc;padding-bottom:4px;margin-top:22px;font-size:16px}ul{margin:6px 0}li{margin:3px 0;font-size:13px}small{color:#666}</style></head><body>" +
+    "<h1>" + c.name + " — Self-Management Guide</h1>" +
+    "<p>" + c.what + "</p>" +
+    "<h2>Common symptoms</h2><ul>" + li(c.symptoms) + "</ul>" +
+    "<h2>Key numbers to track</h2><ul>" + li(c.numbers) + "</ul>" +
+    "<h2>Medications & adherence</h2><ul>" + li(c.meds) + li(c.adherence) + "</ul>" +
+    "<h2>Lifestyle & self-management</h2><ul>" + li(c.lifestyle) + "</ul>" +
+    "<h2>Red flags — seek help</h2><ul>" + li(c.redflags) + "</ul>" +
+    "<h2>Prepare for your visit</h2><ul>" + li(c.prep) + "</ul>" +
+    "<h2>Questions to ask</h2><ul>" + li(c.questions) + "</ul>" +
+    "<h2>Caregiver tips</h2><ul>" + li(c.caregiver) + "</ul>" +
+    "<p><small>Educational only — not medical advice. For personal decisions contact your healthcare provider; for emergencies call your local emergency number.</small></p>" +
+    "</body></html>");
+  w.document.close(); w.focus(); setTimeout(() => w.print(), 300);
+}
+
+function SelfCareGuide({ go }) {
+  const [cond, setCond] = useState(null);
+  const [need, setNeed] = useState(null);
+  const c = cond ? CONDITIONS[cond] : null;
+  const Section = ({ title, children }) => (<div style={{ ...card, marginBottom: 14 }}><h3 style={{ fontFamily: serifH, fontSize: 16.5, margin: "0 0 10px", color: C.ink }}>{title}</h3>{children}</div>);
+  const Bullets = ({ items }) => (<ul style={{ margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6 }}>{items.map((x, i) => <li key={i} style={{ fontSize: 13.5, color: "#4F4233", lineHeight: 1.55 }}>{Array.isArray(x) ? <><strong style={{ color: C.ink }}>{x[0]}:</strong> {x[1]}</> : x}</li>)}</ul>);
+
+  // Step 1 — choose condition
+  if (!cond) return (
+    <div style={{ maxWidth: 860 }}>
+      <PageHead title="Self-Management Guide" italic={"\u201cPick your condition. Get a plan you can actually use.\u201d"} sub="A friendly, step-by-step guide for living well with common conditions — in plain language, for patients and caregivers. Educational only; it never replaces your healthcare provider." />
+      <div style={{ ...card, marginBottom: 16, background: "#FCF3F1", border: "1px solid #EFC6C1" }}>
+        <p style={{ fontSize: 12.5, color: "#7A2A22", margin: 0, lineHeight: 1.55 }}><AlertTriangle size={13} style={{ verticalAlign: "-2px", marginRight: 5 }} />This tool does not diagnose or replace medical advice. Contact your provider for personal decisions, and call your local emergency number for serious symptoms.</p>
+      </div>
+      <p style={{ ...eyebrow, marginBottom: 10 }}>Which condition do you want help with?</p>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px,1fr))", gap: 12 }}>
+        {Object.keys(CONDITIONS).map(k => { const cc = CONDITIONS[k]; const Ic = GUIDE_ICON[cc.icon] || Pill; return (
+          <button key={k} onClick={() => { setCond(k); setNeed(null); }} style={{ display: "flex", alignItems: "center", gap: 12, textAlign: "left", cursor: "pointer", border: `1px solid ${C.line}`, background: "#fff", borderRadius: 14, padding: "15px 16px" }}>
+            <span style={{ height: 40, width: 40, borderRadius: 11, background: cc.accent + "1A", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Ic size={20} color={cc.accent} /></span>
+            <span style={{ fontFamily: serifH, fontSize: 15.5, color: C.ink, lineHeight: 1.15 }}>{cc.name}</span>
+          </button>
+        ); })}
+      </div>
+    </div>
+  );
+
+  const Ic = GUIDE_ICON[c.icon] || Pill;
+  // Step 2 — choose need
+  if (!need) return (
+    <div style={{ maxWidth: 860 }}>
+      <button onClick={() => setCond(null)} style={{ ...ghostBtn, padding: "7px 13px", fontSize: 12.5, marginBottom: 14 }}>← All conditions</button>
+      <div style={{ display: "flex", alignItems: "center", gap: 13, marginBottom: 6 }}>
+        <span style={{ height: 46, width: 46, borderRadius: 12, background: c.accent + "1A", display: "flex", alignItems: "center", justifyContent: "center" }}><Ic size={24} color={c.accent} /></span>
+        <h1 style={{ fontFamily: serifH, fontSize: 26, margin: 0, color: C.ink }}>{c.name}</h1>
+      </div>
+      <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "0 0 16px" }}>What would you like to do?</p>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px,1fr))", gap: 11 }}>
+        {(c.caregiverFirst ? [...NEEDS].sort((a, b) => (a[0] === "caregiver" ? -1 : 0) - (b[0] === "caregiver" ? -1 : 0)) : NEEDS).map(([id, label, NIc]) => (
+          <button key={id} onClick={() => setNeed(id)} style={{ display: "flex", alignItems: "center", gap: 11, textAlign: "left", cursor: "pointer", border: `1px solid ${C.line}`, background: "#fff", borderRadius: 12, padding: "13px 15px" }}>
+            <NIc size={18} color={c.accent} />
+            <span style={{ fontSize: 14, color: C.ink, fontWeight: 500 }}>{label}</span>
+            <ArrowRight size={15} color={C.inkFaint} style={{ marginLeft: "auto" }} />
+          </button>
+        ))}
+      </div>
+      <div style={{ ...card, marginTop: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+        <span style={{ fontSize: 13, color: C.inkSoft }}>Want it all on one page to print or bring along?</span>
+        <button onClick={() => printGuide(c)} style={{ ...primaryBtn, padding: "8px 14px", fontSize: 13 }}><Printer size={15} /> Printable summary</button>
+      </div>
+    </div>
+  );
+
+  // Step 3 — content per need
+  const back = <button onClick={() => setNeed(null)} style={{ ...ghostBtn, padding: "7px 13px", fontSize: 12.5, marginBottom: 14 }}>← {c.name} menu</button>;
+  const header = (t) => <h2 style={{ fontFamily: serifH, fontSize: 22, margin: "0 0 14px", color: c.accent }}>{t}</h2>;
+  return (
+    <div style={{ maxWidth: 780 }}>
+      {back}
+      {need === "understand" && <>{header("Understanding " + c.name)}
+        <Section title="What it is"><p style={{ fontSize: 14, color: "#4F4233", lineHeight: 1.65, margin: 0 }}>{c.what}</p></Section>
+        <Section title="Common symptoms"><Bullets items={c.symptoms} /></Section>
+        <Section title="Key numbers & health markers"><Bullets items={c.numbers} /></Section>
+      </>}
+      {need === "meds" && <>{header("Managing your medications")}
+        <Section title="Medication categories"><Bullets items={c.meds} /></Section>
+        <Section title="Tips for sticking with them"><Bullets items={c.adherence} /></Section>
+        <div style={{ ...card, background: "#FBF6EC" }}><p style={{ fontSize: 13, color: "#4F4233", margin: 0, lineHeight: 1.6 }}>Add your actual medicines to check them for interactions and see them on the Body Impact Map.</p><button onClick={() => go("meds")} style={{ ...primaryBtn, marginTop: 12, padding: "8px 14px", fontSize: 13 }}>Go to My Medications <ArrowRight size={15} /></button></div>
+      </>}
+      {need === "track" && <>{header("Track symptoms & key numbers")}
+        <Section title="Your key numbers"><Bullets items={c.numbers} /></Section>
+        <div style={{ ...card }}><h3 style={{ fontFamily: serifH, fontSize: 16.5, margin: "0 0 4px", color: C.ink }}>Daily / weekly check-in</h3><p style={{ fontSize: 12, color: C.inkSoft, margin: "0 0 12px" }}>Tap what you've done today. This is a personal checklist — it isn't saved.</p><GuideTracker items={c.trackers} accent={c.accent} /></div>
+      </>}
+      {need === "visit" && <>{header("Prepare for your visit")}
+        <Section title="Bring / do before you go"><GuideTracker items={c.prep} accent={c.accent} /></Section>
+        <Section title="Questions to ask your provider"><Bullets items={c.questions} /></Section>
+        <button onClick={() => printGuide(c)} style={{ ...primaryBtn }}><Printer size={16} /> Print one-page summary</button>
+      </>}
+      {need === "redflags" && <>{header("Warning signs & red flags")}
+        <div style={{ borderRadius: 14, border: "1px solid #EFC6C1", background: "#FCF3F1", padding: "16px 18px", marginBottom: 14 }}>
+          <p style={{ margin: "0 0 10px", fontSize: 13, fontWeight: 600, color: "#7A2A22" }}>Call your provider or seek urgent care for:</p>
+          <ul style={{ margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 7 }}>{c.redflags.map((r, i) => <li key={i} style={{ fontSize: 13.5, color: "#5A1410", lineHeight: 1.5 }}>{r}</li>)}</ul>
+        </div>
+        <div style={{ ...card, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+          <span style={{ fontSize: 13, color: C.inkSoft, flex: 1 }}>For anything sudden or severe, don't wait.</span>
+          <button onClick={() => go("emergency")} style={{ ...primaryBtn, padding: "8px 14px", fontSize: 13, background: "#8A160F" }}><Siren size={15} /> Emergency page</button>
+        </div>
+        {c.crisis && <div style={{ marginTop: 14, borderRadius: 12, border: "1px solid #C9B7D6", background: "#F4EFF8", padding: "13px 15px" }}><p style={{ fontSize: 12.5, color: "#3E2C55", margin: 0, lineHeight: 1.55 }}>If you're thinking about harming yourself, you deserve support now. In the U.S., call or text <strong>988</strong> (Suicide &amp; Crisis Lifeline), any time. Elsewhere, contact your local emergency number or crisis line.</p></div>}
+      </>}
+      {need === "lifestyle" && <>{header("Build a lifestyle plan")}
+        <Section title="Steps that help"><Bullets items={c.lifestyle} /></Section>
+        <div style={{ ...card }}><h3 style={{ fontFamily: serifH, fontSize: 16.5, margin: "0 0 4px", color: C.ink }}>Turn it into habits</h3><p style={{ fontSize: 12, color: C.inkSoft, margin: "0 0 12px" }}>Pick the ones you'll start with this week.</p><GuideTracker items={c.lifestyle} accent={c.accent} /></div>
+      </>}
+      {need === "caregiver" && <>{header("Caregiver support")}
+        <Section title="Ways to help"><Bullets items={c.caregiver} /></Section>
+        <div style={{ ...card, background: "#FBF6EC" }}><p style={{ fontSize: 13, color: "#4F4233", margin: 0, lineHeight: 1.6 }}>Caring for someone is real work — look after your own rest and support too. You can bring the printable summary to appointments.</p><button onClick={() => printGuide(c)} style={{ ...ghostBtn, marginTop: 12, padding: "8px 14px", fontSize: 13 }}><Printer size={15} /> Printable summary</button></div>
+      </>}
+      <p style={{ marginTop: 14, fontSize: 11.5, color: C.inkFaint, lineHeight: 1.55 }}>Educational only, written in plain language. It does not diagnose or replace medical advice — contact your provider for personal decisions and seek emergency care for serious symptoms.</p>
+    </div>
+  );
+}
+
+
+
+// ---- RxSafeTravel — International & Domestic Travel Planning ----------------
+const TRAVEL_CONDITIONS = [
+  "Heart disease","High blood pressure","Heart failure","Atrial fibrillation / arrhythmia","History of heart attack",
+  "Stroke or TIA history","Blood clot history","Clotting disorder","Diabetes (type 1)","Diabetes (type 2)",
+  "Kidney disease / dialysis","Liver disease","Cancer (active treatment)","Cancer history / remission",
+  "Immunocompromised","Organ transplant","Autoimmune / rheumatologic disease","Asthma","COPD","Sleep apnea",
+  "Oxygen use","Severe allergies / anaphylaxis","Seizure disorder","Migraine","Parkinson's disease",
+  "Dementia / cognitive impairment","Chronic pain","Anxiety / depression","Pregnancy","Recent surgery or hospitalization",
+  "Inflammatory bowel disease (Crohn's / colitis)","Anemia","Other condition",
+];
+const TRAVEL_MEDCATS = [
+  ["anticoag","Blood thinner / anticoagulant"],["antiplatelet","Antiplatelet"],["insulin","Insulin"],["diabetes","Other diabetes medication"],
+  ["bp","Blood pressure medication"],["diuretic","Diuretic / water pill"],["rhythm","Heart rhythm medication"],["seizure","Seizure medication"],
+  ["steroid","Steroid"],["immuno","Immune suppressant / biologic"],["cancer","Cancer / chemotherapy medication"],["opioid","Opioid pain medication"],
+  ["benzo","Benzodiazepine / anti-anxiety"],["sleep","Sleep medication"],["stimulant","ADHD stimulant"],["psych","Antidepressant / antipsychotic"],
+  ["parkinson","Parkinson's medication"],["inhaler","Inhaler / respiratory"],["injectable","Injectable medication"],["refrigerated","Refrigerated medication"],
+  ["controlled","Controlled medication"],["hormone","Hormone therapy"],["otc","Over-the-counter / supplement"],
+];
+const TRAVEL_RISKS = [
+  ["longflight","Long flights or long car rides"],["timezone","Crossing time zones"],["heat","Hot climate"],["cold","Cold climate"],
+  ["altitude","High altitude"],["cruise","Cruise travel"],["remote","Remote / rural travel"],["foodwater","Food & water concerns"],
+  ["mosquito","Mosquito exposure"],["crowds","Crowded events"],["adventure","Adventure / hiking / diving"],["limitedcare","Limited healthcare access"],
+  ["language","Language barrier"],["medabroad","Medical/dental procedure abroad"],
+];
+
+function TravelChip({ on, onClick, children, accent }) {
+  return <button onClick={onClick} style={{ display: "inline-flex", alignItems: "center", gap: 7, cursor: "pointer", borderRadius: 999, padding: "7px 13px", fontSize: 13, fontWeight: on ? 600 : 400, border: `1px solid ${on ? (accent || C.terra) : C.line}`, background: on ? (accent || C.terra) : "#fff", color: on ? "#fff" : C.inkSoft }}>{on && <Check size={13} />}{children}</button>;
+}
+
+function buildTravelPlan(state) {
+  const { intl, domestic, conds, medcats, risks } = state;
+  const has = (arr, k) => arr.includes(k);
+  const hasCond = name => conds.includes(name);
+  const docQ = [], pharmQ = [], tmQ = [], careQ = [], special = [], warnings = [];
+  const pre = [], during = [], post = [];
+
+  // universal doctor/pharmacist questions
+  docQ.push("Are my conditions stable enough for this trip and the activities I'm planning?",
+    "What symptoms should prompt urgent care while I'm away?",
+    "Do I need any labs, updated prescriptions, or a medical letter before I go?",
+    "Should any medication timing change for time zones?",
+    "What should I do if I get sick, miss a dose, or vomit after taking a medicine?");
+  pharmQ.push("Could any of my medicines interact with travel-related medicines (anti-nausea, diarrhea, antibiotics, sleep aids)?",
+    "Are any of my medicines affected by heat, cold, sunlight, dehydration, or food changes?",
+    "How should I store my medicines during travel and long flights?",
+    "Which of my medicines should never be stopped suddenly?",
+    "How much extra medication should I bring, and can you print my medication list?");
+
+  // international
+  if (intl) {
+    special.push("Medication laws vary by country and can change. Verify your medicines with official government, embassy, consulate, customs, or destination-country sources before you travel.");
+    docQ.push("Do I need a destination-specific vaccine or infection-prevention review?", "Are live vaccines a concern given my conditions or medicines?");
+    tmQ.push("What destination-specific health risks should I know about?",
+      "Are any vaccines recommended or required — and are any unsafe for me?",
+      "Do I need malaria prevention or mosquito precautions?",
+      "What is my traveler's-diarrhea and food/water plan?",
+      "Do I need documentation for any medicines, devices, injections, or supplies?");
+    pre.push("Check medication laws for your destination and any transit countries (official sources).",
+      "Carry generic and brand names for every medicine.",
+      "Bring copies of prescriptions and a clinician letter if advised.",
+      "Consider a travel-medicine clinic visit for vaccines and destination risks.",
+      "Note your nearest embassy/consulate and destination emergency number.");
+  }
+  if (domestic) {
+    pre.push("Confirm your pharmacy can refill across state lines, and locate a pharmacy near your destination.",
+      "Check insurance in-network coverage and the nearest hospital where you're going.",
+      "For controlled medicines, ask about refill limits before you travel.");
+  }
+
+  // medication-category triggers
+  if (has(medcats,"controlled") || has(medcats,"opioid") || has(medcats,"benzo") || has(medcats,"sleep") || has(medcats,"stimulant")) {
+    special.push("Ask your doctor, pharmacist, and destination-country official sources whether your controlled medicine is restricted, requires documentation, or may be illegal in your destination or transit countries.");
+    pharmQ.push("Is my controlled medicine restricted anywhere I'm going, and what documentation do I need?");
+    pre.push("Keep controlled medicines in original labeled containers with a clinician letter.",
+      "Have a written plan for lost, stolen, delayed, or confiscated medication.");
+    docQ.push("Do I need a physician letter for my controlled or high-risk medicines?");
+  }
+  if (has(medcats,"anticoag") || has(medcats,"antiplatelet")) {
+    special.push("You take a blood thinner or antiplatelet — bleeding and injury need extra planning.");
+    docQ.push("What bleeding symptoms need urgent care, and what should I do after a fall or head injury?",
+      "Should I discuss blood-clot prevention for long flights or long drives?",
+      "Do I need INR monitoring during or after travel?");
+    warnings.push("Unusual bleeding, black stools, blood in urine, vomiting blood, or a fall/head injury");
+  }
+  if (has(medcats,"insulin") || has(medcats,"diabetes")) {
+    special.push("Diabetes travel needs a plan for time zones, meals, storage, and low blood sugar.");
+    docQ.push("How should I handle insulin/medication timing across time zones and delayed meals?", "What's my sick-day and low-blood-sugar plan while traveling?");
+    pre.push("Pack extra glucose supplies (sensors, strips, needles, batteries, chargers) for the full trip plus delays.",
+      "Carry fast-acting sugar and a hypoglycemia plan.",
+      "Get a medical letter for insulin, syringes, a pump, or CGM if needed.");
+    if (has(medcats,"refrigerated") || has(medcats,"insulin")) pre.push("Prepare a cold-chain plan (travel cooler, temperature check) for insulin/refrigerated medicines.");
+  }
+  if (has(medcats,"immuno") || has(medcats,"steroid") || has(medcats,"cancer") || hasCond("Cancer (active treatment)") || hasCond("Immunocompromised") || hasCond("Organ transplant")) {
+    special.push("With a weakened immune system, infection prevention and vaccine safety need clinician review.");
+    docQ.push("Is this a safe time to travel given my treatment schedule, blood counts, or immune status?",
+      "Are any vaccines (especially live vaccines) unsafe for me?",
+      "What's my fever action plan, and which infection symptoms need urgent care?");
+    tmQ.push("Which vaccines are safe given my immune status?");
+    warnings.push("Fever or signs of infection while immunocompromised");
+    pre.push("Ask whether to carry a treatment summary or specialist letter and recent labs.");
+  }
+  if (has(medcats,"diuretic") || has(medcats,"bp") || hasCond("Heart failure") || hasCond("Kidney disease / dialysis")) {
+    docQ.push("Do heat, altitude, salt, dehydration, or alcohol pose risks with my heart/kidney condition or medicines?");
+    if (has(risks,"heat")) special.push("In hot climates, water pills and blood-pressure medicines can raise dehydration and dizziness risk — ask about monitoring.");
+  }
+  if (has(medcats,"seizure") || has(medcats,"parkinson") || has(medcats,"psych")) {
+    special.push("These medicines shouldn't be stopped suddenly — plan supply and dose continuity.");
+    docQ.push("What should I do if I miss a dose, and could sleep loss, alcohol, or illness trigger symptoms?");
+    pre.push("Pack more than enough of medicines that must not be missed, split between bags.");
+  }
+  if (has(medcats,"inhaler") || hasCond("Asthma") || hasCond("COPD") || hasCond("Oxygen use") || hasCond("Sleep apnea")) {
+    docQ.push("Do I need an updated asthma/COPD action plan, extra inhalers, or oxygen/CPAP documentation?");
+    pre.push("For oxygen or CPAP: check airline policies, power adapters, backup supplies, and destination power access.");
+    if (has(risks,"altitude")) special.push("Altitude can affect breathing and heart/lung conditions — review with your clinician.");
+  }
+  if (has(medcats,"injectable")) {
+    pre.push("For injectables: bring a sharps plan, documentation, and ask about airport screening and safe disposal.");
+    pharmQ.push("What documentation do I need for injectable medicines and needles at security?");
+  }
+  if (has(medcats,"refrigerated")) {
+    pharmQ.push("How do I keep my refrigerated medicine cold and monitor its temperature during travel?");
+    pre.push("Pack a cooling plan and a backup for delays for refrigerated medicines.");
+  }
+
+  // risk triggers
+  if (has(risks,"longflight")) { docQ.push("Should I take steps to prevent blood clots on long flights (movement, hydration, compression stockings)?"); during.push("On long flights/drives, move regularly and stay hydrated as advised."); }
+  if (has(risks,"heat")) during.push("Avoid overheating and dehydration; protect temperature-sensitive medicines from heat.");
+  if (has(risks,"altitude")) docQ.push("Do heart, lung, blood-pressure, anemia, pregnancy, or neurologic conditions need extra altitude planning?");
+  if (has(risks,"foodwater")) { tmQ.push("What food and water precautions and traveler's-diarrhea plan apply to my destination?"); pharmQ.push("Are anti-diarrhea or standby antibiotics safe with my current medicines?"); }
+  if (has(risks,"mosquito")) tmQ.push("What mosquito precautions or antimalarials apply, and do they interact with my medicines?");
+  if (has(risks,"cruise")) { special.push("Cruise ships have limited onboard pharmacies and medical care — plan supply and evacuation coverage."); docQ.push("Are motion-sickness medicines safe with my current medicines?"); }
+  if (has(risks,"remote")) { special.push("Remote travel means limited care — plan extra supply, evacuation coverage, and offline records."); pre.push("Confirm medical-evacuation coverage and the distance to the nearest hospital."); }
+  if (has(risks,"medabroad")) special.push("For any medical, dental, or cosmetic procedure abroad, discuss infection, clot, medication, records, and follow-up plans with your clinician first.");
+
+  if (hasCond("Pregnancy")) { docQ.push("Is travel appropriate for my pregnancy stage, and which medicines are safe for nausea, pain, allergies, or infection?"); }
+  if (hasCond("Severe allergies / anaphylaxis")) { special.push("Carry enough emergency allergy medicine — ask if you need more than one epinephrine auto-injector and allergy translation cards."); warnings.push("Severe allergic reaction (trouble breathing, throat/face swelling, widespread hives)"); }
+
+  // universal checklist scaffolding
+  pre.unshift("Schedule a pre-travel discussion with your primary clinician, specialist, pharmacist, or travel-medicine clinic.",
+    "Pack medicines in your carry-on, in original labeled containers, with extra for delays.",
+    "Assemble your documents: medication list, allergies, condition summary, provider and pharmacy contacts, prescriptions, insurance, and emergency numbers.");
+  during.unshift("Follow the medication schedule you discussed with your healthcare team; use alarms or caregiver reminders.",
+    "Keep medicines and emergency contacts accessible; don't start unfamiliar medicines or supplements without checking first.");
+  post.push("If you develop fever, persistent diarrhea, rash, cough, breathlessness, jaundice, new swelling, or symptoms that began during travel, contact a healthcare provider — and tell them where and when you traveled.",
+    "Review any medicines, antibiotics, or remedies you took while away, replace used emergency medicines, and update your medication list.",
+    "Ask your care team whether you need labs or follow-up, and what to do differently before your next trip.");
+
+  // baseline warning signs
+  const baseWarn = ["Chest pain","Severe shortness of breath","Fainting or new confusion","Signs of stroke (face droop, arm weakness, speech trouble)","Severe dehydration or persistent vomiting","Severe or bloody diarrhea","Swelling, pain, or redness in one leg","Severe headache with fever, stiff neck, or weakness","A new seizure","Any symptom your healthcare team told you needs urgent care"];
+  const allWarn = uniq([...warnings, ...baseWarn]);
+
+  return { docQ: uniq(docQ), pharmQ: uniq(pharmQ), tmQ: uniq(tmQ), special: uniq(special), pre: uniq(pre), during: uniq(during), post: uniq(post), warnings: allWarn };
+}
+
+function RxSafeTravel({ go, meds }) {
+  const [step, setStep] = useState(0);
+  const [intl, setIntl] = useState(false);
+  const [domestic, setDomestic] = useState(false);
+  const [dest, setDest] = useState("");
+  const [depart, setDepart] = useState("");
+  const [ret, setRet] = useState("");
+  const [conds, setConds] = useState([]);
+  const [medcats, setMedcats] = useState([]);
+  const [risks, setRisks] = useState([]);
+  const [caregiver, setCaregiver] = useState(false);
+  const [emergency, setEmergency] = useState({ contact: "", doctor: "", pharmacy: "", insurance: "", allergies: "" });
+
+  const toggle = (setter, arr, v) => setter(arr.includes(v) ? arr.filter(x => x !== v) : [...arr, v]);
+  const plan = useMemo(() => buildTravelPlan({ intl, domestic, conds, medcats, risks }), [intl, domestic, conds, medcats, risks]);
+
+  const STEPS = ["Trip", "Health", "Medicines", "Risks", "Caregiver & Emergency", "Your Travel Plan"];
+  const Disc = ({ children }) => <div style={{ borderRadius: 12, border: "1px solid #EFC6C1", background: "#FCF3F1", padding: "12px 15px", fontSize: 12.5, color: "#7A2A22", lineHeight: 1.55, margin: "0 0 16px" }}>{children}</div>;
+  const Sec = ({ title, children }) => <div style={{ ...card, marginBottom: 14 }}><h3 style={{ fontFamily: serifH, fontSize: 16.5, margin: "0 0 12px", color: C.ink }}>{title}</h3>{children}</div>;
+  const Field = ({ label, value, onChange, type = "text", placeholder }) => (
+    <div style={{ marginBottom: 12 }}>
+      <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: C.inkSoft, marginBottom: 5 }}>{label}</label>
+      <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={{ width: "100%", boxSizing: "border-box", borderRadius: 10, border: `1px solid ${C.line}`, background: "#fff", padding: "10px 12px", fontSize: 14, color: C.ink, outline: "none" }} />
+    </div>
+  );
+
+  function printTravelPlan() {
+    const w = window.open("", "_blank"); if (!w) return;
+    const ul = a => a.length ? "<ul>" + a.map(x => "<li>" + x + "</li>").join("") + "</ul>" : "<p><em>None flagged.</em></p>";
+    const medList = (meds || []).map(m => (m.name || m.key) + (m.dose ? " — " + m.dose : "")).join("<br>") || "<em>Add your medicines in My Medications to include them.</em>";
+    w.document.write("<html><head><title>RxSafeTravel Plan</title><style>body{font-family:Georgia,serif;max-width:780px;margin:30px auto;color:#2B231C;line-height:1.5;padding:0 20px}h1{color:#0E3A36}h2{border-bottom:1px solid #ccc;padding-bottom:4px;margin-top:22px;font-size:16px}li{margin:3px 0;font-size:13px}small{color:#666}.warn{background:#FCF3F1;border:1px solid #EFC6C1;padding:10px 14px;border-radius:8px}</style></head><body>" +
+      "<h1>RxSafeTravel\u2122 Plan</h1>" +
+      "<p><small>Generated " + new Date().toLocaleDateString() + " \u00b7 Prepared by RxSafeTravel\u2122 inside RxSafeCheck\u2122 \u00b7 For discussion with your healthcare team</small></p>" +
+      "<p><strong>Trip:</strong> " + (intl ? "International" : "") + (intl && domestic ? " & " : "") + (domestic ? "Domestic" : "") + (dest ? " \u2014 " + dest : "") + (depart ? " \u2014 depart " + depart : "") + (ret ? ", return " + ret : "") + "</p>" +
+      "<h2>Conditions to discuss</h2>" + ul(conds) +
+      "<h2>My medicines</h2><p style='font-size:13px'>" + medList + "</p>" +
+      "<h2>Medicines / situations needing special attention</h2>" + ul(plan.special) +
+      "<h2>Questions for my doctor</h2>" + ul(plan.docQ) +
+      "<h2>Questions for my pharmacist</h2>" + ul(plan.pharmQ) +
+      (plan.tmQ.length ? "<h2>Questions for a travel-medicine clinician</h2>" + ul(plan.tmQ) : "") +
+      "<h2>Before you travel</h2>" + ul(plan.pre) +
+      "<h2>During travel</h2>" + ul(plan.during) +
+      "<h2>After travel</h2>" + ul(plan.post) +
+      "<h2>Seek urgent care if you have</h2><div class='warn'>" + ul(plan.warnings) + "</div>" +
+      "<h2>Emergency card</h2><p style='font-size:13px'>Contact: " + (emergency.contact || "___") + "<br>Doctor: " + (emergency.doctor || "___") + "<br>Pharmacy: " + (emergency.pharmacy || "___") + "<br>Insurance: " + (emergency.insurance || "___") + "<br>Allergies: " + (emergency.allergies || "___") + "</p>" +
+      "<p style='margin-top:20px'><small><strong>RxSafeTravel\u2122 is an educational and planning tool.</strong> It does not provide medical advice, diagnose, recommend medicines or vaccines, or replace a licensed healthcare professional. Medication laws vary by country and may change \u2014 verify with official government, embassy, customs, or destination sources. Do not start, stop, skip, or change any medicine unless instructed by a licensed professional. For emergencies, seek care immediately.</small></p>" +
+      "</body></html>");
+    w.document.close(); w.focus(); setTimeout(() => w.print(), 300);
+  }
+
+  return (
+    <div style={{ maxWidth: 860 }}>
+      <PageHead title={"RxSafeTravel\u2122"} italic={"\u201cKnow before you go. Plan before problems happen. Travel safer together.\u201d"} sub="Medication, condition, and caregiver planning before, during, and after travel \u2014 organized into questions and checklists for your healthcare team." />
+
+      <Disc><strong>RxSafeTravel\u2122 is an educational and planning tool.</strong> It does not provide medical advice, diagnose, recommend medicines or vaccines, or replace a licensed healthcare professional. Always speak with your doctor, pharmacist, specialist, or travel-medicine clinician before making health or medication decisions. Do not start, stop, skip, or change any medicine unless instructed by a professional. For a medical emergency, seek care immediately.</Disc>
+
+      {/* progress */}
+      <div style={{ display: "flex", gap: 6, marginBottom: 18, flexWrap: "wrap" }}>
+        {STEPS.map((s, i) => (
+          <button key={s} onClick={() => setStep(i)} style={{ flex: "1 1 auto", minWidth: 90, cursor: "pointer", borderRadius: 8, padding: "7px 8px", fontSize: 11.5, fontWeight: i === step ? 700 : 500, border: `1px solid ${i === step ? C.terra : C.line}`, background: i === step ? C.terra : (i < step ? "#EDE3D1" : "#fff"), color: i === step ? "#fff" : C.inkSoft }}>{i + 1}. {s}</button>
+        ))}
+      </div>
+
+      {step === 0 && (<>
+        <Sec title="Where are you going?">
+          <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+            <TravelChip on={intl} onClick={() => setIntl(!intl)}>International</TravelChip>
+            <TravelChip on={domestic} onClick={() => setDomestic(!domestic)}>Domestic</TravelChip>
+          </div>
+          <Field label="Destination(s)" value={dest} onChange={setDest} placeholder="e.g., Italy; or Denver, CO" />
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <Field label="Departure date" value={depart} onChange={setDepart} type="date" />
+            <Field label="Return date" value={ret} onChange={setRet} type="date" />
+          </div>
+        </Sec>
+        {intl && <Disc>Medication rules vary by country and may change. Before international travel, verify your medicines through official government, embassy, consulate, customs, or destination-country sources, and consider a travel-medicine clinic.</Disc>}
+      </>)}
+
+      {step === 1 && (
+        <Sec title="Which conditions apply to you?">
+          <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "0 0 12px" }}>Select all that apply. This shapes the questions and checklist you'll get. You can pick "Other condition" if yours isn't listed.</p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+            {TRAVEL_CONDITIONS.map(c => <TravelChip key={c} on={conds.includes(c)} onClick={() => toggle(setConds, conds, c)} accent="#5B5BD6">{c}</TravelChip>)}
+          </div>
+        </Sec>
+      )}
+
+      {step === 2 && (
+        <Sec title="What kinds of medicines do you take?">
+          <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "0 0 12px" }}>Pick the categories that apply. If you've added medicines under <button onClick={() => go("meds")} style={{ background: "none", border: "none", color: C.terra, textDecoration: "underline", cursor: "pointer", padding: 0, fontSize: 12.5 }}>My Medications</button>, they'll be included in your printed plan too.</p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+            {TRAVEL_MEDCATS.map(([k, label]) => <TravelChip key={k} on={medcats.includes(k)} onClick={() => toggle(setMedcats, medcats, k)} accent="#B5560A">{label}</TravelChip>)}
+          </div>
+        </Sec>
+      )}
+
+      {step === 3 && (
+        <Sec title="What does your trip involve?">
+          <p style={{ fontSize: 12.5, color: C.inkSoft, margin: "0 0 12px" }}>Select any that apply to add relevant planning questions.</p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+            {TRAVEL_RISKS.map(([k, label]) => <TravelChip key={k} on={risks.includes(k)} onClick={() => toggle(setRisks, risks, k)} accent="#1F7A6D">{label}</TravelChip>)}
+          </div>
+        </Sec>
+      )}
+
+      {step === 4 && (<>
+        <Sec title="Caregiver & emergency information">
+          <div style={{ marginBottom: 14 }}><TravelChip on={caregiver} onClick={() => setCaregiver(!caregiver)}>A caregiver is involved in this trip</TravelChip></div>
+          <Field label="Emergency contact (name & phone)" value={emergency.contact} onChange={v => setEmergency(e => ({ ...e, contact: v }))} placeholder="Name — phone number" />
+          <Field label="Primary doctor / specialist" value={emergency.doctor} onChange={v => setEmergency(e => ({ ...e, doctor: v }))} />
+          <Field label="Pharmacy (name & phone)" value={emergency.pharmacy} onChange={v => setEmergency(e => ({ ...e, pharmacy: v }))} />
+          <Field label="Insurance / travel insurance" value={emergency.insurance} onChange={v => setEmergency(e => ({ ...e, insurance: v }))} />
+          <Field label="Allergies" value={emergency.allergies} onChange={v => setEmergency(e => ({ ...e, allergies: v }))} placeholder="e.g., penicillin; peanuts" />
+        </Sec>
+        <p style={{ fontSize: 11.5, color: C.inkFaint, lineHeight: 1.5 }}>This information stays in your browser for this session only and is used to build your printable plan. Only enter what you're comfortable with.</p>
+      </>)}
+
+      {step === 5 && (<>
+        {(plan.special.length > 0) && (
+          <div style={{ borderRadius: 14, border: "1px solid #E7B7B1", background: "#FCF6F4", padding: "16px 18px", marginBottom: 16 }}>
+            <p style={{ margin: "0 0 8px", fontSize: 13.5, fontWeight: 700, color: "#7A2A22" }}>Worth special attention</p>
+            <ul style={{ margin: 0, paddingLeft: 18 }}>{plan.special.map((s, i) => <li key={i} style={{ fontSize: 13, color: "#5A1410", lineHeight: 1.55, marginBottom: 5 }}>{s}</li>)}</ul>
+          </div>
+        )}
+
+        <TravelList title="Questions for your doctor or specialist" icon={Stethoscope} items={plan.docQ} accent="#5B5BD6" />
+        <TravelList title="Questions for your pharmacist" icon={Pill} items={plan.pharmQ} accent="#B5560A" />
+        {plan.tmQ.length > 0 && <TravelList title="Questions for a travel-medicine clinician" icon={Globe} items={plan.tmQ} accent="#1F7A6D" />}
+        <TravelList title="Before you travel" icon={CalendarCheck} items={plan.pre} accent="#94401F" />
+        <TravelList title="During travel" icon={Navigation} items={plan.during} accent="#1F5B54" />
+        <TravelList title="After travel" icon={CalendarClock} items={plan.post} accent="#6B4E8E" />
+
+        <div style={{ borderRadius: 14, border: "1px solid #EFC6C1", background: "#FCF3F1", padding: "16px 18px", marginBottom: 16 }}>
+          <p style={{ margin: "0 0 8px", fontSize: 13.5, fontWeight: 700, color: "#7A2A22" }}>Seek urgent care if you have</p>
+          <ul style={{ margin: 0, paddingLeft: 18 }}>{plan.warnings.map((w, i) => <li key={i} style={{ fontSize: 13, color: "#5A1410", lineHeight: 1.5, marginBottom: 4 }}>{w}</li>)}</ul>
+          <p style={{ margin: "10px 0 0", fontSize: 12, color: "#7A2A22", fontWeight: 600 }}>If symptoms feel severe, sudden, or life-threatening, seek emergency care immediately.</p>
+        </div>
+
+        <div style={{ ...card, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+          <span style={{ fontSize: 13.5, color: C.inkSoft, flex: 1, minWidth: 200 }}>Print or save your full travel plan and emergency card to bring to your healthcare team.</span>
+          <button onClick={printTravelPlan} style={{ ...primaryBtn, padding: "9px 15px", fontSize: 13 }}><Printer size={15} /> Print / Download plan</button>
+        </div>
+
+        <p style={{ marginTop: 16, fontSize: 11.5, color: C.inkFaint, lineHeight: 1.55 }}>Travel safety is not about fear \u2014 it's about preparation. RxSafeTravel\u2122 helps prepare the conversation; your healthcare team helps guide the care. Educational only; not medical advice. Verify medication rules with official destination sources. For emergencies, seek care immediately.</p>
+      </>)}
+
+      {/* step nav */}
+      {step < 5 && (
+        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
+          <button onClick={() => setStep(s => Math.max(0, s - 1))} disabled={step === 0} style={{ ...ghostBtn, padding: "9px 16px", fontSize: 13, opacity: step === 0 ? 0.4 : 1 }}>← Back</button>
+          <button onClick={() => setStep(s => Math.min(5, s + 1))} style={{ ...primaryBtn, padding: "9px 16px", fontSize: 13 }}>{step === 4 ? "See my travel plan" : "Next"} <ArrowRight size={15} /></button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TravelList({ title, icon: Icon, items, accent }) {
+  if (!items || !items.length) return null;
+  return (
+    <div style={{ ...card, marginBottom: 14 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 10 }}>
+        <span style={{ display: "flex", height: 30, width: 30, borderRadius: 8, background: accent + "1A", alignItems: "center", justifyContent: "center" }}><Icon size={16} color={accent} /></span>
+        <h3 style={{ fontFamily: serifH, fontSize: 16, margin: 0, color: C.ink }}>{title}</h3>
+      </div>
+      <ul style={{ margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 6 }}>
+        {items.map((it, i) => <li key={i} style={{ fontSize: 13.5, color: "#4F4233", lineHeight: 1.55 }}>{it}</li>)}
+      </ul>
+    </div>
+  );
+}
+
+
+// ---- Condition Body Map (how conditions affect organ systems) ---------------
+const COND_IMPACT = {"diabetes": [["heart", "moderate", "Raises risk of heart attack and artery disease over time"], ["kidneys", "high", "A leading cause of kidney damage; needs regular checks"], ["eyes", "high", "Can damage the retina and threaten vision (retinopathy)"], ["brain", "moderate", "Nerve damage causes numbness/tingling; raises stroke risk"], ["endocrine", "high", "The core problem — the body can't use insulin well"], ["skin", "low", "Slow-healing sores and infections, especially on feet"]], "hypertension": [["heart", "high", "Strains the heart and arteries; raises heart-attack risk"], ["kidneys", "high", "A top cause of kidney damage over time"], ["brain", "high", "Major risk factor for stroke"], ["eyes", "moderate", "Can damage the small vessels in the eyes"]], "heart": [["heart", "high", "The heart pumps less effectively; fluid can back up"], ["lungs", "moderate", "Fluid can back up into the lungs (breathlessness)"], ["kidneys", "moderate", "Reduced blood flow can stress the kidneys"], ["liver", "low", "Fluid congestion can affect the liver in advanced cases"]], "copd": [["lungs", "high", "Airflow is limited; breathing is harder"], ["heart", "moderate", "Strain on the heart over time (especially the right side)"]], "asthma": [["lungs", "high", "Airways tighten and swell during flares"]], "cholesterol": [["heart", "high", "Builds up in arteries, raising heart-attack and stroke risk"], ["blood", "moderate", "Circulating blood fats contribute to artery plaque"], ["brain", "moderate", "Artery narrowing raises stroke risk"]], "afib": [["heart", "high", "Irregular rhythm from the upper heart chambers"], ["brain", "high", "Clots can form and travel, raising stroke risk"]], "ckd": [["kidneys", "high", "The kidneys filter less well over time"], ["heart", "high", "Closely linked — raises cardiovascular risk"], ["blood", "moderate", "Can cause anemia as kidney function drops"], ["bones", "moderate", "Affects mineral and bone balance"]], "hypothyroid": [["endocrine", "high", "The thyroid makes too little hormone, slowing the body"], ["heart", "low", "Can affect heart rate and cholesterol"], ["brain", "low", "Low mood, fog, and fatigue"]], "gout": [["bones", "high", "Uric-acid crystals inflame joints (often the big toe)"], ["kidneys", "moderate", "Linked to kidney stones and reduced function"]], "osteoporosis": [["bones", "high", "Bones thin and become fracture-prone"]], "arthritis": [["bones", "high", "Joint pain, stiffness, and inflammation"], ["muscles", "low", "Surrounding muscles and soft tissue can ache"]], "backpain": [["bones", "moderate", "Spine and joints involved"], ["muscles", "high", "Muscle tension and strain in the lower back"], ["brain", "low", "Chronic pain involves nervous-system pain processing"]], "migraine": [["brain", "high", "A neurological condition with disabling head pain"], ["eyes", "low", "Light sensitivity and visual aura in some attacks"]], "fibromyalgia": [["brain", "high", "The nervous system processes pain differently"], ["muscles", "moderate", "Widespread muscle aching and tenderness"]], "chronicpain": [["brain", "moderate", "Chronic pain involves nervous-system changes"], ["muscles", "moderate", "Ongoing muscle pain and tension"]], "mental": [["brain", "high", "Affects mood, thinking, and daily functioning"]], "anxiety": [["brain", "high", "Excessive worry and fear responses"], ["heart", "low", "Can cause racing heart and physical symptoms"]], "dementia": [["brain", "high", "Progressive decline in memory and thinking"]], "parkinsons": [["brain", "high", "Affects the brain cells controlling movement"], ["muscles", "moderate", "Stiffness, tremor, and slowed movement"], ["digestive", "low", "Constipation and swallowing changes are common"]], "gerd": [["digestive", "high", "Stomach acid irritates the food pipe"]], "ibs": [["digestive", "high", "Gut pain with changes in bowel habits"]], "crohns": [["digestive", "high", "Inflammation anywhere in the digestive tract"], ["blood", "moderate", "Bleeding and inflammation can cause anemia"], ["skin", "low", "Skin, mouth, and joint symptoms can occur"], ["bones", "low", "Inflammation and steroids can affect bones"]], "uc": [["digestive", "high", "Inflammation and ulcers in the colon and rectum"], ["blood", "moderate", "Bloody stools can lead to anemia"]], "anemia": [["blood", "high", "Too few healthy red blood cells to carry oxygen"], ["heart", "low", "The heart works harder to move oxygen"]], "sleepapnea": [["lungs", "moderate", "Breathing pauses lower oxygen during sleep"], ["heart", "high", "Raises blood pressure and heart risks over time"], ["brain", "moderate", "Poor sleep affects focus, mood, and alertness"]], "prediabetes": [["endocrine", "moderate", "Blood sugar is higher than normal — a warning stage"], ["heart", "low", "Raises future heart risk if it progresses"]], "obesity": [["heart", "high", "Raises blood pressure, cholesterol, and heart risk"], ["endocrine", "high", "Drives insulin resistance and diabetes risk"], ["bones", "moderate", "Extra load stresses joints"], ["liver", "moderate", "Linked to fatty liver disease"]], "menopause": [["endocrine", "high", "Shifting hormones as periods end"], ["bones", "moderate", "Bone loss speeds up after menopause"], ["heart", "moderate", "Heart risk rises after menopause"], ["repro", "moderate", "Reproductive changes and vaginal dryness"]], "bph": [["kidneys", "moderate", "Urinary flow problems from the enlarged prostate"], ["repro", "high", "The prostate enlarges and squeezes the urinary tube"]], "eczema": [["skin", "high", "Dry, itchy, inflamed skin in flares"]], "psoriasis": [["skin", "high", "Thick, scaly skin patches"], ["bones", "moderate", "Can involve the joints (psoriatic arthritis)"]]};
+const CBM_SEV = { high: { label: "Strong effect", dot: "#B4332B", rank: 3 }, moderate: { label: "Moderate effect", dot: "#B45309", rank: 2 }, low: { label: "Mild / possible", dot: "#1F7A6D", rank: 1 } };
+
+function ConditionBodyMap({ go }) {
+  const [sel, setSel] = useState([]);
+  const [expanded, setExpanded] = useState(null);
+
+  const toggle = k => setSel(p => p.includes(k) ? p.filter(x => x !== k) : [...p, k]);
+
+  // aggregate: system -> [{cond, sev, effect}]
+  const bySystem = useMemo(() => {
+    const m = {};
+    sel.forEach(ck => (COND_IMPACT[ck] || []).forEach(([sys, sev, effect]) => {
+      (m[sys] ||= []).push({ cond: ck, sev, effect });
+    }));
+    // sort each system's list by severity desc
+    Object.values(m).forEach(list => list.sort((a, b) => CBM_SEV[b.sev].rank - CBM_SEV[a.sev].rank));
+    return m;
+  }, [sel]);
+
+  // systems ordered head-to-toe by SYS.pos.y
+  const orderedSystems = useMemo(() => Object.keys(bySystem).sort((a, b) => (SYS[a]?.pos.y || 0) - (SYS[b]?.pos.y || 0)), [bySystem]);
+
+  // overlaps: systems hit by 2+ selected conditions (the signature insight)
+  const overlaps = useMemo(() => orderedSystems.filter(sys => new Set(bySystem[sys].map(x => x.cond)).size >= 2), [orderedSystems, bySystem]);
+
+  return (
+    <div style={{ maxWidth: 940 }}>
+      <PageHead title="Condition Body Map" italic={"\u201cSee how your conditions touch the whole body \u2014 together.\u201d"} sub="Pick one or more conditions to see which organ systems each one affects, and where they overlap. Educational only; it doesn't diagnose or replace your healthcare team." />
+
+      <div style={{ ...card, marginBottom: 16, background: "#F4EFF8", border: "1px solid #C9B7D6" }}>
+        <p style={{ fontSize: 13, color: "#3E2C55", margin: 0, lineHeight: 1.6 }}>Just like medicines, <strong>conditions interact with the body together</strong>. Selecting, say, <strong>diabetes</strong> and <strong>high blood pressure</strong> shows how both strain the <strong>kidneys, heart, eyes, and brain</strong> at once \u2014 which is exactly what makes managing them together so important.</p>
+      </div>
+
+      {/* condition picker */}
+      <p style={{ ...eyebrow, marginBottom: 10 }}>Choose your conditions</p>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 18 }}>
+        {Object.keys(CONDITIONS).map(k => {
+          const on = sel.includes(k); const cc = CONDITIONS[k];
+          return (
+            <button key={k} onClick={() => toggle(k)} style={{ display: "inline-flex", alignItems: "center", gap: 7, cursor: "pointer", borderRadius: 999, padding: "7px 13px", fontSize: 13, fontWeight: on ? 600 : 400, border: `1px solid ${on ? cc.accent : C.line}`, background: on ? cc.accent : "#fff", color: on ? "#fff" : C.inkSoft }}>
+              {on && <Check size={13} />}{cc.name}
+            </button>
+          );
+        })}
+      </div>
+
+      {sel.length === 0 && (
+        <div style={{ ...card, textAlign: "center", padding: "42px 20px" }}>
+          <PersonStanding size={30} style={{ color: C.inkFaint }} />
+          <p style={{ marginTop: 8, fontSize: 14.5, color: C.inkSoft }}>Pick one or more conditions above to see how they affect the body.</p>
+          <p style={{ marginTop: 4, fontSize: 12.5, color: C.inkFaint }}>Try: Type 2 Diabetes + High Blood Pressure</p>
+        </div>
+      )}
+
+      {sel.length > 0 && (
+        <>
+          {/* selected chips summary */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14, alignItems: "center" }}>
+            <span style={{ fontSize: 12.5, color: C.inkSoft }}>Showing:</span>
+            {sel.map(k => <span key={k} style={{ fontSize: 12.5, fontWeight: 600, color: CONDITIONS[k].accent }}>{CONDITIONS[k].name}</span>).reduce((a, b) => [a, <span key={Math.random()} style={{ color: C.inkFaint }}>·</span>, b])}
+            <button onClick={() => setSel([])} style={{ fontSize: 12, color: C.inkFaint, background: "none", border: "none", textDecoration: "underline", cursor: "pointer", marginLeft: 4 }}>clear</button>
+          </div>
+
+          {/* overlap callout — the signature multi-condition insight */}
+          {overlaps.length > 0 && (
+            <div style={{ borderRadius: 14, border: "1px solid #EFC6C1", background: "#FCF3F1", padding: "15px 17px", marginBottom: 18 }}>
+              <p style={{ margin: "0 0 6px", fontSize: 13.5, fontWeight: 700, color: "#7A2A22" }}>Where your conditions stack up</p>
+              <p style={{ margin: 0, fontSize: 13, color: "#5A1410", lineHeight: 1.55 }}>
+                {overlaps.map(sys => SYS[sys].name).join(", ")} {overlaps.length === 1 ? "is" : "are"} affected by more than one of your conditions. Systems under combined strain often deserve the closest monitoring \u2014 good things to ask your care team about.
+              </p>
+            </div>
+          )}
+
+          {/* systems list, head to toe */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {orderedSystems.map(sys => {
+              const S = SYS[sys]; const list = bySystem[sys];
+              const isOverlap = overlaps.includes(sys);
+              const topSev = list[0].sev;
+              return (
+                <div key={sys} style={{ borderRadius: 14, border: `1px solid ${isOverlap ? "#E7B7B1" : C.line}`, background: "#fff", overflow: "hidden" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "13px 16px", background: isOverlap ? "#FCF6F4" : C.surface, borderBottom: `1px solid ${C.line}` }}>
+                    <span style={{ display: "flex", height: 34, width: 34, borderRadius: 9, background: CBM_SEV[topSev].dot + "1A", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><S.Icon size={18} color={CBM_SEV[topSev].dot} /></span>
+                    <span style={{ fontFamily: serifH, fontSize: 16, color: C.ink }}>{S.name}</span>
+                    {isOverlap && <span style={{ marginLeft: "auto", fontSize: 10.5, fontWeight: 700, color: "#7A2A22", background: "#FBE4E0", borderRadius: 999, padding: "3px 9px" }}>MULTIPLE CONDITIONS</span>}
+                  </div>
+                  <div style={{ padding: "6px 16px 12px" }}>
+                    {list.map((it, i) => (
+                      <div key={i} style={{ display: "flex", gap: 10, padding: "9px 0", borderBottom: i < list.length - 1 ? `1px solid ${C.line}` : "none" }}>
+                        <span style={{ height: 8, width: 8, borderRadius: 999, background: CBM_SEV[it.sev].dot, marginTop: 6, flexShrink: 0 }} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ margin: 0, fontSize: 13.5, color: C.ink }}><span style={{ fontWeight: 600, color: CONDITIONS[it.cond].accent }}>{CONDITIONS[it.cond].name}</span> <span style={{ fontSize: 11.5, color: CBM_SEV[it.sev].dot }}>· {CBM_SEV[it.sev].label}</span></p>
+                          <p style={{ margin: "2px 0 0", fontSize: 13, color: C.inkSoft, lineHeight: 1.5 }}>{it.effect}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* legend + actions */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 14, alignItems: "center", marginTop: 16, fontSize: 12, color: C.inkSoft }}>
+            {Object.entries(CBM_SEV).sort((a, b) => b[1].rank - a[1].rank).map(([k, v]) => (
+              <span key={k} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><span style={{ height: 9, width: 9, borderRadius: 999, background: v.dot }} />{v.label}</span>
+            ))}
+          </div>
+          <div style={{ ...card, marginTop: 16, display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+            <span style={{ fontSize: 13, color: C.inkSoft, flex: 1, minWidth: 200 }}>Want plain-language plans, trackers, and questions for these conditions?</span>
+            <button onClick={() => go("guide")} style={{ ...primaryBtn, padding: "9px 15px", fontSize: 13 }}><HeartPulse size={15} /> Open the Self-Management Guide</button>
+          </div>
+        </>
+      )}
+
+      <p style={{ marginTop: 16, fontSize: 11.5, color: C.inkFaint, lineHeight: 1.55 }}>Educational only. This shows general ways conditions can affect body systems \u2014 it does not diagnose, predict your personal outcome, or replace medical advice. Everyone is different; discuss your health with your care team.</p>
+    </div>
+  );
+}
+
+
+// ---- Health & Medication News Hub (live, key-free gov/research sources) -----
+function timeAgo(d) {
+  if (!d) return "";
+  const s = Math.floor((Date.now() - d.getTime()) / 1000);
+  if (s < 60) return s + "s ago";
+  const m = Math.floor(s / 60); if (m < 60) return m + "m ago";
+  const h = Math.floor(m / 60); if (h < 24) return h + "h ago";
+  const dd = Math.floor(h / 24); if (dd === 1) return "yesterday";
+  if (dd < 30) return dd + "d ago";
+  return d.toLocaleDateString();
+}
+function parseFdaDate(s) { if (!s || s.length < 8) return null; const d = new Date(s.slice(0, 4) + "-" + s.slice(4, 6) + "-" + s.slice(6, 8)); return isNaN(d) ? null : d; }
+
+async function fetchFdaRecalls() {
+  const url = "https://api.fda.gov/drug/enforcement.json?sort=report_date:desc&limit=15";
+  const r = await fetch(url); if (!r.ok) throw new Error("fda"); const d = await r.json();
+  return (d.results || []).map(x => ({
+    source: "FDA RECALL", accent: "#B4332B",
+    title: (x.product_description || "Drug recall").slice(0, 140) + (x.reason_for_recall ? " — " + x.reason_for_recall.slice(0, 90) : ""),
+    sub: [x.recalling_firm, x.classification].filter(Boolean).join(" · "),
+    date: parseFdaDate(x.report_date),
+    url: "https://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts",
+  }));
+}
+async function fetchTrials() {
+  const url = "https://clinicaltrials.gov/api/v2/studies?sort=LastUpdatePostDate:desc&pageSize=12&fields=NCTId,BriefTitle,Condition,LastUpdatePostDate,OverallStatus";
+  const r = await fetch(url); if (!r.ok) throw new Error("trials"); const d = await r.json();
+  return (d.studies || []).map(s => {
+    const p = s.protocolSection || {};
+    const id = p.identificationModule || {}; const st = p.statusModule || {}; const co = p.conditionsModule || {};
+    const dt = st.lastUpdatePostDateStruct && st.lastUpdatePostDateStruct.date;
+    return { source: "CLINICAL TRIAL", accent: "#1F7A6D",
+      title: id.briefTitle || "Study update",
+      sub: [(co.conditions || []).slice(0, 2).join(", "), st.overallStatus].filter(Boolean).join(" · "),
+      date: dt ? new Date(dt) : null,
+      url: id.nctId ? "https://clinicaltrials.gov/study/" + id.nctId : "https://clinicaltrials.gov" };
+  });
+}
+async function fetchPubMed() {
+  const term = encodeURIComponent("drug safety OR medication adverse effects OR drug interactions");
+  const s = await fetch("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&sort=date&retmax=12&term=" + term);
+  if (!s.ok) throw new Error("pubmed"); const sd = await s.json();
+  const ids = (sd.esearchresult && sd.esearchresult.idlist) || []; if (!ids.length) return [];
+  const su = await fetch("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id=" + ids.join(","));
+  if (!su.ok) throw new Error("pubmed2"); const d = await su.json(); const res = d.result || {};
+  return ids.map(id => res[id]).filter(Boolean).map(a => ({
+    source: "PUBMED", accent: "#5B5BD6",
+    title: a.title || "Research article",
+    sub: [a.fulljournalname || a.source, (a.authors && a.authors[0] && a.authors[0].name)].filter(Boolean).join(" · "),
+    date: a.pubdate ? new Date(a.pubdate) : (a.sortpubdate ? new Date(a.sortpubdate) : null),
+    url: "https://pubmed.ncbi.nlm.nih.gov/" + a.uid + "/",
+  }));
+}
+
+const NEWS_DIR = [
+  ["FDA MedWatch — Safety Alerts", "https://www.fda.gov/safety/medwatch-fda-safety-information-and-adverse-event-reporting-program", "Official U.S. drug & device safety alerts"],
+  ["FDA Drug Recalls", "https://www.fda.gov/drugs/drug-safety-and-availability/drug-recalls", "Current recalls and withdrawals"],
+  ["MedlinePlus (NIH)", "https://medlineplus.gov/", "Plain-language health & drug information"],
+  ["DailyMed (NIH)", "https://dailymed.nlm.nih.gov/", "Official FDA drug labels"],
+  ["EMA — Medicines news (EU)", "https://www.ema.europa.eu/en/news", "European Medicines Agency updates"],
+  ["CDC Newsroom", "https://www.cdc.gov/media/", "Public health updates"],
+  ["Poison Control", "https://www.poison.org/", "webPOISONCONTROL & 1-800-222-1222"],
+  ["Reuters Health", "https://www.reuters.com/business/healthcare-pharmaceuticals/", "Pharma & healthcare journalism"],
+  ["STAT News", "https://www.statnews.com/", "Medicine, biotech & health reporting"],
+];
+
+function NewsHub() {
+  const [items, setItems] = useState([]);
+  const [status, setStatus] = useState("loading"); // loading|ready|partial|error
+  const [q, setQ] = useState("");
+  const [updated, setUpdated] = useState(null);
+  const [tick, setTick] = useState(0);
+  const [filter, setFilter] = useState("all");
+
+  const load = React.useCallback(async () => {
+    setStatus(s => (s === "ready" ? "ready" : "loading"));
+    const results = await Promise.allSettled([fetchFdaRecalls(), fetchTrials(), fetchPubMed()]);
+    const ok = results.filter(r => r.status === "fulfilled").flatMap(r => r.value);
+    const failed = results.filter(r => r.status === "rejected").length;
+    if (ok.length) {
+      ok.sort((a, b) => (b.date ? b.date.getTime() : 0) - (a.date ? a.date.getTime() : 0));
+      setItems(ok); setUpdated(new Date()); setStatus(failed ? "partial" : "ready");
+    } else setStatus("error");
+  }, []);
+
+  useEffect(() => { load(); const iv = setInterval(load, 300000); return () => clearInterval(iv); }, [load]); // refresh ~5 min
+  useEffect(() => { const t = setInterval(() => setTick(x => x + 1), 1000); return () => clearInterval(t); }, []); // live "ago" ticker
+
+  const shown = useMemo(() => {
+    const s = q.trim().toLowerCase();
+    return items.filter(it => (filter === "all" || it.source.startsWith(filter)) && (!s || (it.title + " " + it.sub).toLowerCase().includes(s)));
+  }, [items, q, filter, tick]);
+
+  const TABS = [["all", "All"], ["FDA", "FDA recalls"], ["CLINICAL", "Trials"], ["PUBMED", "Research"]];
+
+  return (
+    <div style={{ maxWidth: 860 }}>
+      <PageHead title="Health & Medication News Hub" italic={"\u201cLive from the sources that matter \u2014 in one place.\u201d"} sub="Real, current headlines pulled from official U.S. government and research sources: FDA drug recalls, ClinicalTrials.gov, and PubMed. Plus a curated directory of trusted outlets." />
+
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
+        <p style={{ ...eyebrow, margin: 0 }}>Live · across the web
+          {updated && <span style={{ textTransform: "none", letterSpacing: 0, fontWeight: 400, color: C.inkFaint, marginLeft: 8 }}>· updated {timeAgo(updated)}</span>}
+        </p>
+        <button onClick={load} style={{ ...ghostBtn, padding: "7px 13px", fontSize: 12.5 }}><RefreshCw size={13} /> Refresh</button>
+      </div>
+
+      <div style={{ position: "relative", marginBottom: 12 }}>
+        <Search size={16} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: C.inkFaint }} />
+        <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search headlines, drugs, conditions…"
+          style={{ width: "100%", boxSizing: "border-box", borderRadius: 11, border: `1px solid ${C.line}`, background: "#fff", padding: "10px 12px 10px 36px", fontSize: 13.5, color: C.ink, outline: "none" }} />
+      </div>
+      <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 14 }}>
+        {TABS.map(([id, lbl]) => { const on = filter === id; return <button key={id} onClick={() => setFilter(id)} style={{ borderRadius: 999, padding: "5px 13px", fontSize: 12, fontWeight: on ? 600 : 400, cursor: "pointer", border: `1px solid ${on ? C.terra : C.line}`, background: on ? C.terra : C.surface, color: on ? "#FBF6EC" : C.inkSoft }}>{lbl}</button>; })}
+      </div>
+
+      {status === "loading" && <div style={{ ...card, textAlign: "center", color: C.inkSoft, fontSize: 13.5 }}>Pulling the latest headlines…</div>}
+      {status === "error" && <div style={{ ...card, fontSize: 13.5, color: C.inkSoft }}>Couldn't reach the live sources right now. Try Refresh, or use the trusted outlets below.</div>}
+
+      {(status === "ready" || status === "partial") && (
+        <>
+          {status === "partial" && <p style={{ fontSize: 11.5, color: C.inkFaint, margin: "0 0 8px" }}>Some sources didn't respond; showing what loaded.</p>}
+          <div style={{ display: "flex", flexDirection: "column", gap: 0, borderRadius: 14, overflow: "hidden", border: `1px solid ${C.line}` }}>
+            {shown.map((it, i) => (
+              <a key={i} href={it.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 12, padding: "13px 15px", background: i % 2 ? "#FBF7EF" : "#fff", borderBottom: i < shown.length - 1 ? `1px solid ${C.line}` : "none" }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.06em", color: it.accent }}>{it.source}</span>
+                  <p style={{ margin: "3px 0 0", fontSize: 14, color: C.ink, lineHeight: 1.4 }}>{it.title}</p>
+                  {it.sub && <p style={{ margin: "2px 0 0", fontSize: 11.5, color: C.inkFaint }}>{it.sub}</p>}
+                </div>
+                <span style={{ fontSize: 11.5, color: C.inkFaint, flexShrink: 0 }}>{timeAgo(it.date)}</span>
+              </a>
+            ))}
+            {shown.length === 0 && <div style={{ padding: 20, textAlign: "center", color: C.inkFaint, fontSize: 13 }}>No matching headlines.</div>}
+          </div>
+        </>
+      )}
+
+      <p style={{ ...eyebrow, margin: "26px 0 10px" }}>Trusted sources & outlets</p>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px,1fr))", gap: 10 }}>
+        {NEWS_DIR.map(([name, url, desc], i) => (
+          <a key={i} href={url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none", border: `1px solid ${C.line}`, background: "#fff", borderRadius: 12, padding: "13px 14px" }}>
+            <p style={{ margin: 0, fontSize: 13.5, fontWeight: 600, color: C.ink }}>{name} <ArrowRight size={12} style={{ verticalAlign: "0px" }} /></p>
+            <p style={{ margin: "3px 0 0", fontSize: 11.5, color: C.inkSoft, lineHeight: 1.45 }}>{desc}</p>
+          </a>
+        ))}
+      </div>
+
+      <p style={{ marginTop: 16, fontSize: 11.5, color: C.inkFaint, lineHeight: 1.55 }}>Headlines come live from openFDA, ClinicalTrials.gov, and PubMed and refresh automatically. This is educational, not medical advice or a complete safety feed — always confirm with the official source and your pharmacist or prescriber.</p>
+    </div>
+  );
+}
+
+// ---- Stubs -----------------------------------------------------------------
+const STUBS = {
+  plan: { Icon: CalendarCheck, title: "Plan ahead", italic: "\u201cA little preparation makes the next visit easier.\u201d", body: "Before a pharmacy or clinic visit, generate a one-page summary of your medicines, interactions, schedule, suggested labs, and questions to ask — then print it, save it as a PDF, or download it to bring along.", cta: "summary", ctaLabel: "Open Health Summary to export" },
+  pharmacist: { Icon: MessageCircle, title: "AI Pharmacist", italic: "\u201cAsk plainly. Get something you can take to a real pharmacist.\u201d", body: "A conversational way to ask about your medicines in everyday language. It explains and points you toward the right conversation — it never tells you to start, stop, or change a medicine.", cta: "interactions", ctaLabel: "Start with your medicine list" },
+  news: null,
+  learn: { Icon: BookOpen, title: "Learn & FAQ", italic: "\u201cWhy does any of this happen in the body?\u201d", body: "Short, plain-language explainers on how interactions work — enzymes that clear medicines, additive effects on the heart or breathing, and why some medicines have a narrow safety margin.", cta: "bodymap", ctaLabel: "See it on the Body Map" },
+};
+function Stub({ id, go }) {
+  const s = STUBS[id];
+  return (
+    <div style={{ maxWidth: 680 }}>
+      <PageHead title={s.title} italic={s.italic} />
+      <div style={{ ...card, padding: "26px 24px" }}>
+        <span style={{ display: "flex", height: 44, width: 44, alignItems: "center", justifyContent: "center", borderRadius: 12, background: C.terra + "16", border: `1px solid ${C.terra}33`, marginBottom: 16 }}><s.Icon size={22} color={C.terra} /></span>
+        <p style={{ fontSize: 14.5, lineHeight: 1.65, color: "#4F4233", margin: 0 }}>{s.body}</p>
+        <button onClick={() => go(s.cta)} style={{ ...primaryBtn, marginTop: 20 }}>{s.ctaLabel} <ArrowRight size={16} /></button>
+      </div>
+      <p style={{ marginTop: 16, fontSize: 11.5, color: C.inkFaint }}>Educational only. Always confirm anything about your medicines with your pharmacist or prescriber.</p>
+    </div>
+  );
+}
+
+// ---- Navigation ------------------------------------------------------------
+const NAV_GROUPS = [
+  ["My Medicines", [
+    ["dashboard", "Dashboard", LayoutDashboard], ["meds", "My Medications", Pill], ["pillid", "Pill Identifier", ScanLine], ["findmed", "Find My Medication", MapPin],
+  ]],
+  ["Check Safety", [
+    ["interactions", "Interaction Checker", Activity], ["painsafe", "Pain-Reliever Safety", ShieldCheck], ["bodymap", "Body Impact Map", PersonStanding], ["food", "Food Interactions", Apple],
+  ]],
+  ["My Health", [
+    ["condmap", "Condition Body Map", HeartPulse], ["guide", "Self-Management Guide", HeartPulse], ["symptom", "Symptom Checker", Stethoscope], ["summary", "Health Summary", Gauge],
+  ]],
+  ["Plan & Travel", [
+    ["travel", "RxSafeTravel", Navigation], ["schedule", "Schedule Builder", CalendarClock], ["notifications", "Notifications", Bell], ["plan", "Plan ahead", CalendarCheck], ["treatment", "Treatment Options", ListChecks], ["trials", "Clinical Trials", FlaskConical],
+  ]],
+  ["Learn", [
+    ["learn", "Learn & FAQ", BookOpen], ["news", "Drug Safety News", Newspaper], ["newshub", "News Hub (live)", Globe], ["pharmacist", "AI Pharmacist", MessageCircle],
+  ]],
+  ["Urgent", [
+    ["emergency", "Emergency", Siren],
+  ]],
+  ["About", [
+    ["mission", "Mission & Vision", Star], ["policies", "Policies & Terms", FileText],
+  ]],
+];
+const NAV = NAV_GROUPS.flatMap(([, items]) => items);
 
 // ---- App shell -------------------------------------------------------------
 export default function App() {
   const [page, setPage] = useState("dashboard");
   const [navOpen, setNavOpen] = useState(false);
+  const [meds, setMeds] = useState([]);
+  const [symptoms, setSymptoms] = useState([]);
+  const [notify, setNotify] = useState({ phone: "", email: "", prefs: { reminders: true, missed: true, interactions: true, food: false, refills: true, appts: false, labs: false, daily: true, weekly: false, critical: true } });
+  const [clinical, setClinical] = useState({ conditions: [], allergies: [], priorMeds: [], dependence: [], insurance: "", country: "United States" });
+  const [account, setAccount] = useState(null);
+
+  const keys = useMemo(() => uniq(meds.map(m => m.key).filter(Boolean)), [meds]);
+  const findings = useMemo(() => getFindings(keys), [keys]);
+  const score = useMemo(() => computeScore(findings), [findings]);
   const go = id => { setPage(id); setNavOpen(false); };
 
   return (
-    <div className="app-root" style={{
-      minHeight: "100%", color: C.ink,
-      fontFamily: "'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
-    }}>
+    <RxNormProvider>
+    <div style={{ minHeight: "100%", color: C.ink, fontFamily: "'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif", background: "radial-gradient(1200px 720px at 12% -8%, #FBF4E6, transparent 55%), radial-gradient(1000px 640px at 100% 0%, #F4ECDB, transparent 50%), #F2EADC" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Inter:wght@400;500;600;700&display=swap');
-        .mie-input::placeholder { color: ${C.inkFaint}; }
-        .mie-input:focus { border-color: ${C.terra} !important; box-shadow: 0 0 0 3px rgba(181,83,46,0.14); }
-        .mie-row:hover { background: #F4EAD8; }
-        .tool-card:hover { border-color: ${C.terra}66 !important; transform: translateY(-2px); box-shadow: 0 14px 30px -20px rgba(43,35,28,0.4); }
-        .hero { display: grid; grid-template-columns: 1fr 330px; gap: 36px; align-items: center; }
-        .hero-figure { margin: 0; position: relative; }
-        @media (max-width: 760px) { .hero { grid-template-columns: 1fr; gap: 24px; } .hero-figure { max-width: 420px; } }
-
-        .shell { display: grid; grid-template-columns: 268px 1fr; min-height: 100vh; }
-        .sidebar { background: ${C.sidebar}; border-right: 1px solid ${C.line}; height: 100vh;
-          position: sticky; top: 0; overflow-y: auto; display: flex; flex-direction: column; }
-        .nav-btn { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
-          border: none; background: transparent; cursor: pointer; padding: 11px 14px; border-radius: 11px;
-          font-size: 14.5px; font-weight: 500; color: ${C.inkSoft}; transition: background .15s, color .15s; }
-        .nav-btn:hover { background: rgba(181,83,46,0.08); color: ${C.ink}; }
-        .nav-btn.active { background: ${C.terra}; color: #FBF6EC; font-weight: 600;
-          box-shadow: 0 8px 18px -10px rgba(181,83,46,0.7); }
-        .nav-btn.active svg { color: #FBF6EC; }
-        .topbar { display: none; }
-        .scrim { display: none; }
-
-        @media (max-width: 860px) {
-          .shell { grid-template-columns: 1fr; }
-          .sidebar { position: fixed; z-index: 60; width: 272px; left: 0; top: 0;
-            transform: translateX(-100%); transition: transform .25s ease; }
-          .sidebar.open { transform: translateX(0); box-shadow: 0 0 70px rgba(43,35,28,0.3); }
-          .topbar { display: flex; align-items: center; gap: 12px;
-            padding: 12px 16px; border-bottom: 1px solid ${C.line}; position: sticky; top: 0; z-index: 30;
-            background: ${C.paper}; }
-          .scrim.show { display: block; position: fixed; inset: 0; background: rgba(43,35,28,0.34); z-index: 50; }
+        * { box-sizing: border-box; }
+        .nav-btn { display:flex; align-items:center; gap:11px; width:100%; text-align:left; border:none; background:transparent; cursor:pointer; padding:9px 13px; border-radius:10px; font-size:14px; font-weight:500; color:${C.inkSoft}; position:relative; transition:background .15s, color .15s; }
+        .nav-btn:hover { background:#E3D8C4; color:${C.ink}; }
+        .nav-btn.active { background:${C.terra}; color:#FBF6EC; font-weight:600; box-shadow:0 8px 18px -10px rgba(181,83,46,0.8); }
+        .tool-card:hover { border-color:${C.terra}66; transform:translateY(-2px); box-shadow:0 16px 30px -22px rgba(43,35,28,0.5); }
+        .wst-input::placeholder { color:${C.inkFaint}; }
+        .wst-input:focus { border-color:${C.terra} !important; box-shadow:0 0 0 3px rgba(181,83,46,0.14); }
+        .wst-row:hover { background:#F4EAD8 !important; }
+        .hero { display:grid; grid-template-columns:1.1fr 0.9fr; gap:34px; align-items:center; }
+        .hero-figure { aspect-ratio:4/3; margin:0; }
+        @media (max-width:760px){ .hero{ grid-template-columns:1fr; } .hero-figure{ aspect-ratio:16/10; order:-1; } .pill-grid{ grid-template-columns:1fr !important; } .emerg-grid{ grid-template-columns:1fr 1fr !important; } .emerg-grid > button:first-child{ grid-column:1 / -1; } .pc-grid{ grid-template-columns:1fr !important; } }
+        .shell { display:grid; grid-template-columns:268px 1fr; min-height:100vh; }
+        .sidebar { position:sticky; top:0; height:100vh; overflow-y:auto; border-right:1px solid ${C.line}; background:${C.sidebar}; padding:22px 16px; }
+        .topbar { display:none; }
+        .scrim { display:none; }
+        @media (max-width:860px){
+          .shell { grid-template-columns:1fr; }
+          .sidebar { position:fixed; z-index:50; width:280px; transform:translateX(-100%); transition:transform .22s ease; box-shadow:0 0 60px -10px rgba(43,35,28,0.4); }
+          .sidebar.open { transform:translateX(0); }
+          .topbar { display:flex; align-items:center; gap:12px; position:sticky; top:0; z-index:30; background:${C.paper}; border-bottom:1px solid ${C.line}; padding:12px 16px; }
+          .scrim.show { display:block; position:fixed; inset:0; z-index:40; background:rgba(43,35,28,0.32); }
         }
+        @media print { .sidebar, .topbar, .scrim { display:none !important; } .shell { grid-template-columns:1fr; } }
       `}</style>
 
-      <div className="shell" style={{
-        background: "radial-gradient(120% 70% at 60% -10%, #FBF4E6 0%, " + C.paper + " 46%, #ECE2CF 100%)",
-      }}>
-        {/* Sidebar */}
+      <div className="shell">
         <aside className={"sidebar" + (navOpen ? " open" : "")}>
-          <div style={{ padding: "22px 18px 14px", display: "flex", alignItems: "center", gap: 11, borderBottom: `1px solid ${C.line}` }}>
-            <span style={{ display: "flex", height: 38, width: 38, alignItems: "center", justifyContent: "center",
-              borderRadius: 10, background: C.terra }}>
-              <Stethoscope size={20} color="#FBF6EC" />
-            </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "4px 8px 18px" }}>
+            <span style={{ display: "flex", height: 40, width: 40, alignItems: "center", justifyContent: "center", borderRadius: 11, background: C.terra, boxShadow: "0 8px 18px -8px rgba(181,83,46,0.8)", fontFamily: serif, fontWeight: 700, fontSize: 19, color: "#F2EADC" }}>Rx</span>
             <div>
-              <div style={{ fontFamily: serif, fontWeight: 700, fontSize: 16, color: C.ink, lineHeight: 1.1 }}>What's Safe Together?</div>
-              <div style={{ fontSize: 10, letterSpacing: "0.14em", color: C.inkFaint, fontWeight: 600, marginTop: 2 }}>RXSAFECHECK.COM</div>
+              <div style={{ fontFamily: serif, fontWeight: 700, fontSize: 17, color: C.ink, lineHeight: 1.05, letterSpacing: "-0.01em" }}>RxSafeCheck<span style={{ fontSize: 9, verticalAlign: "super", fontWeight: 600 }}>™</span></div>
+              <div style={{ fontFamily: serif, fontStyle: "italic", fontSize: 12, color: C.terraDeep, marginTop: 2, lineHeight: 1.1 }}>
+                What's Safe T<span style={{ display: "inline-block", width: 9, height: 9, borderRadius: 999, background: C.terra, position: "relative", verticalAlign: "-1px", margin: "0 0.5px" }}><span style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 4, height: 1.5, background: C.surface, borderRadius: 1 }} /></span>gether<span style={{ color: C.terra, fontWeight: 700, fontStyle: "normal" }}>?</span>
+              </div>
             </div>
           </div>
-
-          <nav style={{ padding: "14px 12px", display: "flex", flexDirection: "column", gap: 3, flex: 1 }}>
-            {NAV.map(n => (
-              <button key={n.id} className={"nav-btn" + (page === n.id ? " active" : "")} onClick={() => go(n.id)}>
-                <n.Icon size={18} color={page === n.id ? "#FBF6EC" : C.inkSoft} />
-                {n.label}
-              </button>
+          <nav style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+            {NAV_GROUPS.map(([groupLabel, items], gi) => (
+              <div key={groupLabel} style={{ marginTop: gi === 0 ? 0 : 12 }}>
+                <p style={{ margin: "0 0 4px", padding: "0 13px", fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: C.inkFaint }}>{groupLabel}</p>
+                {items.map(([id, label, Icon]) => (
+                  <button key={id} className={"nav-btn" + (page === id ? " active" : "")} onClick={() => go(id)}>
+                    <Icon size={17} />{label}
+                  </button>
+                ))}
+              </div>
             ))}
           </nav>
-
-          <div style={{ padding: "14px 18px", borderTop: `1px solid ${C.line}` }}>
-            <p style={{ fontSize: 11, lineHeight: 1.55, color: C.inkFaint, margin: 0 }}>
-              Educational companion. Always talk to your pharmacist or prescriber before changing anything.
-            </p>
+          <div style={{ marginTop: 20, padding: "13px", borderRadius: 12, background: "#E3D8C4", border: `1px solid ${C.line}` }}>
+            <p style={{ margin: 0, fontSize: 11.5, lineHeight: 1.5, color: C.inkSoft }}><Info size={12} style={{ verticalAlign: "-2px", marginRight: 4 }} />Educational only. Never start, stop, or change a medicine without your prescriber or pharmacist.</p>
+          </div>
+          <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${C.line}` }}>
+            <p style={{ margin: 0, fontSize: 10.5, color: C.inkFaint, lineHeight: 1.5 }}>© {new Date().getFullYear()} Morning Mind LLC. All rights reserved.</p>
+            <p style={{ margin: "3px 0 0", fontSize: 10, color: C.inkFaint, lineHeight: 1.5 }}>What's Safe Together?™ and RxSafeCheck™ are trademarks of Morning Mind LLC.</p>
+            <button onClick={() => go("policies")} style={{ background: "none", border: "none", padding: "5px 0 0", margin: 0, fontSize: 11, color: C.terra, cursor: "pointer", textDecoration: "underline", textUnderlineOffset: 2 }}>Policies, Terms & Privacy</button>
           </div>
         </aside>
 
-        {/* Main column */}
+        <div className={"scrim" + (navOpen ? " show" : "")} onClick={() => setNavOpen(false)} />
+
         <div>
           <div className="topbar">
-            <button onClick={() => setNavOpen(true)} aria-label="Open menu"
-              style={{ display: "flex", height: 38, width: 38, alignItems: "center", justifyContent: "center",
-                borderRadius: 10, border: `1px solid ${C.line}`, background: C.surface, cursor: "pointer" }}>
-              <Menu size={20} color={C.ink} />
-            </button>
+            <button onClick={() => setNavOpen(true)} aria-label="Open menu" style={{ border: `1px solid ${C.line}`, background: C.surface, borderRadius: 10, padding: 8, cursor: "pointer", display: "flex" }}><Menu size={18} color={C.ink} /></button>
             <span style={{ fontFamily: serif, fontWeight: 700, fontSize: 16, color: C.ink }}>What's Safe Together?</span>
           </div>
-
-          <main style={{ padding: "clamp(24px, 4vw, 44px)" }}>
-            {page === "dashboard" && <Dashboard go={go} />}
-            {page === "interactions" && <InteractionChecker />}
-            {page === "bodymap" && <BodyImpactMap />}
+          <main style={{ padding: "clamp(20px, 4vw, 44px)", maxWidth: 1240, margin: "0 auto" }}>
+            {page === "dashboard" && <Dashboard meds={meds} symptoms={symptoms} findings={findings} score={score} go={go} />}
+            {page === "meds" && <MyMedications meds={meds} setMeds={setMeds} go={go} />}
+            {page === "pillid" && <PillIdentifier go={go} />}
+            {page === "findmed" && <MedicationFinder meds={meds} go={go} />}
+            {page === "treatment" && <TreatmentOptions meds={meds} keys={keys} findings={findings} score={score} clinical={clinical} setClinical={setClinical} go={go} />}
+            {page === "trials" && <ClinicalTrials clinical={clinical} go={go} />}
+            {page === "painsafe" && <PainSafety meds={meds} go={go} />}
+            {page === "emergency" && <EmergencyPage go={go} />}
+            {page === "interactions" && <Interactions meds={meds} findings={findings} score={score} go={go} />}
+            {page === "bodymap" && <BodyImpactMap baseSel={keys} go={go} />}
+            {page === "food" && <FoodInteractions keys={keys} go={go} />}
+            {page === "schedule" && <ScheduleBuilder meds={meds} setMeds={setMeds} go={go} />}
+            {page === "symptom" && <SymptomChecker keys={keys} symptoms={symptoms} setSymptoms={setSymptoms} go={go} />}
+            {page === "summary" && <HealthSummary meds={meds} keys={keys} findings={findings} score={score} symptoms={symptoms} />}
+            {page === "notifications" && <Notifications notify={notify} setNotify={setNotify} account={account} setAccount={setAccount} />}
+            {page === "news" && <DrugSafetyNews meds={meds} keys={keys} findings={findings} score={score} go={go} />}
+            {page === "guide" && <SelfCareGuide go={go} />}
+            {page === "travel" && <RxSafeTravel go={go} meds={meds} />}
+            {page === "condmap" && <ConditionBodyMap go={go} />}
+            {page === "mission" && <MissionPage go={go} />}
+            {page === "newshub" && <NewsHub />}
+            {page === "parkinson" && <ParkinsonGuide go={go} />}
+            {page === "policies" && <PoliciesPage />}
             {STUBS[page] && <Stub id={page} go={go} />}
           </main>
         </div>
       </div>
-
-      <div className={"scrim" + (navOpen ? " show" : "")} onClick={() => setNavOpen(false)} />
     </div>
+    </RxNormProvider>
   );
 }
