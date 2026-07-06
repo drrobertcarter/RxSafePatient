@@ -59,6 +59,17 @@ h2{font-family:var(--serif);font-size:30px;margin:0 0 10px;letter-spacing:-.01em
 .card h3{margin:0 0 6px;font-size:17px}
 .card p{margin:0;color:var(--inkSoft);font-size:14.5px}
 .steps{counter-reset:s;display:grid;gap:16px;grid-template-columns:repeat(3,1fr)}
+.cmp{width:100%;border-collapse:separate;border-spacing:0;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;font-size:14.5px}
+.cmp th,.cmp td{padding:13px 16px;text-align:left;border-bottom:1px solid var(--line)}
+.cmp thead th{background:var(--surface);font-size:13px;color:var(--inkSoft);font-weight:700}
+.cmp tbody tr:last-child td{border-bottom:none}
+.cmp td.feat{color:var(--ink);font-weight:600}
+.cmp td.mid{text-align:center;width:130px}
+.cmp .yes{color:var(--teal);font-weight:700}
+.cmp .no{color:var(--inkFaint)}
+.cmp .us{background:rgba(181,83,46,.05)}
+.cmp thead th.usc{color:var(--terraDeep);background:rgba(181,83,46,.08)}
+@media(max-width:640px){.cmp th,.cmp td{padding:10px 11px;font-size:13px}.cmp td.mid{width:70px}}
 .step{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px}
 .step::before{counter-increment:s;content:counter(s);font-family:var(--serif);font-size:15px;font-weight:700;color:#fff;background:var(--terra);height:30px;width:30px;border-radius:999px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
 .trust{background:var(--teal);color:#EAF3F1;border-radius:20px;padding:34px}
@@ -85,7 +96,7 @@ footer.site a{color:var(--inkSoft);text-decoration:none;margin-right:16px}
 <div class="wrap">
   <header class="site">
     <a class="brand" href="/"><span class="logo">Rx</span><span><b>RxSafeCheck</b><small class="wst-tag">What's Safe T<span class="pilldot"><i></i></span>gether<span class="qm">?</span></small></span></a>
-    <nav class="top"><a href="/app.html">The Tool</a><a href="#why">Why</a><a href="#guides">Guides</a><a href="#how">How it works</a><a href="#travel">Travel</a><a href="#mission">Mission</a><a href="#news">News</a><a href="#partners">For Partners</a></nav>
+    <nav class="top"><a href="/app.html">The Tool</a><a href="#why">Why</a><a href="#different">Compare</a><a href="#guides">Guides</a><a href="#how">How it works</a><a href="#travel">Travel</a><a href="#mission">Mission</a><a href="#news">News</a><a href="#partners">For Partners</a></nav>
     <a class="btn btn-primary" href="/app.html">Open the free tool</a>
   </header>
 </div>
@@ -136,6 +147,29 @@ footer.site a{color:var(--inkSoft);text-decoration:none;margin-right:16px}
   </div>
   <p style="font-size:14px;color:var(--inkSoft);line-height:1.65;max-width:720px;margin:0 0 6px">Beyond overdoses, some patient-safety advocates argue that adverse drug events, taken together, rank among the leading causes of death in the U.S. — a claim that is debated among researchers, but one that reflects a real and under-recognized burden. Older adults and people taking several medicines at once carry the highest risk, which is exactly where a clear medication list and good questions help most.</p>
   <p style="font-size:11.5px;color:var(--inkFaint);line-height:1.6;max-width:720px;margin:12px 0 0">Sources: U.S. Centers for Disease Control and Prevention (National Vital Statistics System, 2024 provisional overdose data); World Health Organization (opioid overdose fact sheet); American Society of Pharmacovigilance; peer-reviewed literature on adverse drug events. Figures are estimates from public sources and are provided for general awareness, not as medical or statistical advice. RxSafeCheck is educational and does not diagnose or treat.</p>
+</section></div>
+
+<div class="wrap"><section id="different">
+  <p class="eyebrow">How we're different</p>
+  <h2>Built for you — not for clinicians, and not for advertisers</h2>
+  <div style="max-width:720px">
+    <p style="font-size:16.5px;color:#3E352A;line-height:1.7;margin:0 0 20px">Most interaction checkers were built as clinical reference tools or drug encyclopedias, with the checker added later. They're powerful, but they're written for professionals, often show ads inside your results, and treat safety as a one-time lookup. RxSafeCheck takes a different approach: plain language, no ads, no tracking, and a place to understand your whole picture over time.</p>
+  </div>
+  <div style="overflow-x:auto;margin-bottom:16px">
+    <table class="cmp">
+      <thead><tr><th>What matters to patients &amp; caregivers</th><th class="mid usc">RxSafeCheck</th><th class="mid">Typical checkers</th></tr></thead>
+      <tbody>
+        <tr><td class="feat">Plain language, written for patients</td><td class="mid us"><span class="yes">Yes</span></td><td class="mid"><span class="no">Often clinical</span></td></tr>
+        <tr><td class="feat">No ads inside your results</td><td class="mid us"><span class="yes">Yes</span></td><td class="mid"><span class="no">Often ads</span></td></tr>
+        <tr><td class="feat">No account or login required</td><td class="mid us"><span class="yes">Yes</span></td><td class="mid"><span class="no">Sometimes</span></td></tr>
+        <tr><td class="feat">Results grouped by body system</td><td class="mid us"><span class="yes">Yes</span></td><td class="mid"><span class="no">Rarely</span></td></tr>
+        <tr><td class="feat">Conditions, food &amp; travel — not just drug-drug</td><td class="mid us"><span class="yes">Yes</span></td><td class="mid"><span class="no">Rarely</span></td></tr>
+        <tr><td class="feat">Questions to bring to your care team</td><td class="mid us"><span class="yes">Yes</span></td><td class="mid"><span class="no">Rarely</span></td></tr>
+        <tr><td class="feat">Large professional drug database</td><td class="mid us"><span class="no">Growing</span></td><td class="mid"><span class="yes">Extensive</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="font-size:13.5px;color:var(--inkSoft);line-height:1.65;max-width:720px;margin:0">We're honest about the tradeoff: long-established checkers cover a larger drug list, and for an exhaustive professional lookup they're excellent. RxSafeCheck focuses on the well-established, high-impact interactions — and explains them in a way you can actually use, then points you to your pharmacist to confirm. Different jobs, done well.</p>
 </section></div>
 
 <div class="wrap"><section id="how">
