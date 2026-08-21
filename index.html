@@ -8,6 +8,13 @@
 <meta name="keywords" content="medication safety, drug interaction checker, medicine interactions, pharmacist questions, senior medication safety, caregiver medication guide, supplement interactions" />
 <link rel="canonical" href="https://rxsafecheck.com/" />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <meta name="theme-color" content="#0E3A36" />
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="RxSafeCheck" />
+  <meta name="mobile-web-app-capable" content="yes" />
 <meta property="og:image" content="https://rxsafecheck.com/logo.svg" />
 <meta name="robots" content="index,follow" />
 <meta name="author" content="Morning Mind LLC" />
@@ -96,7 +103,7 @@ footer.site a{color:var(--inkSoft);text-decoration:none;margin-right:16px}
 <div class="wrap">
   <header class="site">
     <a class="brand" href="/"><span class="logo">Rx</span><span><b>RxSafeCheck</b><small class="wst-tag">What's Safe T<span class="pilldot"><i></i></span>gether<span class="qm">?</span></small></span></a>
-    <nav class="top"><a href="/app.html">The Tool</a><a href="#why">Why</a><a href="#different">Compare</a><a href="#guides">Guides</a><a href="#how">How it works</a><a href="#travel">Travel</a><a href="#mission">Mission</a><a href="#news">News</a><a href="#partners">For Partners</a></nav>
+    <nav class="top"><a href="/app.html">The Tool</a><a href="#why">Why</a><a href="#different">Compare</a><a href="#guides">Guides</a><a href="#how">How it works</a><a href="#travel">Travel</a><a href="#install">Install</a><a href="#mission">Mission</a><a href="#news">News</a><a href="#partners">For Partners</a></nav>
     <a class="btn btn-primary" href="/app.html">Open the free tool</a>
   </header>
 </div>
@@ -105,7 +112,7 @@ footer.site a{color:var(--inkSoft);text-decoration:none;margin-right:16px}
   <h1>Understand how your medicines work together.</h1>
   <p class="tag">"What's Safe Together?"</p>
   <p class="lead">RxSafeCheck is a free, private tool that helps you see how your prescriptions, over-the-counter medicines, supplements, and even food may interact — organized by the part of the body they affect. Learn what to watch for and bring the right questions to your pharmacist or doctor.</p>
-  <div class="cta-row"><a class="btn btn-primary" href="/app.html">Check my medications →</a><a class="btn btn-ghost" href="#guides">Read the safety guides</a></div>
+  <div class="cta-row"><a class="btn btn-primary" href="/app.html">Check my medications →</a><a class="btn btn-ghost" href="#guides">Read the safety guides</a><button id="installBtn" class="btn btn-ghost" style="display:none;cursor:pointer;border:none">📲 Install app</button></div>
 </section></div>
 
 <div class="wrap"><section id="mission">
@@ -302,6 +309,28 @@ footer.site a{color:var(--inkSoft);text-decoration:none;margin-right:16px}
   </div>
 </section></div>
 
+<div class="wrap"><section id="install">
+  <p class="eyebrow">Take it with you</p>
+  <h2>Install RxSafeCheck as an app</h2>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <div style="flex:1;min-width:280px">
+      <p style="font-size:16.5px;color:#3E352A;line-height:1.7;margin:0 0 16px">Add RxSafeCheck to your phone, tablet, or computer and it works like a regular app — its own icon, full screen, and it even opens <strong>offline</strong>. It's free, there's nothing to buy, and your medicine list still stays private on your own device.</p>
+      <button id="installBtn2" class="btn btn-primary" style="display:none;cursor:pointer;border:none;margin-bottom:12px">📲 Install the app</button>
+      <div class="grid g3" style="margin-top:8px">
+        <div class="card"><h3>iPhone &amp; iPad</h3><p>Open this site in <strong>Safari</strong>, tap the <strong>Share</strong> button, then <strong>Add to Home Screen</strong>.</p></div>
+        <div class="card"><h3>Android</h3><p>Open in <strong>Chrome</strong>, tap the <strong>⋮</strong> menu, then <strong>Install app</strong> (or tap the Install button above).</p></div>
+        <div class="card"><h3>Computer</h3><p>In Chrome or Edge, click the <strong>install icon</strong> in the address bar, or use the browser menu&rsquo;s <strong>Install</strong> option.</p></div>
+      </div>
+    </div>
+    <div style="flex:0 0 auto;text-align:center;padding:8px 4px">
+      <img src="/icons/icon-512.png" alt="RxSafeCheck app icon" width="132" height="132" style="border-radius:28px;box-shadow:0 14px 34px -12px rgba(14,58,54,0.5)" />
+      <p style="font-size:13px;color:var(--inkSoft);margin:12px 0 0;font-weight:600">RxSafeCheck</p>
+      <p style="font-size:11.5px;color:var(--inkFaint);margin:2px 0 0">Your home screen</p>
+    </div>
+  </div>
+  <p style="font-size:11.5px;color:var(--inkFaint);line-height:1.6;max-width:720px;margin:18px 0 0">Installing adds an app shortcut and lets the tool work offline. RxSafeCheck is a web-based app you install from this site — it is not sold through the Apple App Store or Google Play. Educational only; not medical advice.</p>
+</section></div>
+
 <div class="wrap"><section id="news">
   <p class="eyebrow">Live · across the web</p>
   <h2>Latest health &amp; medication headlines</h2>
@@ -365,5 +394,31 @@ footer.site a{color:var(--inkSoft);text-decoration:none;margin-right:16px}
   <div style="margin-bottom:10px"><a href="/app.html">The Tool</a><a href="#guides">Guides</a><a href="#partners">Partners</a><a href="/app.html">Policies &amp; Privacy</a><a href="https://themorningmind.com">Morning Mind LLC</a></div>
   © 2026 Morning Mind LLC. All rights reserved. RxSafeCheck&trade; and What's Safe Together?&trade; are trademarks of Morning Mind LLC, Cedar Park, Texas. Educational only — not medical advice.
 </div></footer>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("/service-worker.js").catch(function(){});
+    });
+  }
+</script>
+<script>
+(function(){
+  var deferred=null;
+  var btns=[document.getElementById("installBtn"),document.getElementById("installBtn2")].filter(Boolean);
+  function show(){ btns.forEach(function(b){ b.style.display="inline-flex"; }); }
+  function hide(){ btns.forEach(function(b){ b.style.display="none"; }); }
+  window.addEventListener("beforeinstallprompt",function(e){ e.preventDefault(); deferred=e; show(); });
+  btns.forEach(function(btn){
+    btn.addEventListener("click",function(){
+      if(deferred){ deferred.prompt(); deferred.userChoice.finally(function(){ deferred=null; hide(); }); }
+      else { alert("To install: on iPhone/iPad, tap the Share button in Safari, then \"Add to Home Screen.\" On Android/desktop, use your browser menu\u2019s \"Install\" option."); }
+    });
+  });
+  window.addEventListener("appinstalled",hide);
+  var isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  var standalone=window.navigator.standalone||window.matchMedia("(display-mode: standalone)").matches;
+  if(isIOS && !standalone){ show(); }
+})();
+</script>
 </body>
 </html>
