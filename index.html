@@ -104,7 +104,7 @@ footer.site a{color:var(--inkSoft);text-decoration:none;margin-right:16px}
   <header class="site">
     <a class="brand" href="/"><span class="logo">Rx</span><span><b>RxSafeCheck</b><small class="wst-tag">What's Safe T<span class="pilldot"><i></i></span>gether<span class="qm">?</span></small></span></a>
     <nav class="top"><a href="/app.html">The Tool</a><a href="#why">Why</a><a href="#different">Compare</a><a href="#guides">Guides</a><a href="#how">How it works</a><a href="#travel">Travel</a><a href="#install">Install</a><a href="#mission">Mission</a><a href="#news">News</a><a href="#partners">For Partners</a></nav>
-    <a class="btn btn-primary" href="/app.html">Open the free tool</a>
+    <span style="display:inline-flex;gap:8px;align-items:center"><button id="installBtnTop" class="btn btn-ghost" style="display:none;cursor:pointer;border:none">📲 Install App</button><a class="btn btn-primary" href="/app.html">Open the free tool</a></span>
   </header>
 </div>
 
@@ -404,7 +404,7 @@ footer.site a{color:var(--inkSoft);text-decoration:none;margin-right:16px}
 <script>
 (function(){
   var deferred=null;
-  var btns=[document.getElementById("installBtn"),document.getElementById("installBtn2")].filter(Boolean);
+  var btns=[document.getElementById("installBtn"),document.getElementById("installBtn2"),document.getElementById("installBtnTop")].filter(Boolean);
   function show(){ btns.forEach(function(b){ b.style.display="inline-flex"; }); }
   function hide(){ btns.forEach(function(b){ b.style.display="none"; }); }
   window.addEventListener("beforeinstallprompt",function(e){ e.preventDefault(); deferred=e; show(); });
