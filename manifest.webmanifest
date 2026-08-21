@@ -1,0 +1,25 @@
+{
+  "name": "RxSafeCheck — What's Safe Together?",
+  "short_name": "RxSafeCheck",
+  "description": "Check how your prescriptions, over-the-counter medicines, supplements, and food may interact — organized by the part of the body they affect. Educational, private, ad-free.",
+  "start_url": "/app.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F2EADC",
+  "theme_color": "#0E3A36",
+  "categories": ["health", "medical", "lifestyle"],
+  "lang": "en-US",
+  "dir": "ltr",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Check interactions", "short_name": "Check", "url": "/app.html#interactions" },
+    { "name": "My medications", "short_name": "My meds", "url": "/app.html#meds" },
+    { "name": "RxSafeTravel", "short_name": "Travel", "url": "/app.html#travel" }
+  ]
+}
