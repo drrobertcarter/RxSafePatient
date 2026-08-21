@@ -1,6 +1,6 @@
 /* RxSafeCheck service worker — offline app shell + safe runtime caching.
    Bump CACHE_VERSION whenever you deploy new app.html/index.html so users get the update. */
-const CACHE_VERSION = "rxsafecheck-v1";
+const CACHE_VERSION = "rxsafecheck-v3";
 const APP_SHELL = [
   "/",
   "/index.html",
